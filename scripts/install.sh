@@ -3,13 +3,11 @@
 set -e
 
 export BASE_DIRECTORY=$1
+export PLEX_CLAIM_TOKEN=$2
 
 function check_requirements() {
   if [[ -z "$(command -v docker)" ]]; then
     echo "Please install 'docker' before running this script"
-    exit 1
-  elif [[ -z "$(command -v 7z)" ]]; then
-    echo "Please install '7z' before running this script"
     exit 1
   fi
 }
@@ -27,6 +25,9 @@ function set_environment_variables() {
   if [[ -z "$BASE_DIRECTORY" ]]; then
     echo "Please an environment variable for 'BASE_DIRECTORY' before running this script"
     exit 1
+  elif [[ -z "$PLEX_CLAIM_TOKEN" ]]; then
+    echo "Please an environment variable for 'PLEX_CLAIM_TOKEN' before running this script"
+    exit 1
   fi
 
   export ENVIRONMENT=development
@@ -42,9 +43,8 @@ function set_environment_variables() {
   export AUDIOBOOKS_DIRECTORY=${MEDIA_DIRECTORY}/Audiobooks
   export PODCASTS_DIRECTORY=${MEDIA_DIRECTORY}/Podcasts
 
-  export JELLYFIN_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/jellyfin-server
-  export JELLYFIN_PORT=8096
-  export JELLYFIN_SERVER_URL="http://${SERVER_HOST}"
+  export PLEX_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/plex-server
+  export PLEX_PORT=32400
 
   export CALIBRE_WEB_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/calibre-web
   export CALIBRE_WEB_PORT=8083
@@ -76,28 +76,13 @@ function set_environment_variables() {
   export NODE_RED_PORT=1880
 }
 
-function download_and_install_jellyfin_plugin() {
-  JELLYFIN_PLUGIN_NAME=$1
-  JELLYFIN_PLUGIN_DLL_FILE=$2
-  JELLYFIN_BOOKSHELF_PLUGIN_URL=$3
-
-  if [[ ! -f "$JELLYFIN_BASE_DIRECTORY/config/data/plugins/configurations/$JELLYFIN_PLUGIN_DLL_FILE" ]]; then
-    echo "Downloading and installing $JELLYFIN_PLUGIN_NAME..."
-
-    curl -SL "$JELLYFIN_BOOKSHELF_PLUGIN_URL" --output $JELLYFIN_PLUGIN_NAME.zip
-    7z x $JELLYFIN_PLUGIN_NAME.zip -otmp/$JELLYFIN_PLUGIN_NAME
-    cp -rf tmp/$JELLYFIN_PLUGIN_NAME/* "$JELLYFIN_BASE_DIRECTORY/config/data/plugins/configurations"
-    rm -rf tmp/$JELLYFIN_PLUGIN_NAME
-  fi
-}
-
 function main() {
   check_requirements
   
   set_environment_variables
 
-  ensure_directory_exists "$JELLYFIN_BASE_DIRECTORY/config"
-  ensure_directory_exists "$JELLYFIN_BASE_DIRECTORY/plugins"
+  ensure_directory_exists "$PLEX_BASE_DIRECTORY/config"
+  ensure_directory_exists "$PLEX_BASE_DIRECTORY/transcode"
   ensure_directory_exists "$CALIBRE_WEB_BASE_DIRECTORY/config"
   ensure_directory_exists "$GOGS_BASE_DIRECTORY/data"
   ensure_directory_exists "$GOGS_DATABASE_BASE_DIRECTORY"
@@ -107,11 +92,13 @@ function main() {
   ensure_directory_exists "$AUDIOBOOKSHELF_BASE_DIRECTORY/config"
   ensure_directory_exists "$AUDIOBOOKSHELF_BASE_DIRECTORY/metadata"
   ensure_directory_exists "$PODGRAB_BASE_DIRECTORY/config"
+
   ensure_directory_exists "$NODE_RED_BASE_DIRECTORY/data"
+  sudo chmod 777 "$NODE_RED_BASE_DIRECTORY/data"
 
   ENCODED_SERVER_HOST="http:\/\/${SERVER_HOST}"
   sed \
-     -e "s/%server-host%:%jellyfin-port%/${ENCODED_SERVER_HOST}:${JELLYFIN_PORT}/g" \
+     -e "s/%server-host%:%plex-port%/${ENCODED_SERVER_HOST}:${PLEX_PORT}/g" \
      -e "s/%server-host%:%calibre-web-port%/${ENCODED_SERVER_HOST}:${CALIBRE_WEB_PORT}/g" \
      -e "s/%server-host%:%home-assistant-port%/${ENCODED_SERVER_HOST}:${HOME_ASSISTANT_PORT}/g" \
      -e "s/%server-host%:%gogs-port%/${ENCODED_SERVER_HOST}:${GOGS_PORT}/g" \
@@ -126,8 +113,6 @@ function main() {
   sudo -E docker-compose up -d
 
   sudo docker exec tailscale-agent tailscale up
-
-  sudo chmod 777 "$NODE_RED_BASE_DIRECTORY/data"
 }
 
 main

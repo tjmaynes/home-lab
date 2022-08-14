@@ -47,19 +47,19 @@ colors:
 links:
   - name: "Source Code"
     icon: "fab fa-github"
-    url: "https://github.com/tjmaynes/config/tree/main/hosts/kratos"
+    url: "https://github.com/tjmaynes/kratos"
     target: "_blank"
 
 services:
   - name: "Media"
     icon: "fas fa-play"
     items:
-      - name: "Jellyfin"
+      - name: "Plex"
         icon: "fas fa-tv"
         subtitle: "Media server for movies, music, etc"
         tag: "app"
         keywords: "self-hosted media server, plex"
-        url: "%server-host%:%jellyfin-port%"
+        url: "%server-host%:%plex-port%/web/index.html"
         target: "_blank"
       - name: "Calibre-web"
         icon: "fas fa-book"
@@ -67,12 +67,14 @@ services:
         tag: "app"
         keywords: "self-hosted ebook reader, calibre"
         url: "%server-host%:%calibre-web-port%"
+        target: "_blank"
       - name: "Audiobookshelf"
         icon: "fas fa-podcast"
         subtitle: "Listen to podcasts and audiobooks from one place"
         tag: "app"
         keywords: "self-hosted podcast & audiobooks server"
         url: "%server-host%:%audiobookshelf-web-port%"
+        target: "_blank"
   - name: "Automation"
     icon: "fas fa-magic"
     items:

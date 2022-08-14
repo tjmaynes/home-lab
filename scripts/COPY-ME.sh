@@ -3,6 +3,7 @@
 set -e
 
 export BASE_DIRECTORY=$1
+export PLEX_CLAIM_TOKEN=$2
 
 function main() {
   if [[ -d "config" ]]; then
@@ -13,7 +14,7 @@ function main() {
   mv config-main config
 
   pushd config/hosts/kratos
-    ./scripts/install.sh "$BASE_DIRECTORY"
+    ./scripts/install.sh "$BASE_DIRECTORY" "$PLEX_CLAIM_TOKEN"
   popd
 }
 

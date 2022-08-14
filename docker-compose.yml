@@ -1,17 +1,20 @@
 version: "3.3"
 
 services:
-  jellyfin-server:
-    image: linuxserver/jellyfin:amd64-10.8.1
-    container_name: jellyfin-server
+  plex-server:
+    image: plexinc/pms-docker:1.28.0.5999-97678ded3
+    container_name: plex-server
     restart: unless-stopped
     network_mode: host
-    volumes:
-      - ${JELLYFIN_BASE_DIRECTORY}/config:/config
-      - ${MEDIA_DIRECTORY}:/media
     environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
       - TZ=${TIMEZONE}
-      - JELLYFIN_PublishedServerUrl=${JELLYFIN_SERVER_URL}
+      - CLAIM_TOKEN=${PLEX_CLAIM_TOKEN}
+    volumes:
+      - ${PLEX_BASE_DIRECTORY}/config:/config
+      - ${PLEX_BASE_DIRECTORY}/transcode:/transcode
+      - ${MEDIA_DIRECTORY}:/media
 
   calibre-web:
     image: lscr.io/linuxserver/calibre-web:0.6.19
