@@ -132,6 +132,19 @@ services:
       - ${PODGRAB_PORT}:8080
     restart: unless-stopped
 
+  node-red:
+    image: nodered/node-red:2.2.3-12
+    container_name: node-red
+    restart: unless-stopped
+    environment:
+      - TZ=${TIMEZONE}
+    ports:
+      - ${NODE_RED_PORT}:1880
+    networks:
+      - default
+    volumes:
+      - ${NODE_RED_BASE_DIRECTORY}/data:/data
+
 networks:
   default:
     driver: bridge
