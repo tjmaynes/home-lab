@@ -148,6 +148,70 @@ services:
     volumes:
       - ${NODE_RED_BASE_DIRECTORY}/data:/data
 
+  photoprism-server:
+    image: photoprism/photoprism:220730-bookworm
+    container_name: photoprism-server
+    working_dir: "/photoprism"
+    depends_on:
+      - photoprism-db
+    security_opt:
+      - seccomp:unconfined
+      - apparmor:unconfined
+    ports:
+      - ${PHOTOPRISM_PORT}:2342
+    environment:
+      PHOTOPRISM_ADMIN_PASSWORD: "insecure"
+      PHOTOPRISM_AUTH_MODE: "password"
+      PHOTOPRISM_SITE_URL: "http://${SERVER_HOST}:${PHOTOPRISM_PORT}/"
+      PHOTOPRISM_ORIGINALS_LIMIT: 5000
+      PHOTOPRISM_HTTP_COMPRESSION: "gzip"
+      PHOTOPRISM_LOG_LEVEL: "info"
+      PHOTOPRISM_READONLY: "false"
+      PHOTOPRISM_EXPERIMENTAL: "false"
+      PHOTOPRISM_DISABLE_CHOWN: "false"
+      PHOTOPRISM_DISABLE_WEBDAV: "false"
+      PHOTOPRISM_DISABLE_SETTINGS: "false"
+      PHOTOPRISM_DISABLE_TENSORFLOW: "false"
+      PHOTOPRISM_DISABLE_FACES: "false"
+      PHOTOPRISM_DISABLE_CLASSIFICATION: "false"
+      PHOTOPRISM_DISABLE_RAW: "false"
+      PHOTOPRISM_RAW_PRESETS: "false"
+      PHOTOPRISM_JPEG_QUALITY: 90
+      PHOTOPRISM_DETECT_NSFW: "false"
+      PHOTOPRISM_DATABASE_DRIVER: "mysql"
+      PHOTOPRISM_DATABASE_SERVER: "photoprism-db:${PHOTOPRISM_DB_PORT}"
+      PHOTOPRISM_DATABASE_NAME: "photoprism"
+      PHOTOPRISM_DATABASE_USER: "${PHOTOPRISM_DB_USER}"
+      PHOTOPRISM_DATABASE_PASSWORD: "${PHOTOPRISM_DB_PASSWORD}"
+      PHOTOPRISM_SITE_CAPTION: "AI-Powered Photos App"
+      PHOTOPRISM_SITE_DESCRIPTION: "Family photos and other memorable images"
+      PHOTOPRISM_SITE_AUTHOR: "Bewoogie Family"
+      PHOTOPRISM_UID: ${PUID}
+      PHOTOPRISM_GID: ${PGID}
+    volumes:
+      - ${PHOTOS_DIRECTORY}:/photoprism/originals
+      - ${PHOTOPRISM_BASE_DIRECTORY}:/photoprism/storage
+
+  photoprism-db:
+    image: mariadb:10.8
+    container_name: photoprism-db
+    restart: unless-stopped
+    ports:
+      - ${PHOTOPRISM_DB_PORT}:3306
+    security_opt:
+      - seccomp:unconfined
+      - apparmor:unconfined
+    command: mysqld --innodb-buffer-pool-size=512M --transaction-isolation=READ-COMMITTED --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --max-connections=512 --innodb-rollback-on-timeout=OFF --innodb-lock-wait-timeout=120
+    volumes:
+      - ${PHOTOPRISM_DB_BASE_DIRECTORY}:/var/lib/mysql
+    environment:
+      MARIADB_AUTO_UPGRADE: "1"
+      MARIADB_INITDB_SKIP_TZINFO: "1"
+      MARIADB_DATABASE: "photoprism"
+      MARIADB_USER: "${PHOTOPRISM_DB_USER}"
+      MARIADB_PASSWORD: "${PHOTOPRISM_DB_PASSWORD}"
+      MARIADB_ROOT_PASSWORD: "${PHOTOPRISM_DB_ROOT_PASSWORD}"
+
 networks:
   default:
     driver: bridge

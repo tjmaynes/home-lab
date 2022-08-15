@@ -39,6 +39,8 @@ function set_environment_variables() {
   export ADMIN_PORTAL_PORT=5000
 
   export MEDIA_DIRECTORY=${BASE_DIRECTORY}/media
+
+  export PHOTOS_DIRECTORY=${MEDIA_DIRECTORY}/Photos
   export BOOKS_DIRECTORY=${MEDIA_DIRECTORY}/Books
   export AUDIOBOOKS_DIRECTORY=${MEDIA_DIRECTORY}/Audiobooks
   export PODCASTS_DIRECTORY=${MEDIA_DIRECTORY}/Podcasts
@@ -74,6 +76,15 @@ function set_environment_variables() {
 
   export NODE_RED_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/node-red
   export NODE_RED_PORT=1880
+
+  export PHOTOPRISM_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/photoprism-server
+  export PHOTOPRISM_PORT=2342
+
+  export PHOTOPRISM_DB_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/photoprism-db
+  export PHOTOPRISM_DB_PORT=3306
+  export PHOTOPRISM_DB_ROOT_PASSWORD=password
+  export PHOTOPRISM_DB_USER=photoprism
+  export PHOTOPRISM_DB_PASSWORD=password
 }
 
 function main() {
@@ -92,6 +103,8 @@ function main() {
   ensure_directory_exists "$AUDIOBOOKSHELF_BASE_DIRECTORY/config"
   ensure_directory_exists "$AUDIOBOOKSHELF_BASE_DIRECTORY/metadata"
   ensure_directory_exists "$PODGRAB_BASE_DIRECTORY/config"
+  ensure_directory_exists "$PHOTOPRISM_BASE_DIRECTORY"
+  ensure_directory_exists "$PHOTOPRISM_DB_BASE_DIRECTORY"
 
   ensure_directory_exists "$NODE_RED_BASE_DIRECTORY/data"
   sudo chmod 777 "$NODE_RED_BASE_DIRECTORY/data"
@@ -104,6 +117,7 @@ function main() {
      -e "s/%server-host%:%gogs-port%/${ENCODED_SERVER_HOST}:${GOGS_PORT}/g" \
      -e "s/%server-host%:%audiobookshelf-web-port%/${ENCODED_SERVER_HOST}:${AUDIOBOOKSHELF_PORT}/g" \
      -e "s/%server-host%:%node-red-port%/${ENCODED_SERVER_HOST}:${NODE_RED_PORT}/g" \
+     -e "s/%server-host%:%photoprism-port%/${ENCODED_SERVER_HOST}:${PHOTOPRISM_PORT}/g" \
      -e "s/%server-host%:%admin-portal-port%/${ENCODED_SERVER_HOST}:${ADMIN_PORTAL_PORT}/g" \
      -e "s/%server-host%:%podgrab-port%/${ENCODED_SERVER_HOST}:${PODGRAB_PORT}/g" \
     data/homer.yml > "$HOMER_WEB_BASE_DIRECTORY/www/assets/config.yml"
