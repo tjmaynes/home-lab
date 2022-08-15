@@ -88,6 +88,10 @@ function set_environment_variables() {
 
   export DRAWIO_PORT=9092
   export DRAWIO_HTTPS_PORT=9093
+
+  export KEEWEB_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/keeweb-server
+  export KEEWEB_PORT=8084
+  export KEEWEB_HTTPS_PORT=8085
 }
 
 function main() {
@@ -108,6 +112,7 @@ function main() {
   ensure_directory_exists "$PODGRAB_BASE_DIRECTORY/config"
   ensure_directory_exists "$PHOTOPRISM_BASE_DIRECTORY"
   ensure_directory_exists "$PHOTOPRISM_DB_BASE_DIRECTORY"
+  ensure_directory_exists "$KEEWEB_BASE_DIRECTORY/data"
 
   ensure_directory_exists "$NODE_RED_BASE_DIRECTORY/data"
   sudo chmod 777 "$NODE_RED_BASE_DIRECTORY/data"
@@ -122,6 +127,7 @@ function main() {
      -e "s/%server-host%:%node-red-port%/${ENCODED_SERVER_HOST}:${NODE_RED_PORT}/g" \
      -e "s/%server-host%:%photoprism-port%/${ENCODED_SERVER_HOST}:${PHOTOPRISM_PORT}/g" \
      -e "s/%server-host%:%drawio-port%/${ENCODED_SERVER_HOST}:${DRAWIO_PORT}/g" \
+     -e "s/%server-host%:%keeweb-port%/${ENCODED_SERVER_HOST}:${KEEWEB_PORT}/g" \
      -e "s/%server-host%:%admin-portal-port%/${ENCODED_SERVER_HOST}:${ADMIN_PORTAL_PORT}/g" \
      -e "s/%server-host%:%podgrab-port%/${ENCODED_SERVER_HOST}:${PODGRAB_PORT}/g" \
     data/homer.yml > "$HOMER_WEB_BASE_DIRECTORY/www/assets/config.yml"

@@ -102,6 +102,12 @@ services:
   - name: "Productivity"
     icon: "fas fa-tasks"
     items:
+      - name: "KeeWeb"
+        icon: "fas fa-key"
+        subtitle: "Password manager"
+        tag: "app"
+        url: "%server-host%:%keeweb-port%"
+        target: "_blank"
       - name: "Draw.io"
         icon: "fas fa-object-group"
         subtitle: "Online diagram software"
