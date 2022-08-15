@@ -249,6 +249,22 @@ services:
     ports:
       - ${FRESHRSS_PORT}:80
 
+  photobrowser-server:
+    image: filebrowser/filebrowser:s6
+    container_name: photobrowser-server
+    restart: unless-stopped
+    networks:
+      - default
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+    volumes:
+      - ${PHOTOS_DIRECTORY}:/srv
+      - ${PHOTOBROWSER_BASE_DIRECTORY}/database/filebrowser.db:/database/filebrowser.db
+      - ${PHOTOBROWSER_BASE_DIRECTORY}/config:/config
+    ports:
+      - ${PHOTOBROWSER_PORT}:80
 
 networks:
   default:

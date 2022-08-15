@@ -17,6 +17,7 @@
 | [bitwarden](https://bitwarden.com/)                        | password manager                   | docker-compose | ✅ |
 | [privatebin](https://privatebin.info/)                     | private, minimal pastebin          | docker-compose | ✅ |
 | [freshrss](https://www.freshrss.org/)                      | A free, news aggregator            | docker-compose | ✅ |
+| [photobrowser](https://filebrowser.org/)                   | A tool for uploading photos        | docker-compose | ✅ |
 
 ## Requirements
 

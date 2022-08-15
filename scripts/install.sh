@@ -98,6 +98,9 @@ function set_environment_variables() {
 
   export FRESHRSS_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/freshrss-web
   export FRESHRSS_PORT=9002
+
+  export PHOTOBROWSER_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/photobrowser-server
+  export PHOTOBROWSER_PORT=9003
 }
 
 function main() {
@@ -121,6 +124,10 @@ function main() {
   ensure_directory_exists "$BITWARDEN_BASE_DIRECTORY/data"
   ensure_directory_exists "$PRIVATEBIN_BASE_DIRECTORY/data"
   ensure_directory_exists "$FRESHRSS_BASE_DIRECTORY/config"
+  
+  ensure_directory_exists "$PHOTOBROWSER_BASE_DIRECTORY/config"
+  ensure_directory_exists "$PHOTOBROWSER_BASE_DIRECTORY/database"
+  touch "$PHOTOBROWSER_BASE_DIRECTORY/database/filebrowser.db"
 
   ensure_directory_exists "$NODE_RED_BASE_DIRECTORY/data"
   sudo chmod 777 "$NODE_RED_BASE_DIRECTORY/data"
@@ -138,6 +145,7 @@ function main() {
      -e "s/%server-host%:%bitwarden-port%/${ENCODED_SERVER_HOST}:${BITWARDEN_PORT}/g" \
      -e "s/%server-host%:%privatebin-port%/${ENCODED_SERVER_HOST}:${PRIVATEBIN_PORT}/g" \
      -e "s/%server-host%:%freshrss-port%/${ENCODED_SERVER_HOST}:${FRESHRSS_PORT}/g" \
+     -e "s/%server-host%:%photobrowser-port%/${ENCODED_SERVER_HOST}:${PHOTOBROWSER_PORT}/g" \
      -e "s/%server-host%:%admin-portal-port%/${ENCODED_SERVER_HOST}:${ADMIN_PORTAL_PORT}/g" \
      -e "s/%server-host%:%podgrab-port%/${ENCODED_SERVER_HOST}:${PODGRAB_PORT}/g" \
     data/homer.yml > "$HOMER_WEB_BASE_DIRECTORY/www/assets/config.yml"
