@@ -15,6 +15,7 @@
 | [photoview](https://github.com/photoview/photoview)        | photo gallery                      | docker-compose | ✅ |
 | [draw.io](https://github.com/jgraph/drawio)                | web-base diagramming software      | docker-compose | ✅ |
 | [bitwarden](https://bitwarden.com/)                        | password manager                   | docker-compose | ✅ |
+| [privatebin](https://privatebin.info/)                     | private, minimal pastebin          | docker-compose | ✅ |
 
 ## Requirements
 
