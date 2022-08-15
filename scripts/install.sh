@@ -152,6 +152,8 @@ function main() {
 
   cp -f static/homer-logo.png "$HOMER_WEB_BASE_DIRECTORY/www/assets/logo.png"
 
+  cp -f data/photobrowser.json "$PHOTOBROWSER_BASE_DIRECTORY/config/settings.json"
+
   sudo -E docker-compose up -d --remove-orphans
 
   sudo docker exec tailscale-agent tailscale up

@@ -260,7 +260,7 @@ services:
       - PGID=${PGID}
       - TZ=${TIMEZONE}
     volumes:
-      - ${PHOTOS_DIRECTORY}:/srv
+      - ${PHOTOS_DIRECTORY}:/photos
       - ${PHOTOBROWSER_BASE_DIRECTORY}/database/filebrowser.db:/database/filebrowser.db
       - ${PHOTOBROWSER_BASE_DIRECTORY}/config:/config
     ports:
