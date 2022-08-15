@@ -14,7 +14,7 @@
 | [node-red](https://nodered.org/)                           | programmable automation interface  | docker-compose | ✅ |
 | [photoprism](https://photoprism.app/)                      | smart photo gallaery               | docker-compose | ✅ |
 | [draw.io](https://github.com/jgraph/drawio)                | web-base diagramming software      | docker-compose | ✅ |
-| [keeweb](https://keeweb.info/)                             | password manager                   | docker-compose | ✅ |
+| [bitwarden](https://bitwarden.com/)                        | password manager                   | docker-compose | ✅ |
 
 ## Requirements
 

@@ -189,8 +189,9 @@ services:
       PHOTOPRISM_UID: ${PUID}
       PHOTOPRISM_GID: ${PGID}
     volumes:
-      - ${PHOTOS_DIRECTORY}:/photoprism/originals
-      - ${PHOTOPRISM_BASE_DIRECTORY}:/photoprism/storage
+      - ${PHOTOS_DIRECTORY}/Emily Baron:/photoprism/originals/emilybaron
+      - ${PHOTOS_DIRECTORY}/TJ Maynes:/photoprism/originals/tjmaynes
+      - ${PHOTOPRISM_BASE_DIRECTORY}/storage:/photoprism/storage
 
   photoprism-db:
     image: mariadb:10.8
@@ -232,15 +233,18 @@ services:
       retries: 5
       start_period: 10s
 
-  keeweb-server:
-    image: antelle/keeweb:1.18.7
-    container_name: keeweb-server
+  bitwarden-server:
+    image: vaultwarden/server:1.25.2-alpine
+    container_name: bitwarden-server
     restart: always
     ports:
-      - ${KEEWEB_PORT}:80
-      - ${KEEWEB_HTTPS_PORT}:443
+      - ${BITWARDEN_PORT}:80
+      - ${BITWARDEN_HTTPS_PORT}:443
     volumes:
-      - ${KEEWEB_BASE_DIRECTORY}/data:/etc/nginx/external/
+      - ${BITWARDEN_BASE_DIRECTORY}/data:/data/
+    environment:
+      WEBSOCKET_ENABLED: "true"
+      SIGNUPS_ALLOWED: "true"
 
 networks:
   default:

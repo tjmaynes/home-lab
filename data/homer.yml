@@ -102,11 +102,11 @@ services:
   - name: "Productivity"
     icon: "fas fa-tasks"
     items:
-      - name: "KeeWeb"
+      - name: "Bitwarden"
         icon: "fas fa-key"
         subtitle: "Password manager"
         tag: "app"
-        url: "%server-host%:%keeweb-port%"
+        url: "%server-host%:%bitwarden-port%"
         target: "_blank"
       - name: "Draw.io"
         icon: "fas fa-object-group"
