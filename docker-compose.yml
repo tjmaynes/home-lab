@@ -212,6 +212,62 @@ services:
       MARIADB_PASSWORD: "${PHOTOPRISM_DB_PASSWORD}"
       MARIADB_ROOT_PASSWORD: "${PHOTOPRISM_DB_ROOT_PASSWORD}"
 
+  drawio-web:
+    image: jgraph/drawio:20.2.3
+    container_name: drawio-web
+    restart: unless-stopped
+    ports:
+      - ${DRAWIO_PORT}:8080
+      - ${DRAWIO_HTTPS_PORT}:8443
+    environment:
+      PUBLIC_DNS: ${SERVER_HOST}
+      ORGANISATION_UNIT: unit
+      ORGANISATION: bewoogie
+      CITY: Remote
+      STATE: Remote
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://${SERVER_HOST}:${DRAWIO_PORT} || exit 1"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+
+  joplin-server:
+    image: joplin/server:2.7.4-beta
+    container_name: joplin-server
+    restart: always
+    networks:
+      - default
+    ports:
+      - ${JOPLIN_PORT}:22300
+    environment:
+      - DB_CLIENT=pg
+      - POSTGRES_PASSWORD=${JOPLIN_DB_PASSWORD}
+      - POSTGRES_DATABASE=${JOPLIN_DB_NAME}
+      - POSTGRES_USER=${JOPLIN_DB_USER}
+      - POSTGRES_PORT=${JOPLIN_DB_PORT}
+      - POSTGRES_HOST=${SERVER_HOST}
+
+  joplin-db:
+    image: postgres:14
+    container_name: joplin-db
+    restart: always
+    networks:
+      - default
+    ports:
+      - ${JOPLIN_DB_PORT}:5432
+    environment:
+      - POSTGRES_USER=${JOPLIN_DB_USER}
+      - POSTGRES_PASSWORD=${JOPLIN_DB_PASSWORD}
+      - POSTGRES_DB=${JOPLIN_DB_NAME}
+    volumes:
+      - ${JOPLIN_DB_BASE_DIRECTORY}:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${JOPLIN_DB_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
 networks:
   default:
     driver: bridge
