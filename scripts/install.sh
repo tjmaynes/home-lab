@@ -86,15 +86,6 @@ function set_environment_variables() {
   export PHOTOPRISM_DB_USER=photoprism
   export PHOTOPRISM_DB_PASSWORD=password
 
-  export JOPLIN_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/joplin-web
-  export JOPLIN_PORT=22300
-
-  export JOPLIN_DB_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/joplin-db
-  export JOPLIN_DB_PORT=5434
-  export JOPLIN_DB_NAME=joplin
-  export JOPLIN_DB_USER=joplin
-  export JOPLIN_DB_PASSWORD=password
-
   export DRAWIO_PORT=9092
   export DRAWIO_HTTPS_PORT=9093
 }

@@ -232,42 +232,6 @@ services:
       retries: 5
       start_period: 10s
 
-  joplin-server:
-    image: joplin/server:2.7.4-beta
-    container_name: joplin-server
-    restart: always
-    networks:
-      - default
-    ports:
-      - ${JOPLIN_PORT}:22300
-    environment:
-      - DB_CLIENT=pg
-      - POSTGRES_PASSWORD=${JOPLIN_DB_PASSWORD}
-      - POSTGRES_DATABASE=${JOPLIN_DB_NAME}
-      - POSTGRES_USER=${JOPLIN_DB_USER}
-      - POSTGRES_PORT=${JOPLIN_DB_PORT}
-      - POSTGRES_HOST=${SERVER_HOST}
-
-  joplin-db:
-    image: postgres:14
-    container_name: joplin-db
-    restart: always
-    networks:
-      - default
-    ports:
-      - ${JOPLIN_DB_PORT}:5432
-    environment:
-      - POSTGRES_USER=${JOPLIN_DB_USER}
-      - POSTGRES_PASSWORD=${JOPLIN_DB_PASSWORD}
-      - POSTGRES_DB=${JOPLIN_DB_NAME}
-    volumes:
-      - ${JOPLIN_DB_BASE_DIRECTORY}:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${JOPLIN_DB_USER}"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
 networks:
   default:
     driver: bridge

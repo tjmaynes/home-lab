@@ -102,12 +102,6 @@ services:
   - name: "Productivity"
     icon: "fas fa-heartbeat"
     items:
-      - name: "Joplin"
-        icon: "fas fa-briefcase"
-        subtitle: "Notetaking app"
-        tag: "app"
-        url: "%server-host%:%joplin-port%"
-        target: "_blank"
       - name: "Draw.io"
         icon: "fas fa-object-group"
         subtitle: "Online diagram software"
