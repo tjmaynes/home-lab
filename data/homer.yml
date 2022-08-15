@@ -100,7 +100,7 @@ services:
         url: "%server-host%:%node-red-port%"
         target: "_blank"
   - name: "Productivity"
-    icon: "fas fa-heartbeat"
+    icon: "fas fa-tasks"
     items:
       - name: "Draw.io"
         icon: "fas fa-object-group"
