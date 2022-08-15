@@ -12,7 +12,7 @@
 | [audiobookshelf](https://www.audiobookshelf.org/)          | podcast & audiobooks server        | docker-compose | ✅ |
 | [podgrab](https://github.com/akhilrex/podgrab)             | podcast downloader                 | docker-compose | ✅ |
 | [node-red](https://nodered.org/)                           | programmable automation interface  | docker-compose | ✅ |
-| [photoprism](https://photoprism.app/)                      | smart photo gallaery               | docker-compose | ✅ |
+| [fussel](https://github.com/cbenning/fussel)               | simple photo gallaery              | docker-compose | ✅ |
 | [draw.io](https://github.com/jgraph/drawio)                | web-base diagramming software      | docker-compose | ✅ |
 | [bitwarden](https://bitwarden.com/)                        | password manager                   | docker-compose | ✅ |
 

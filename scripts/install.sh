@@ -77,14 +77,9 @@ function set_environment_variables() {
   export NODE_RED_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/node-red
   export NODE_RED_PORT=1880
 
-  export PHOTOPRISM_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/photoprism-server
-  export PHOTOPRISM_PORT=2342
-
-  export PHOTOPRISM_DB_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/photoprism-db
-  export PHOTOPRISM_DB_PORT=3306
-  export PHOTOPRISM_DB_ROOT_PASSWORD=password
-  export PHOTOPRISM_DB_USER=photoprism
-  export PHOTOPRISM_DB_PASSWORD=password
+  export FUSSEL_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/fussel-server
+  export FUSSEL_PORT=2342
+  export FUSSEL_SITE_NAME=BewoogiePhotos
 
   export DRAWIO_PORT=9092
   export DRAWIO_HTTPS_PORT=9093
@@ -110,8 +105,7 @@ function main() {
   ensure_directory_exists "$AUDIOBOOKSHELF_BASE_DIRECTORY/config"
   ensure_directory_exists "$AUDIOBOOKSHELF_BASE_DIRECTORY/metadata"
   ensure_directory_exists "$PODGRAB_BASE_DIRECTORY/config"
-  ensure_directory_exists "$PHOTOPRISM_BASE_DIRECTORY/storage"
-  ensure_directory_exists "$PHOTOPRISM_DB_BASE_DIRECTORY"
+  ensure_directory_exists "$FUSSEL_BASE_DIRECTORY/www"
   ensure_directory_exists "$BITWARDEN_BASE_DIRECTORY/data"
 
   ensure_directory_exists "$NODE_RED_BASE_DIRECTORY/data"
@@ -125,7 +119,7 @@ function main() {
      -e "s/%server-host%:%gogs-port%/${ENCODED_SERVER_HOST}:${GOGS_PORT}/g" \
      -e "s/%server-host%:%audiobookshelf-web-port%/${ENCODED_SERVER_HOST}:${AUDIOBOOKSHELF_PORT}/g" \
      -e "s/%server-host%:%node-red-port%/${ENCODED_SERVER_HOST}:${NODE_RED_PORT}/g" \
-     -e "s/%server-host%:%photoprism-port%/${ENCODED_SERVER_HOST}:${PHOTOPRISM_PORT}/g" \
+     -e "s/%server-host%:%fussel-port%/${ENCODED_SERVER_HOST}:${FUSSEL_PORT}/g" \
      -e "s/%server-host%:%drawio-port%/${ENCODED_SERVER_HOST}:${DRAWIO_PORT}/g" \
      -e "s/%server-host%:%bitwarden-port%/${ENCODED_SERVER_HOST}:${BITWARDEN_PORT}/g" \
      -e "s/%server-host%:%admin-portal-port%/${ENCODED_SERVER_HOST}:${ADMIN_PORTAL_PORT}/g" \
