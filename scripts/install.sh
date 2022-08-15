@@ -108,8 +108,6 @@ function main() {
   ensure_directory_exists "$PODGRAB_BASE_DIRECTORY/config"
   ensure_directory_exists "$PHOTOPRISM_BASE_DIRECTORY"
   ensure_directory_exists "$PHOTOPRISM_DB_BASE_DIRECTORY"
-  ensure_directory_exists "$JOPLIN_BASE_DIRECTORY"
-  ensure_directory_exists "$JOPLIN_DB_BASE_DIRECTORY"
 
   ensure_directory_exists "$NODE_RED_BASE_DIRECTORY/data"
   sudo chmod 777 "$NODE_RED_BASE_DIRECTORY/data"
@@ -124,7 +122,6 @@ function main() {
      -e "s/%server-host%:%node-red-port%/${ENCODED_SERVER_HOST}:${NODE_RED_PORT}/g" \
      -e "s/%server-host%:%photoprism-port%/${ENCODED_SERVER_HOST}:${PHOTOPRISM_PORT}/g" \
      -e "s/%server-host%:%drawio-port%/${ENCODED_SERVER_HOST}:${DRAWIO_PORT}/g" \
-     -e "s/%server-host%:%joplin-port%/${ENCODED_SERVER_HOST}:${JOPLIN_PORT}/g" \
      -e "s/%server-host%:%admin-portal-port%/${ENCODED_SERVER_HOST}:${ADMIN_PORTAL_PORT}/g" \
      -e "s/%server-host%:%podgrab-port%/${ENCODED_SERVER_HOST}:${PODGRAB_PORT}/g" \
     data/homer.yml > "$HOMER_WEB_BASE_DIRECTORY/www/assets/config.yml"
