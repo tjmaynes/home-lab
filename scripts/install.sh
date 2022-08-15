@@ -77,9 +77,14 @@ function set_environment_variables() {
   export NODE_RED_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/node-red
   export NODE_RED_PORT=1880
 
-  export FUSSEL_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/fussel-server
-  export FUSSEL_PORT=2342
-  export FUSSEL_SITE_NAME=BewoogiePhotos
+  export PHOTOVIEW_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/photoview-server
+  export PHOTOVIEW_PORT=9080
+
+  export PHOTOVIEW_DB_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/photoview-db
+  export PHOTOVIEW_DB_PORT=9081
+  export PHOTOVIEW_DB_NAME=photoview
+  export PHOTOVIEW_DB_USER=photoview
+  export PHOTOVIEW_DB_PASSWORD=password
 
   export DRAWIO_PORT=9092
   export DRAWIO_HTTPS_PORT=9093
@@ -105,7 +110,8 @@ function main() {
   ensure_directory_exists "$AUDIOBOOKSHELF_BASE_DIRECTORY/config"
   ensure_directory_exists "$AUDIOBOOKSHELF_BASE_DIRECTORY/metadata"
   ensure_directory_exists "$PODGRAB_BASE_DIRECTORY/config"
-  ensure_directory_exists "$FUSSEL_BASE_DIRECTORY/www"
+  ensure_directory_exists "$PHOTOVIEW_BASE_DIRECTORY/cache"
+  ensure_directory_exists "$PHOTOVIEW_DB_BASE_DIRECTORY"
   ensure_directory_exists "$BITWARDEN_BASE_DIRECTORY/data"
 
   ensure_directory_exists "$NODE_RED_BASE_DIRECTORY/data"
@@ -119,7 +125,7 @@ function main() {
      -e "s/%server-host%:%gogs-port%/${ENCODED_SERVER_HOST}:${GOGS_PORT}/g" \
      -e "s/%server-host%:%audiobookshelf-web-port%/${ENCODED_SERVER_HOST}:${AUDIOBOOKSHELF_PORT}/g" \
      -e "s/%server-host%:%node-red-port%/${ENCODED_SERVER_HOST}:${NODE_RED_PORT}/g" \
-     -e "s/%server-host%:%fussel-port%/${ENCODED_SERVER_HOST}:${FUSSEL_PORT}/g" \
+     -e "s/%server-host%:%photoview-port%/${ENCODED_SERVER_HOST}:${PHOTOVIEW_PORT}/g" \
      -e "s/%server-host%:%drawio-port%/${ENCODED_SERVER_HOST}:${DRAWIO_PORT}/g" \
      -e "s/%server-host%:%bitwarden-port%/${ENCODED_SERVER_HOST}:${BITWARDEN_PORT}/g" \
      -e "s/%server-host%:%admin-portal-port%/${ENCODED_SERVER_HOST}:${ADMIN_PORTAL_PORT}/g" \
@@ -128,7 +134,7 @@ function main() {
 
   cp -f static/homer-logo.png "$HOMER_WEB_BASE_DIRECTORY/www/assets/logo.png"
 
-  sudo -E docker-compose up -d
+  sudo -E docker-compose up -d --remove-orphans
 
   sudo docker exec tailscale-agent tailscale up
 }
