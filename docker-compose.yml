@@ -234,6 +234,22 @@ services:
     ports:
       - ${PRIVATEBIN_PORT}:80
 
+  freshrss-web:
+    image: lscr.io/linuxserver/freshrss:1.19.2
+    container_name: freshrss-web
+    restart: unless-stopped
+    networks:
+      - default
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+    volumes:
+      - ${FRESHRSS_BASE_DIRECTORY}/config:/config
+    ports:
+      - ${FRESHRSS_PORT}:80
+
+
 networks:
   default:
     driver: bridge
