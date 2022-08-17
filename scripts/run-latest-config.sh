@@ -3,7 +3,8 @@
 set -e
 
 export BASE_DIRECTORY=$1
-export PLEX_CLAIM_TOKEN=$2
+export SERVER_HOST=$2
+export PLEX_CLAIM_TOKEN=$3
 
 function ensure_tailscale_tunnel_exists() {
   if [[ ! -c "/dev/net/tun" ]]; then
@@ -31,7 +32,7 @@ function main() {
   ensure_tailscale_tunnel_exists
 
   pushd kratos
-    ./scripts/install.sh "$BASE_DIRECTORY" "$PLEX_CLAIM_TOKEN"
+    ./scripts/install.sh "$BASE_DIRECTORY" "$SERVER_HOST" "$PLEX_CLAIM_TOKEN"
   popd
 }
 

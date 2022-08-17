@@ -3,7 +3,8 @@
 set -e
 
 export BASE_DIRECTORY=$1
-export PLEX_CLAIM_TOKEN=$2
+export SERVER_HOST=$2
+export PLEX_CLAIM_TOKEN=$3
 
 function check_requirements() {
   if [[ -z "$(command -v docker)" ]]; then
@@ -25,6 +26,9 @@ function set_environment_variables() {
   if [[ -z "$BASE_DIRECTORY" ]]; then
     echo "Please an environment variable for 'BASE_DIRECTORY' before running this script"
     exit 1
+  elif [[ -z "$SERVER_HOST" ]]; then
+    echo "Please an environment variable for 'SERVER_HOST' before running this script"
+    exit 1
   elif [[ -z "$PLEX_CLAIM_TOKEN" ]]; then
     echo "Please an environment variable for 'PLEX_CLAIM_TOKEN' before running this script"
     exit 1
@@ -35,7 +39,6 @@ function set_environment_variables() {
   export PUID=$UID
   export PGID=$(sudo id -g)
 
-  export SERVER_HOST="$(ifconfig eth0 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}')"
   export ADMIN_PORTAL_PORT=5000
 
   export MEDIA_DIRECTORY=${BASE_DIRECTORY}/media
@@ -126,7 +129,7 @@ function main() {
   ensure_directory_exists "$NODE_RED_BASE_DIRECTORY/data"
   sudo chmod 777 "$NODE_RED_BASE_DIRECTORY/data"
 
-  ENCODED_SERVER_HOST="http:\/\/${SERVER_HOST}"
+  ENCODED_SERVER_HOST="https:\/\/${SERVER_HOST}"
   sed \
      -e "s/%server-host%:%plex-port%/${ENCODED_SERVER_HOST}:${PLEX_PORT}/g" \
      -e "s/%server-host%:%calibre-web-port%/${ENCODED_SERVER_HOST}:${CALIBRE_WEB_PORT}/g" \
