@@ -3,7 +3,7 @@
 set -e
 
 export BASE_DIRECTORY=$1
-export REMOTE_SERVER_HOST=$2
+export SERVER_HOST=$2
 export PLEX_CLAIM_TOKEN=$3
 
 function check_requirements() {
@@ -26,8 +26,8 @@ function set_environment_variables() {
   if [[ -z "$BASE_DIRECTORY" ]]; then
     echo "Please an environment variable for 'BASE_DIRECTORY' before running this script"
     exit 1
-  elif [[ -z "$REMOTE_SERVER_HOST" ]]; then
-    echo "Please an environment variable for 'REMOTE_SERVER_HOST' before running this script"
+  elif [[ -z "$SERVER_HOST" ]]; then
+    echo "Please an environment variable for 'SERVER_HOST' before running this script"
     exit 1
   elif [[ -z "$PLEX_CLAIM_TOKEN" ]]; then
     echo "Please an environment variable for 'PLEX_CLAIM_TOKEN' before running this script"
@@ -129,36 +129,22 @@ function main() {
   ensure_directory_exists "$NODE_RED_BASE_DIRECTORY/data"
   sudo chmod 777 "$NODE_RED_BASE_DIRECTORY/data"
 
-  ENCODED_REMOTE_SERVER_HOST="https:\/\/${REMOTE_SERVER_HOST}"
-  
-  LOCAL_SERVER_HOST="$(ifconfig eth0 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}')"
-  ENCODED_LOCAL_SERVER_HOST="http:\/\/${LOCAL_SERVER_HOST}"
-
+  ENCODED_SERVER_HOST="https:\/\/${SERVER_HOST}"
   sed \
-     -e "s/%remote-server-host%:%plex-port%/${ENCODED_REMOTE_SERVER_HOST}:${PLEX_PORT}/g" \
-     -e "s/%local-server-host%:%plex-port%/${ENCODED_LOCAL_SERVER_HOST}:${PLEX_PORT}/g" \
-     -e "s/%remote-server-host%:%calibre-web-port%/${ENCODED_REMOTE_SERVER_HOST}:${CALIBRE_WEB_PORT}/g" \
-     -e "s/%local-server-host%:%calibre-web-port%/${ENCODED_LOCAL_SERVER_HOST}:${CALIBRE_WEB_PORT}/g" \
-     -e "s/%remote-server-host%:%home-assistant-port%/${ENCODED_REMOTE_SERVER_HOST}:${HOME_ASSISTANT_PORT}/g" \
-     -e "s/%local-server-host%:%home-assistant-port%/${ENCODED_LOCAL_SERVER_HOST}:${HOME_ASSISTANT_PORT}/g" \
-     -e "s/%remote-server-host%:%gogs-port%/${ENCODED_REMOTE_SERVER_HOST}:${GOGS_PORT}/g" \
-     -e "s/%local-server-host%:%gogs-port%/${ENCODED_LOCAL_SERVER_HOST}:${GOGS_PORT}/g" \
-     -e "s/%remote-server-host%:%audiobookshelf-web-port%/${ENCODED_REMOTE_SERVER_HOST}:${AUDIOBOOKSHELF_PORT}/g" \
-     -e "s/%local-server-host%:%audiobookshelf-web-port%/${ENCODED_LOCAL_SERVER_HOST}:${AUDIOBOOKSHELF_PORT}/g" \
-     -e "s/%remote-server-host%:%node-red-port%/${ENCODED_REMOTE_SERVER_HOST}:${NODE_RED_PORT}/g" \
-     -e "s/%local-server-host%:%node-red-port%/${ENCODED_LOCAL_SERVER_HOST}:${NODE_RED_PORT}/g" \
-     -e "s/%remote-server-host%:%photoview-port%/${ENCODED_REMOTE_SERVER_HOST}:${PHOTOVIEW_PORT}/g" \
-     -e "s/%local-server-host%:%photoview-port%/${ENCODED_LOCAL_SERVER_HOST}:${PHOTOVIEW_PORT}/g" \
-     -e "s/%remote-server-host%:%drawio-port%/${ENCODED_REMOTE_SERVER_HOST}:${DRAWIO_PORT}/g" \
-     -e "s/%local-server-host%:%drawio-port%/${ENCODED_LOCAL_SERVER_HOST}:${DRAWIO_PORT}/g" \
-     -e "s/%remote-server-host%:%bitwarden-port%/${ENCODED_REMOTE_SERVER_HOST}:${BITWARDEN_PORT}/g" \
-     -e "s/%local-server-host%:%bitwarden-port%/${ENCODED_LOCAL_SERVER_HOST}:${BITWARDEN_PORT}/g" \
-     -e "s/%remote-server-host%:%photouploader-port%/${ENCODED_REMOTE_SERVER_HOST}:${PHOTOUPLOADER_PORT}/g" \
-     -e "s/%local-server-host%:%photouploader-port%/${ENCODED_LOCAL_SERVER_HOST}:${PHOTOUPLOADER_PORT}/g" \
-     -e "s/%remote-server-host%:%admin-portal-port%/${ENCODED_REMOTE_SERVER_HOST}:${ADMIN_PORTAL_PORT}/g" \
-     -e "s/%local-server-host%:%admin-portal-port%/${ENCODED_LOCAL_SERVER_HOST}:${ADMIN_PORTAL_PORT}/g" \
-     -e "s/%remote-server-host%:%podgrab-port%/${ENCODED_REMOTE_SERVER_HOST}:${PODGRAB_PORT}/g" \
-     -e "s/%local-server-host%:%podgrab-port%/${ENCODED_LOCAL_SERVER_HOST}:${PODGRAB_PORT}/g" \
+     -e "s/%server-host%:%plex-port%/${ENCODED_SERVER_HOST}:${PLEX_PORT}/g" \
+     -e "s/%server-host%:%calibre-web-port%/${ENCODED_SERVER_HOST}:${CALIBRE_WEB_PORT}/g" \
+     -e "s/%server-host%:%home-assistant-port%/${ENCODED_SERVER_HOST}:${HOME_ASSISTANT_PORT}/g" \
+     -e "s/%server-host%:%gogs-port%/${ENCODED_SERVER_HOST}:${GOGS_PORT}/g" \
+     -e "s/%server-host%:%audiobookshelf-web-port%/${ENCODED_SERVER_HOST}:${AUDIOBOOKSHELF_PORT}/g" \
+     -e "s/%server-host%:%node-red-port%/${ENCODED_SERVER_HOST}:${NODE_RED_PORT}/g" \
+     -e "s/%server-host%:%photoview-port%/${ENCODED_SERVER_HOST}:${PHOTOVIEW_PORT}/g" \
+     -e "s/%server-host%:%drawio-port%/${ENCODED_SERVER_HOST}:${DRAWIO_PORT}/g" \
+     -e "s/%server-host%:%bitwarden-port%/${ENCODED_SERVER_HOST}:${BITWARDEN_PORT}/g" \
+     -e "s/%server-host%:%privatebin-port%/${ENCODED_SERVER_HOST}:${PRIVATEBIN_PORT}/g" \
+     -e "s/%server-host%:%freshrss-port%/${ENCODED_SERVER_HOST}:${FRESHRSS_PORT}/g" \
+     -e "s/%server-host%:%photouploader-port%/${ENCODED_SERVER_HOST}:${PHOTOUPLOADER_PORT}/g" \
+     -e "s/%server-host%:%admin-portal-port%/${ENCODED_SERVER_HOST}:${ADMIN_PORTAL_PORT}/g" \
+     -e "s/%server-host%:%podgrab-port%/${ENCODED_SERVER_HOST}:${PODGRAB_PORT}/g" \
     data/homer.yml > "$HOMER_WEB_BASE_DIRECTORY/www/assets/config.yml"
 
   cp -f static/homer-logo.png "$HOMER_WEB_BASE_DIRECTORY/www/assets/logo.png"
@@ -167,7 +153,7 @@ function main() {
 
   sudo -E docker-compose up -d --remove-orphans
 
-  sudo docker exec tailscale-agent tailscale up --advertise-routes=192.168.4.0/24
+  sudo docker exec tailscale-agent tailscale up
 }
 
 main

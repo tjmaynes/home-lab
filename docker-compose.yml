@@ -194,12 +194,13 @@ services:
       - ${DRAWIO_PORT}:8080
       - ${DRAWIO_HTTPS_PORT}:8443
     environment:
+      PUBLIC_DNS: ${SERVER_HOST}
       ORGANISATION_UNIT: unit
       ORGANISATION: bewoogie
       CITY: Remote
       STATE: Remote
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:${DRAWIO_PORT} || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://${SERVER_HOST}:${DRAWIO_PORT} || exit 1"]
       interval: 1m30s
       timeout: 10s
       retries: 5
