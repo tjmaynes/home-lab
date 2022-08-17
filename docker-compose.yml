@@ -221,37 +221,9 @@ services:
       WEBSOCKET_ENABLED: "true"
       SIGNUPS_ALLOWED: "true"
 
-  privatebin-web:
-    image: privatebin/nginx-fpm-alpine:1.4.0
-    container_name: privatebin-web
-    restart: always
-    networks:
-      - default
-    read_only: true
-    volumes:
-      - ${PRIVATEBIN_BASE_DIRECTORY}/data:/srv/data
-      # - ${PRIVATEBIN_BASE_DIRECTORY}/conf.php:/srv/cfg/conf.php:ro
-    ports:
-      - ${PRIVATEBIN_PORT}:80
-
-  freshrss-web:
-    image: lscr.io/linuxserver/freshrss:1.19.2
-    container_name: freshrss-web
-    restart: unless-stopped
-    networks:
-      - default
-    environment:
-      - PUID=${PUID}
-      - PGID=${PGID}
-      - TZ=${TIMEZONE}
-    volumes:
-      - ${FRESHRSS_BASE_DIRECTORY}/config:/config
-    ports:
-      - ${FRESHRSS_PORT}:80
-
-  photobrowser-server:
+  photouploader-server:
     image: filebrowser/filebrowser:s6
-    container_name: photobrowser-server
+    container_name: photouploader-server
     restart: unless-stopped
     networks:
       - default
@@ -261,10 +233,10 @@ services:
       - TZ=${TIMEZONE}
     volumes:
       - ${PHOTOS_DIRECTORY}:/photos
-      - ${PHOTOBROWSER_BASE_DIRECTORY}/database/filebrowser.db:/database/filebrowser.db
-      - ${PHOTOBROWSER_BASE_DIRECTORY}/config:/config
+      - ${PHOTOUPLOADER_BASE_DIRECTORY}/database/filebrowser.db:/database/filebrowser.db
+      - ${PHOTOUPLOADER_BASE_DIRECTORY}/config:/config
     ports:
-      - ${PHOTOBROWSER_PORT}:80
+      - ${PHOTOUPLOADER_PORT}:80
 
 networks:
   default:
