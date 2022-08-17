@@ -3,8 +3,18 @@
 set -e
 
 export BASE_DIRECTORY=$1
-export SERVER_HOST=$2
+export SERVICE_DOMAIN=$2
 export PLEX_CLAIM_TOKEN=$3
+
+function check_requirements() {
+  if [[ -z "$(command -v docker)" ]]; then
+    echo "Please install 'docker' before running this script"
+    exit 1
+  elif [[ -z "$(command -v tailscale)" ]]; then
+    echo "Please install 'tailscale' before running this script"
+    exit 1
+  fi
+}
 
 function ensure_tailscale_tunnel_exists() {
   if [[ ! -c "/dev/net/tun" ]]; then
@@ -22,6 +32,8 @@ function ensure_tailscale_tunnel_exists() {
 }
 
 function main() {
+  check_requirements
+
   if [[ -d "kratos" ]]; then
 	  sudo rm -rf kratos
   fi
@@ -32,7 +44,7 @@ function main() {
   ensure_tailscale_tunnel_exists
 
   pushd kratos
-    ./scripts/install.sh "$BASE_DIRECTORY" "$SERVER_HOST" "$PLEX_CLAIM_TOKEN"
+    ./scripts/install.sh "$BASE_DIRECTORY" "$SERVICE_DOMAIN" "$PLEX_CLAIM_TOKEN"
   popd
 }
 
