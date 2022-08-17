@@ -3,7 +3,6 @@
 
 | Program                                                    | Usage                              | Tools          | Status |
 | :--------------------------------------------------------- | :--------------------------------: | :------------: | :----: |
-| [caddy-proxy](https://caddyserver.com/)                    | reverse-proxy server               | docker-compose | ✅ |
 | [plex-server](https://plex.tv/)                            | media server                       | docker-compose | ✅ |
 | [home-assistant](https://www.home-assistant.io/)           | home automation server             | docker-compose | ✅ |
 | [calibre-web](https://github.com/janeczku/calibre-web)     | web-based ebook-reader             | docker-compose | ✅ |

@@ -10,9 +10,6 @@ function check_requirements() {
   if [[ -z "$(command -v docker)" ]]; then
     echo "Please install 'docker' before running this script"
     exit 1
-  elif [[ -z "$(command -v tailscale)" ]]; then
-    echo "Please install 'tailscale' before running this script"
-    exit 1
   fi
 }
 

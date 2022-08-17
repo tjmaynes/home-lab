@@ -10,9 +10,6 @@ function check_requirements() {
   if [[ -z "$(command -v docker)" ]]; then
     echo "Please install 'docker' before running this script"
     exit 1
-  elif [[ -z "$(command -v tailscale)" ]]; then
-    echo "Please install 'tailscale' before running this script"
-    exit 1
   fi
 }
 
@@ -49,16 +46,23 @@ function set_environment_variables() {
   export AUDIOBOOKS_DIRECTORY=${MEDIA_DIRECTORY}/Audiobooks
   export PODCASTS_DIRECTORY=${MEDIA_DIRECTORY}/Podcasts
 
+  export TAILSCALE_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/tailscale-agent
+
   export CADDY_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/caddy-proxy
   export CADDY_PUID=$(sudo id -u)
   export CADDY_PGID=$(sudo id -g)
   export TAILSCALE_SOCKET="/volume1/@appdata/Tailscale/tailscaled.sock"
 
   export PLEX_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/plex-server
+  export PLEX_PORT=32400
 
   export CALIBRE_WEB_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/calibre-web
+  export CALIBRE_WEB_PORT=8083
 
   export GOGS_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/gogs-web
+  export GOGS_PORT=3000
+  export GOGS_SSH_PORT=2222
+
   export GOGS_DB_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/gogs-db
   export GOGS_USER=gogs
   export GOGS_DB=gogs
@@ -66,16 +70,22 @@ function set_environment_variables() {
   export GOGS_DB_PORT=5433
 
   export HOME_ASSISTANT_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/home-assistant-web
+  export HOME_ASSISTANT_PORT=8123
 
   export HOMER_WEB_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/homer-web
+  export HOMER_WEB_PORT=8080
 
   export AUDIOBOOKSHELF_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/audiobookshelf-web
+  export AUDIOBOOKSHELF_PORT=13378
 
   export PODGRAB_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/podgrab-web
+  export PODGRAB_PORT=9087
 
   export NODE_RED_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/node-red
+  export NODE_RED_PORT=1880
 
   export PHOTOVIEW_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/photoview-server
+  export PHOTOVIEW_PORT=9080
 
   export PHOTOVIEW_DB_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/photoview-db
   export PHOTOVIEW_DB_PORT=9081
@@ -83,9 +93,15 @@ function set_environment_variables() {
   export PHOTOVIEW_DB_USER=photoview
   export PHOTOVIEW_DB_PASSWORD=password
 
+  export DRAWIO_PORT=9092
+  export DRAWIO_HTTPS_PORT=9093
+
   export BITWARDEN_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/bitwarden-server
+  export BITWARDEN_PORT=8084
+  export BITWARDEN_HTTPS_PORT=8085
 
   export PHOTOUPLOADER_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/photouploader-server
+  export PHOTOUPLOADER_PORT=9003
 }
 
 function main() {
@@ -93,10 +109,7 @@ function main() {
   
   set_environment_variables
 
-  ensure_directory_exists "$CADDY_BASE_DIRECTORY/var/www"
-  ensure_directory_exists "$CADDY_BASE_DIRECTORY/config"
-  ensure_directory_exists "$CADDY_BASE_DIRECTORY/data"
-  ensure_directory_exists "$CADDY_BASE_DIRECTORY/certs"
+  ensure_directory_exists "$TAILSCALE_BASE_DIRECTORY/var/lib"
 
   ensure_directory_exists "$PLEX_BASE_DIRECTORY/config"
   ensure_directory_exists "$PLEX_BASE_DIRECTORY/transcode"
@@ -119,16 +132,15 @@ function main() {
   ensure_directory_exists "$NODE_RED_BASE_DIRECTORY/data"
   sudo chmod 777 "$NODE_RED_BASE_DIRECTORY/data"
 
-  sed -e "s/%server-domain%/${SERVICE_DOMAIN}/g" \
+  sed -e "s/%service-domain%/${SERVICE_DOMAIN}/g" \
     data/homer.yml > "$HOMER_WEB_BASE_DIRECTORY/www/assets/config.yml"
 
   cp -f static/homer-logo.png "$HOMER_WEB_BASE_DIRECTORY/www/assets/logo.png"
   cp -f data/photo-uploader.json "$PHOTOUPLOADER_BASE_DIRECTORY/config/settings.json"
-  cp -f data/Caddyfile "$CADDY_BASE_DIRECTORY/Caddyfile"
 
   sudo -E docker-compose up -d --remove-orphans
 
-  sudo -E tailscale up
+  sudo -E docker exec tailscale-agent tailscale up
 }
 
 main

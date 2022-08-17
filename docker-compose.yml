@@ -1,261 +1,242 @@
 version: "3.3"
 
 services:
-  caddy-proxy:
-    image: caddy:2.5.2-alpine
-    container_name: caddy-proxy
-    user: ${CADDY_PUID}:${CADDY_PGID}
-    # network_mode: "host"
+  plex-server:
+    image: plexinc/pms-docker:1.28.0.5999-97678ded3
+    container_name: plex-server
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+      - CLAIM_TOKEN=${PLEX_CLAIM_TOKEN}
+    volumes:
+      - ${PLEX_BASE_DIRECTORY}/config:/config
+      - ${PLEX_BASE_DIRECTORY}/transcode:/transcode
+      - ${MEDIA_DIRECTORY}:/media
+
+  calibre-web:
+    image: lscr.io/linuxserver/calibre-web:0.6.19
+    container_name: calibre-web
+    restart: unless-stopped
     networks:
       - default
     ports:
-      - 8080:8080
-      - 8443:8443
-      - 8443:8443/udp
-    volumes:
-      - ${TAILSCALE_SOCKET}:/var/run/tailscale/tailscale.sock:ro
-      - ${CADDY_BASE_DIRECTORY}/Caddyfile:/etc/caddy/Caddyfile
-      - ${CADDY_BASE_DIRECTORY}/var/www:/var/www
-      - ${CADDY_BASE_DIRECTORY}/config:/config
-      - ${CADDY_BASE_DIRECTORY}/data:/data
-      - ${CADDY_BASE_DIRECTORY}/certs:/root/.caddy
+      - ${CALIBRE_WEB_PORT}:8083
     environment:
-      - CADDY_DOMAIN=${SERVICE_DOMAIN}
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+      - DOCKER_MODS=linuxserver/mods:universal-calibre
+    volumes:
+      - ${CALIBRE_WEB_BASE_DIRECTORY}/config:/config
+      - ${BOOKS_DIRECTORY}:/books
 
-  # plex-server:
-  #   image: plexinc/pms-docker:1.28.0.5999-97678ded3
-  #   container_name: plex-server
-  #   restart: unless-stopped
-  #   networks:
-  #     - default
-  #   expose:
-  #     - "32400"
-  #   environment:
-  #     - PUID=${PUID}
-  #     - PGID=${PGID}
-  #     - TZ=${TIMEZONE}
-  #     - CLAIM_TOKEN=${PLEX_CLAIM_TOKEN}
-  #   volumes:
-  #     - ${PLEX_BASE_DIRECTORY}/config:/config
-  #     - ${PLEX_BASE_DIRECTORY}/transcode:/transcode
-  #     - ${MEDIA_DIRECTORY}:/media
+  gogs-web:
+    image: gogs/gogs:0.12
+    container_name: gogs-web
+    restart: always
+    ports:
+      - ${GOGS_PORT}:3000
+      - ${GOGS_SSH_PORT}:22
+    networks:
+      - default
+    environment:
+      - RUN_CROND=true
+    volumes:
+      - ${GOGS_BASE_DIRECTORY}/data:/data
+    depends_on:
+      - gogs-db
 
-  # calibre-web:
-  #   image: lscr.io/linuxserver/calibre-web:0.6.19
-  #   container_name: calibre-web
-  #   restart: unless-stopped
-  #   networks:
-  #     - default
-  #   expose:
-  #     - "8083"
-  #   environment:
-  #     - PUID=${PUID}
-  #     - PGID=${PGID}
-  #     - TZ=${TIMEZONE}
-  #     - DOCKER_MODS=linuxserver/mods:universal-calibre
-  #   volumes:
-  #     - ${CALIBRE_WEB_BASE_DIRECTORY}/config:/config
-  #     - ${BOOKS_DIRECTORY}:/books
+  gogs-db:
+    image: postgres:14
+    container_name: gogs-db
+    restart: always
+    networks:
+      - default
+    ports:
+      - ${GOGS_DB_PORT}:5432
+    environment:
+      - POSTGRES_USER=${GOGS_USER}
+      - POSTGRES_PASSWORD=${GOGS_DB_PASSWORD}
+      - POSTGRES_DB=${GOGS_DB}
+    volumes:
+      - ${GOGS_DB_BASE_DIRECTORY}:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${GOGS_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
-  # gogs-web:
-  #   image: gogs/gogs:0.12
-  #   container_name: gogs-web
-  #   restart: always
-  #   networks:
-  #     - default
-  #   expose:
-  #     - "3000"
-  #     - "22"
-  #   environment:
-  #     - RUN_CROND=true
-  #   volumes:
-  #     - ${GOGS_BASE_DIRECTORY}/data:/data
-  #   depends_on:
-  #     - gogs-db
+  home-assistant-web:
+    image: ghcr.io/home-assistant/home-assistant:2022.8.3
+    container_name: home-assistant-web
+    restart: always
+    network_mode: host
+    volumes:
+      - ${HOME_ASSISTANT_BASE_DIRECTORY}/config:/config
+    environment:
+      - TZ=${TIMEZONE}
 
-  # gogs-db:
-  #   image: postgres:14
-  #   container_name: gogs-db
-  #   restart: always
-  #   networks:
-  #     - default
-  #   ports:
-  #     - ${GOGS_DB_PORT}:5432
-  #   environment:
-  #     - POSTGRES_USER=${GOGS_USER}
-  #     - POSTGRES_PASSWORD=${GOGS_DB_PASSWORD}
-  #     - POSTGRES_DB=${GOGS_DB}
-  #   volumes:
-  #     - ${GOGS_DB_BASE_DIRECTORY}:/var/lib/postgresql/data
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "pg_isready -U ${GOGS_USER}"]
-  #     interval: 5s
-  #     timeout: 5s
-  #     retries: 5
+  homer-web:
+    image: b4bz/homer:v22.07.2
+    container_name: homer-web
+    restart: always
+    networks:
+      - default
+    ports:
+      - ${HOMER_WEB_PORT}:8080
+    volumes:
+      - ${HOMER_WEB_BASE_DIRECTORY}/www/assets:/www/assets
+    environment:
+      - INIT_ASSETS=0
 
-  # home-assistant-web:
-  #   image: ghcr.io/home-assistant/home-assistant:2022.8.3
-  #   container_name: home-assistant-web
-  #   restart: always
-  #   networks:
-  #     - default
-  #   expose:
-  #     - "8123"
-  #   volumes:
-  #     - ${HOME_ASSISTANT_BASE_DIRECTORY}/config:/config
-  #   environment:
-  #     - TZ=${TIMEZONE}
+  tailscale-agent:
+    image: tailscale/tailscale:v1.29.125
+    container_name: tailscale-agent
+    hostname: kratos
+    privileged: true
+    network_mode: host
+    volumes:
+      - ${TAILSCALE_BASE_DIRECTORY}/var/lib:/var/lib   # State data will be stored in this directory
+      - /dev/net/tun:/dev/net/tun
+    cap_add:
+      - net_admin
+      - sys_module
+    command: tailscaled
+    restart: unless-stopped
 
-  # homer-web:
-  #   image: b4bz/homer:v22.07.2
-  #   container_name: homer-web
-  #   restart: always
-  #   networks:
-  #     - default
-  #   expose:
-  #     - "8080"
-  #   volumes:
-  #     - ${HOMER_WEB_BASE_DIRECTORY}/www/assets:/www/assets
-  #   environment:
-  #     - INIT_ASSETS=0
+  audiobookshelf-web:
+    image: ghcr.io/advplyr/audiobookshelf:2.1.2
+    container_name: audiobookshelf-web
+    networks:
+      - default
+    ports:
+      - ${AUDIOBOOKSHELF_PORT}:80
+    environment:
+      - AUDIOBOOKSHELF_UID=${PUID}
+      - AUDIOBOOKSHELF_GID=${PGID}
+    volumes:
+      - ${AUDIOBOOKS_DIRECTORY}:/audiobooks
+      - ${PODCASTS_DIRECTORY}:/podcasts
+      - ${AUDIOBOOKSHELF_BASE_DIRECTORY}/config:/config
+      - ${AUDIOBOOKSHELF_BASE_DIRECTORY}/metadata:/metadata
 
-  # audiobookshelf-web:
-  #   image: ghcr.io/advplyr/audiobookshelf:2.1.2
-  #   container_name: audiobookshelf-web
-  #   networks:
-  #     - default
-  #   expose:
-  #     - "80"
-  #     - "443"
-  #   environment:
-  #     - AUDIOBOOKSHELF_UID=${PUID}
-  #     - AUDIOBOOKSHELF_GID=${PGID}
-  #   volumes:
-  #     - ${AUDIOBOOKS_DIRECTORY}:/audiobooks
-  #     - ${PODCASTS_DIRECTORY}:/podcasts
-  #     - ${AUDIOBOOKSHELF_BASE_DIRECTORY}/config:/config
-  #     - ${AUDIOBOOKSHELF_BASE_DIRECTORY}/metadata:/metadata
+  podgrab-web:
+    image: akhilrex/podgrab:1.0.0
+    container_name: podgrab-web
+    environment:
+      - CHECK_FREQUENCY=240
+    volumes:
+      - ${PODGRAB_BASE_DIRECTORY}/config:/config
+      - ${PODCASTS_DIRECTORY}:/assets
+    ports:
+      - ${PODGRAB_PORT}:8080
+    restart: unless-stopped
 
-  # podgrab-web:
-  #   image: akhilrex/podgrab:1.0.0
-  #   container_name: podgrab-web
-  #   restart: unless-stopped
-  #   networks:
-  #     - default
-  #   expose:
-  #     - "8080"
-  #   environment:
-  #     - CHECK_FREQUENCY=240
-  #   volumes:
-  #     - ${PODGRAB_BASE_DIRECTORY}/config:/config
-  #     - ${PODCASTS_DIRECTORY}:/assets
+  node-red:
+    image: nodered/node-red:2.2.3-12
+    container_name: node-red
+    restart: unless-stopped
+    environment:
+      - TZ=${TIMEZONE}
+    ports:
+      - ${NODE_RED_PORT}:1880
+    networks:
+      - default
+    volumes:
+      - ${NODE_RED_BASE_DIRECTORY}/data:/data
 
-  # node-red:
-  #   image: nodered/node-red:2.2.3-12
-  #   container_name: node-red
-  #   restart: unless-stopped
-  #   environment:
-  #     - TZ=${TIMEZONE}
-  #   networks:
-  #     - default
-  #   expose:
-  #     - "1880"
-  #   volumes:
-  #     - ${NODE_RED_BASE_DIRECTORY}/data:/data
+  photoview-server:
+    image: viktorstrate/photoview:2
+    restart: always
+    container_name: photoview-server
+    ports:
+      - ${PHOTOVIEW_PORT}:80
+    depends_on:
+      - photoview-db
+    volumes:
+      - ${PHOTOS_DIRECTORY}:/photos:ro
+      - ${PHOTOVIEW_BASE_DIRECTORY}/cache:/app/cache
+    environment:
+      - PHOTOVIEW_DATABASE_DRIVER=postgres
+      - PHOTOVIEW_POSTGRES_URL=postgresql://${PHOTOVIEW_DB_USER}:${PHOTOVIEW_DB_PASSWORD}@photoview-db/${PHOTOVIEW_DB_NAME}
+      - PHOTOVIEW_LISTEN_IP=photoview
+      - PHOTOVIEW_LISTEN_PORT=80
+      - PHOTOVIEW_MEDIA_CACHE=/app/cache
 
-  # photoview-server:
-  #   image: viktorstrate/photoview:2
-  #   restart: always
-  #   container_name: photoview-server
-  #   networks:
-  #     - default
-  #   expose:
-  #     - "80"
-  #   depends_on:
-  #     - photoview-db
-  #   volumes:
-  #     - ${PHOTOS_DIRECTORY}:/photos:ro
-  #     - ${PHOTOVIEW_BASE_DIRECTORY}/cache:/app/cache
-  #   environment:
-  #     - PHOTOVIEW_DATABASE_DRIVER=postgres
-  #     - PHOTOVIEW_POSTGRES_URL=postgresql://${PHOTOVIEW_DB_USER}:${PHOTOVIEW_DB_PASSWORD}@photoview-db/${PHOTOVIEW_DB_NAME}
-  #     - PHOTOVIEW_LISTEN_IP=photoview
-  #     - PHOTOVIEW_LISTEN_PORT=80
-  #     - PHOTOVIEW_MEDIA_CACHE=/app/cache
+  photoview-db:
+    image: postgres:14
+    container_name: photoview-db
+    restart: always
+    networks:
+      - default
+    ports:
+      - ${PHOTOVIEW_DB_PORT}:5432
+    environment:
+      - POSTGRES_USER=${PHOTOVIEW_DB_USER}
+      - POSTGRES_PASSWORD=${PHOTOVIEW_DB_PASSWORD}
+      - POSTGRES_DB=${PHOTOVIEW_DB_NAME}
+    volumes:
+      - ${PHOTOVIEW_DB_BASE_DIRECTORY}:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PHOTOVIEW_DB_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
-  # photoview-db:
-  #   image: postgres:14
-  #   container_name: photoview-db
-  #   restart: always
-  #   networks:
-  #     - default
-  #   ports:
-  #     - ${PHOTOVIEW_DB_PORT}:5432
-  #   environment:
-  #     - POSTGRES_USER=${PHOTOVIEW_DB_USER}
-  #     - POSTGRES_PASSWORD=${PHOTOVIEW_DB_PASSWORD}
-  #     - POSTGRES_DB=${PHOTOVIEW_DB_NAME}
-  #   volumes:
-  #     - ${PHOTOVIEW_DB_BASE_DIRECTORY}:/var/lib/postgresql/data
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "pg_isready -U ${PHOTOVIEW_DB_USER}"]
-  #     interval: 5s
-  #     timeout: 5s
-  #     retries: 5
+  drawio-web:
+    image: jgraph/drawio:20.2.3
+    container_name: drawio-web
+    restart: unless-stopped
+    ports:
+      - ${DRAWIO_PORT}:8080
+      - ${DRAWIO_HTTPS_PORT}:8443
+    environment:
+      PUBLIC_DNS: ${SERVER_HOST}
+      ORGANISATION_UNIT: unit
+      ORGANISATION: bewoogie
+      CITY: Remote
+      STATE: Remote
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://${SERVER_HOST}:${DRAWIO_PORT} || exit 1"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
 
-  # drawio-web:
-  #   image: jgraph/drawio:20.2.3
-  #   container_name: drawio-web
-  #   restart: unless-stopped
-  #   networks:
-  #     - default
-  #   expose:
-  #     - "8080"
-  #     - "8443"
-  #   environment:
-  #     ORGANISATION_UNIT: unit
-  #     ORGANISATION: bewoogie
-  #     CITY: Remote
-  #     STATE: Remote
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "curl -f http://drawio-web:8080 || exit 1"]
-  #     interval: 1m30s
-  #     timeout: 10s
-  #     retries: 5
-  #     start_period: 10s
+  bitwarden-server:
+    image: vaultwarden/server:1.25.2-alpine
+    container_name: bitwarden-server
+    restart: always
+    networks:
+      - default
+    ports:
+      - ${BITWARDEN_PORT}:80
+      - ${BITWARDEN_HTTPS_PORT}:443
+    volumes:
+      - ${BITWARDEN_BASE_DIRECTORY}/data:/data/
+    environment:
+      WEBSOCKET_ENABLED: "true"
+      SIGNUPS_ALLOWED: "true"
 
-  # bitwarden-server:
-  #   image: vaultwarden/server:1.25.2-alpine
-  #   container_name: bitwarden-server
-  #   restart: always
-  #   networks:
-  #     - default
-  #   expose:
-  #     - "80"
-  #     - "443"
-  #   volumes:
-  #     - ${BITWARDEN_BASE_DIRECTORY}/data:/data/
-  #   environment:
-  #     WEBSOCKET_ENABLED: "true"
-  #     SIGNUPS_ALLOWED: "true"
-
-  # photouploader-server:
-  #   image: filebrowser/filebrowser:s6
-  #   container_name: photouploader-server
-  #   restart: unless-stopped
-  #   networks:
-  #     - default
-  #   expose:
-  #     - "80"
-  #     - "443"
-  #   environment:
-  #     - PUID=${PUID}
-  #     - PGID=${PGID}
-  #     - TZ=${TIMEZONE}
-  #   volumes:
-  #     - ${PHOTOS_DIRECTORY}:/photos
-  #     - ${PHOTOUPLOADER_BASE_DIRECTORY}/database/filebrowser.db:/database/filebrowser.db
-  #     - ${PHOTOUPLOADER_BASE_DIRECTORY}/config:/config
+  photouploader-server:
+    image: filebrowser/filebrowser:s6
+    container_name: photouploader-server
+    restart: unless-stopped
+    networks:
+      - default
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+    volumes:
+      - ${PHOTOS_DIRECTORY}:/photos
+      - ${PHOTOUPLOADER_BASE_DIRECTORY}/database/filebrowser.db:/database/filebrowser.db
+      - ${PHOTOUPLOADER_BASE_DIRECTORY}/config:/config
+    ports:
+      - ${PHOTOUPLOADER_PORT}:80
 
 networks:
   default:
