@@ -1,32 +1,6 @@
 version: "2"
 
 services:
-  pihole-server:
-    image: pihole/pihole:2022.07.1
-    container_name: pihole-server
-    restart: always
-    networks:
-      macvlan_network:
-        ipv4_address: 192.168.1.200
-    cap_add:
-      - NET_ADMIN # add if using DHCP in pihole
-    volumes:
-      - ${PIHOLE_BASE_DIRECTORY}/pihole/:/etc/pihole/
-      - ${PIHOLE_BASE_DIRECTORY}/dnsmasq.d/:/etc/dnsmasq.d/
-    dns:
-      - 127.0.0.1
-      - 192.168.1.1
-    ports:
-      - 443/tcp
-      - 53/tcp
-      - 53/udp
-      - 67/udp
-      - 80/tcp
-    environment:
-      TZ: ${TIMEZONE}
-      ServerIP: 192.168.1.200
-      WEBPASSWORD: ${PIHOLE_PASSWORD}
-
   nginx-server:
     image: jc21/nginx-proxy-manager:2.9.18
     container_name: nginx-proxy

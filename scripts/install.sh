@@ -145,6 +145,10 @@ function main() {
   cp -f static/homer-logo.png "$HOMER_WEB_BASE_DIRECTORY/www/assets/logo.png"
   cp -f data/photo-uploader.json "$PHOTOUPLOADER_BASE_DIRECTORY/config/settings.json"
 
+  pushd scripts/pihole-install
+  sudo ./syno_pihole.sh --ip 192.168.0.250
+  popd
+
   sudo -E docker-compose up -d --remove-orphans
 
   sudo -E docker exec tailscale-agent tailscale up --accept-dns=false

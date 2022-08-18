@@ -1,0 +1,3 @@
+[submodule "scripts/pihole-install"]
+	path = scripts/pihole-install
+	url = https://github.com/tjmaynes/synology-pihole
