@@ -4,7 +4,8 @@ set -e
 
 export BASE_DIRECTORY=$1
 export SERVICE_DOMAIN=$2
-export PLEX_CLAIM_TOKEN=$3
+export PIHOLE_PASSWORD=$3
+export PLEX_CLAIM_TOKEN=$4
 
 function check_requirements() {
   if [[ -z "$(command -v docker)" ]]; then
@@ -41,7 +42,8 @@ function main() {
   ensure_tailscale_tunnel_exists
 
   pushd kratos
-    ./scripts/install.sh "$BASE_DIRECTORY" "$SERVICE_DOMAIN" "$PLEX_CLAIM_TOKEN"
+    ./scripts/setup-macvlan.sh
+    ./scripts/install.sh "$BASE_DIRECTORY" "$SERVICE_DOMAIN" "$PIHOLE_PASSWORD" "$PLEX_CLAIM_TOKEN"
   popd
 }
 

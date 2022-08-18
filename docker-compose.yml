@@ -1,6 +1,50 @@
-version: "3.3"
+version: "2"
 
 services:
+  pihole-server:
+    image: pihole/pihole:2022.07.1
+    container_name: pihole-server
+    restart: always
+    networks:
+      macvlan_network:
+        ipv4_address: 192.168.1.200
+    cap_add:
+      - NET_ADMIN # add if using DHCP in pihole
+    volumes:
+      - ${PIHOLE_BASE_DIRECTORY}/pihole/:/etc/pihole/
+      - ${PIHOLE_BASE_DIRECTORY}/dnsmasq.d/:/etc/dnsmasq.d/
+    dns:
+      - 127.0.0.1
+      - 192.168.1.1
+    ports:
+      - 443/tcp
+      - 53/tcp
+      - 53/udp
+      - 67/udp
+      - 80/tcp
+    environment:
+      TZ: ${TIMEZONE}
+      ServerIP: 192.168.1.200
+      WEBPASSWORD: ${PIHOLE_PASSWORD}
+
+  nginx-server:
+    image: jc21/nginx-proxy-manager:2.9.18
+    container_name: nginx-proxy
+    restart: unless-stopped
+    networks:
+      macvlan_network:
+        ipv4_address: 192.168.1.201
+    ports:
+      - 80:80
+      - 443:443
+      - 81:81
+    volumes:
+      - ${NGNIX_PROXY_MANAGER_BASE_DIRECTORY}/data:/data
+      - ${NGNIX_PROXY_MANAGER_BASE_DIRECTORY}/letsencrypt:/etc/letsencrypt
+    environment:
+      DB_SQLITE_FILE: "/data/database.sqlite"
+      DISABLE_IPV6: "true"
+
   plex-server:
     image: plexinc/pms-docker:1.28.0.5999-97678ded3
     container_name: plex-server
@@ -194,17 +238,10 @@ services:
       - ${DRAWIO_PORT}:8080
       - ${DRAWIO_HTTPS_PORT}:8443
     environment:
-      PUBLIC_DNS: ${SERVER_HOST}
       ORGANISATION_UNIT: unit
       ORGANISATION: bewoogie
       CITY: Remote
       STATE: Remote
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://${SERVER_HOST}:${DRAWIO_PORT} || exit 1"]
-      interval: 1m30s
-      timeout: 10s
-      retries: 5
-      start_period: 10s
 
   bitwarden-server:
     image: vaultwarden/server:1.25.2-alpine
@@ -241,3 +278,15 @@ services:
 networks:
   default:
     driver: bridge
+
+  macvlan_network:
+    driver: macvlan
+    driver_opts:
+      parent: ovs_eth0
+    ipam:
+      config:
+        - subnet: 192.168.1.0/24
+          gateway: 192.168.1.1
+          ip_range: 192.168.1.200/28
+          aux_addresses:
+            host: 192.168.1.210

@@ -4,7 +4,8 @@ set -e
 
 export BASE_DIRECTORY=$1
 export SERVICE_DOMAIN=$2
-export PLEX_CLAIM_TOKEN=$3
+export PIHOLE_PASSWORD=$3
+export PLEX_CLAIM_TOKEN=$4
 
 function check_requirements() {
   if [[ -z "$(command -v docker)" ]]; then
@@ -29,6 +30,9 @@ function set_environment_variables() {
   elif [[ -z "$SERVICE_DOMAIN" ]]; then
     echo "Please an environment variable for 'SERVICE_DOMAIN' before running this script"
     exit 1
+  elif [[ -z "$PIHOLE_PASSWORD" ]]; then
+    echo "Please an environment variable for 'PIHOLE_PASSWORD' before running this script"
+    exit 1
   elif [[ -z "$PLEX_CLAIM_TOKEN" ]]; then
     echo "Please an environment variable for 'PLEX_CLAIM_TOKEN' before running this script"
     exit 1
@@ -48,9 +52,8 @@ function set_environment_variables() {
 
   export TAILSCALE_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/tailscale-agent
 
-  export CADDY_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/caddy-proxy
-  export CADDY_PUID=$(sudo id -u)
-  export CADDY_PGID=$(sudo id -g)
+  export PIHOLE_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/pihole-server
+  export NGNIX_PROXY_MANAGER_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/nginx-proxy-manager-server
   export TAILSCALE_SOCKET="/volume1/@appdata/Tailscale/tailscaled.sock"
 
   export PLEX_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/plex-server
@@ -109,6 +112,10 @@ function main() {
   
   set_environment_variables
 
+  ensure_directory_exists "$PIHOLE_BASE_DIRECTORY/pihole"
+  ensure_directory_exists "$PIHOLE_BASE_DIRECTORY/dnsmasq.d"
+  ensure_directory_exists "$NGNIX_PROXY_MANAGER_BASE_DIRECTORY/data"
+  ensure_directory_exists "$NGNIX_PROXY_MANAGER_BASE_DIRECTORY/letsencrypt"
   ensure_directory_exists "$TAILSCALE_BASE_DIRECTORY/var/lib"
 
   ensure_directory_exists "$PLEX_BASE_DIRECTORY/config"
@@ -140,7 +147,7 @@ function main() {
 
   sudo -E docker-compose up -d --remove-orphans
 
-  sudo -E docker exec tailscale-agent tailscale up
+  sudo -E docker exec tailscale-agent tailscale up --accept-dns=false
 }
 
 main
