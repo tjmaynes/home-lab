@@ -11,6 +11,9 @@ function check_requirements() {
   if [[ -z "$(command -v docker)" ]]; then
     echo "Please install 'docker' before running this script"
     exit 1
+  elif [[ -z "$(command -v tailscale)" ]]; then
+    echo "Please install 'tailscale' before running this script"
+    exit 1
   fi
 }
 
@@ -145,13 +148,25 @@ function main() {
   cp -f static/homer-logo.png "$HOMER_WEB_BASE_DIRECTORY/www/assets/logo.png"
   cp -f data/photo-uploader.json "$PHOTOUPLOADER_BASE_DIRECTORY/config/settings.json"
 
-  pushd scripts/pihole-install
-  sudo ./syno_pihole.sh --ip 192.168.0.250
-  popd
+  if ! cat /etc/sysctl.conf | grep 'net.ipv4.ip_forward=1'; then
+    echo 'net.ipv4.ip_forward=1' | sudo tee -a /etc/sysctl.conf
+  fi
+
+  if ! cat /etc/sysctl.conf | grep 'net.ipv6.conf.all.forwarding=1'; then
+    echo 'net.ipv6.conf.all.forwarding=1' | sudo tee -a /etc/sysctl.conf
+  fi
+
+  sudo sysctl -p /etc/sysctl.conf
 
   sudo -E docker-compose up -d --remove-orphans
 
-  sudo -E docker exec tailscale-agent tailscale up --accept-dns=false
+  sudo -E tailscale up \
+    --accept-dns=false \
+    --advertise-exit-node \
+    --advertise-routes=192.168.4.0/22 \
+    --reset
+
+  echo "Done!"
 }
 
 main

@@ -2,8 +2,8 @@
 
 set -e
 
-BRIDGE_IP_ADDRESS=${1:-192.168.1.210}
-STARTING_IP_ADDRESS=${2:-192.168.1.201}
+HOST_IP_ADDRESS=${1:-192.168.4.210}
+PROXY_IP_ADDRESS=${2:-192.168.4.201}
 IS_CRON_JOB=$3
 
 function main() {
@@ -18,9 +18,9 @@ function main() {
 
   if ! ip link show | grep "macvlan0"; then
     ip link add macvlan0 link ovs_eth0 type macvlan mode bridge
-    ip addr add $BRIDGE_IP_ADDRESS/28 dev macvlan0
+    ip addr add $HOST_IP_ADDRESS/32 dev macvlan0
     ip link set macvlan0 up
-    ip route add $STARTING_IP_ADDRESS dev macvlan0
+    ip route add $PROXY_IP_ADDRESS dev macvlan0
   fi
 }
 
