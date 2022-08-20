@@ -78,8 +78,11 @@ function set_environment_variables() {
   export HOME_ASSISTANT_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/home-assistant-web
   export HOME_ASSISTANT_PORT=8123
 
-  export HOMER_WEB_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/homer-web
-  export HOMER_WEB_PORT=8080
+  export HOMER_REMOTE_WEB_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/homer-remote-web
+  export HOMER_REMOTE_WEB_PORT=8081
+
+  export HOMER_LOCAL_WEB_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/homer-local-web
+  export HOMER_LOCAL_WEB_PORT=8080
 
   export AUDIOBOOKSHELF_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/audiobookshelf-web
   export AUDIOBOOKSHELF_PORT=13378
@@ -127,7 +130,10 @@ function main() {
   ensure_directory_exists "$GOGS_BASE_DIRECTORY/data"
   ensure_directory_exists "$GOGS_DB_BASE_DIRECTORY"
   ensure_directory_exists "$HOME_ASSISTANT_BASE_DIRECTORY/config"
-  ensure_directory_exists "$HOMER_WEB_BASE_DIRECTORY/www/assets"
+
+  ensure_directory_exists "$HOMER_LOCAL_WEB_BASE_DIRECTORY/www/assets"
+  ensure_directory_exists "$HOMER_REMOTE_WEB_BASE_DIRECTORY/www/assets"
+  
   ensure_directory_exists "$AUDIOBOOKSHELF_BASE_DIRECTORY/config"
   ensure_directory_exists "$AUDIOBOOKSHELF_BASE_DIRECTORY/metadata"
   ensure_directory_exists "$PODGRAB_BASE_DIRECTORY/config"
@@ -142,10 +148,19 @@ function main() {
   ensure_directory_exists "$NODE_RED_BASE_DIRECTORY/data"
   sudo chmod 777 "$NODE_RED_BASE_DIRECTORY/data"
 
-  sed -e "s/%service-domain%/${SERVICE_DOMAIN}/g" \
-    data/homer.yml > "$HOMER_WEB_BASE_DIRECTORY/www/assets/config.yml"
+  sed \
+    -e "s/%protocol-type%/https/g" \
+    -e "s/%service-domain%/${SERVICE_DOMAIN}/g" \
+    data/homer.template.yml > "$HOMER_REMOTE_WEB_BASE_DIRECTORY/www/assets/config.yml"
 
-  cp -f static/homer-logo.png "$HOMER_WEB_BASE_DIRECTORY/www/assets/logo.png"
+  sed \
+    -e "s/%protocol-type%/http/g" \
+    -e "s/%service-domain%/${SERVICE_DOMAIN}/g" \
+    data/homer.template.yml > "$HOMER_LOCAL_WEB_BASE_DIRECTORY/www/assets/config.yml"
+
+  cp -f static/homer-logo.png "$HOMER_LOCAL_WEB_BASE_DIRECTORY/www/assets/logo.png"
+  cp -f static/homer-logo.png "$HOMER_REMOTE_WEB_BASE_DIRECTORY/www/assets/logo.png"
+  
   cp -f data/photo-uploader.json "$PHOTOUPLOADER_BASE_DIRECTORY/config/settings.json"
 
   if ! cat /etc/sysctl.conf | grep 'net.ipv4.ip_forward=1'; then
