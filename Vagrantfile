@@ -17,7 +17,7 @@ Vagrant.configure("2") do |config|
   config.vm.provision :docker
 
   config.vm.provision "shell", inline: <<-SHELL
-    cd /vagrant/kratos && ./scripts/install.sh "/tmp" "some-token"
+    cd /vagrant/kratos && make install
   SHELL
 
   config.vm.hostname = "kratos"
