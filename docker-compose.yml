@@ -48,20 +48,35 @@ services:
       DB_SQLITE_FILE: "/data/database.sqlite"
       DISABLE_IPV6: "true"
 
-  plex-server:
-    image: plexinc/pms-docker:${PLEX_DOCKER_TAG}
-    container_name: plex-server
+  navidrome-server:
+    image: deluan/navidrome:${NAVIDROME_DOCKER_TAG}
+    container_name: navidrome-server
+    # user: 1000:1000 # should be owner of volumes
+    ports:
+      - ${NAVIDROME_PORT}:4533
     restart: unless-stopped
-    network_mode: host
     environment:
-      - PUID=${PUID}
-      - PGID=${PGID}
-      - TZ=${TIMEZONE}
-      - CLAIM_TOKEN=${PLEX_CLAIM_TOKEN}
+      ND_SCANSCHEDULE: 1h
+      ND_LOGLEVEL: info  
+      ND_SESSIONTIMEOUT: 24h
     volumes:
-      - ${PLEX_BASE_DIRECTORY}/config:/config
-      - ${PLEX_BASE_DIRECTORY}/transcode:/transcode
-      - ${MEDIA_DIRECTORY}:/media
+      - ${NAVIDROME_BASE_DIRECTORY}/data:/data
+      - ${MUSIC_DIRECTORY}:/music:ro
+
+  # plex-server:
+  #   image: plexinc/pms-docker:${PLEX_DOCKER_TAG}
+  #   container_name: plex-server
+  #   restart: unless-stopped
+  #   network_mode: host
+  #   environment:
+  #     - PUID=${PUID}
+  #     - PGID=${PGID}
+  #     - TZ=${TIMEZONE}
+  #     - CLAIM_TOKEN=${PLEX_CLAIM_TOKEN}
+  #   volumes:
+  #     - ${PLEX_BASE_DIRECTORY}/config:/config
+  #     - ${PLEX_BASE_DIRECTORY}/transcode:/transcode
+  #     - ${MEDIA_DIRECTORY}:/media
 
   calibre-web:
     image: lscr.io/linuxserver/calibre-web:${CALIBRE_WEB_DOCKER_TAG}
@@ -78,7 +93,7 @@ services:
       - DOCKER_MODS=linuxserver/mods:universal-calibre
     volumes:
       - ${CALIBRE_WEB_BASE_DIRECTORY}/config:/config
-      - ${BOOKS_DIRECTORY}:/books
+      - ${BOOKS_DIRECTORY}:/books:ro
 
   gogs-web:
     image: gogs/gogs:${GOGS_DOCKER_TAG}
@@ -193,40 +208,40 @@ services:
       - ${PODGRAB_PORT}:8080
     restart: unless-stopped
 
-  photoview-server:
+  photoviewer-server:
     image: viktorstrate/photoview:${PHOTOVIEWER_DOCKER_TAG}
+    container_name: photoviewer-server
     restart: always
-    container_name: photoview-server
     ports:
-      - ${PHOTOVIEW_PORT}:80
+      - ${PHOTOVIEWER_PORT}:80
     depends_on:
       - photoview-db
     volumes:
       - ${PHOTOS_DIRECTORY}:/photos:ro
-      - ${PHOTOVIEW_BASE_DIRECTORY}/cache:/app/cache
+      - ${PHOTOVIEWER_BASE_DIRECTORY}/cache:/app/cache
     environment:
-      - PHOTOVIEW_DATABASE_DRIVER=postgres
-      - PHOTOVIEW_POSTGRES_URL=postgresql://${PHOTOVIEW_DB_USER}:${PHOTOVIEW_DB_PASSWORD}@photoview-db/${PHOTOVIEW_DB_NAME}
-      - PHOTOVIEW_LISTEN_IP=photoview
-      - PHOTOVIEW_LISTEN_PORT=80
-      - PHOTOVIEW_MEDIA_CACHE=/app/cache
+      - PHOTOVIEWER_DATABASE_DRIVER=postgres
+      - PHOTOVIEWER_POSTGRES_URL=postgresql://${PHOTOVIEWER_DB_USER}:${PHOTOVIEWER_DB_PASSWORD}@photoviewer-db/${PHOTOVIEWER_DB_NAME}
+      - PHOTOVIEWER_LISTEN_IP=photoviewer-server
+      - PHOTOVIEWER_LISTEN_PORT=80
+      - PHOTOVIEWER_MEDIA_CACHE=/app/cache
 
-  photoview-db:
+  photoviewer-db:
     image: postgres:${PHOTOVIEWER_DB_DOCKER_TAG}
-    container_name: photoview-db
+    container_name: photoviewer-db
     restart: always
     networks:
       - default
     ports:
-      - ${PHOTOVIEW_DB_PORT}:5432
+      - ${PHOTOVIEWER_DB_PORT}:5432
     environment:
-      - POSTGRES_USER=${PHOTOVIEW_DB_USER}
-      - POSTGRES_PASSWORD=${PHOTOVIEW_DB_PASSWORD}
-      - POSTGRES_DB=${PHOTOVIEW_DB_NAME}
+      - POSTGRES_USER=${PHOTOVIEWER_DB_USER}
+      - POSTGRES_PASSWORD=${PHOTOVIEWER_DB_PASSWORD}
+      - POSTGRES_DB=${PHOTOVIEWER_DB_NAME}
     volumes:
-      - ${PHOTOVIEW_DB_BASE_DIRECTORY}:/var/lib/postgresql/data
+      - ${PHOTOVIEWER_DB_BASE_DIRECTORY}:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${PHOTOVIEW_DB_USER}"]
+      test: ["CMD-SHELL", "pg_isready -U ${PHOTOVIEWER_DB_USER}"]
       interval: 5s
       timeout: 5s
       retries: 5

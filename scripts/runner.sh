@@ -82,6 +82,7 @@ function check_requirements() {
   throw_if_env_var_not_present "DNS_IP_ADDRESS" "$DNS_IP_ADDRESS"
 
   throw_if_directory_not_present "VIDEOS_DIRECTORY" "$VIDEOS_DIRECTORY"
+  throw_if_directory_not_present "MUSIC_DIRECTORY" "$MUSIC_DIRECTORY"
   throw_if_directory_not_present "PHOTOS_DIRECTORY" "$PHOTOS_DIRECTORY"
   throw_if_directory_not_present "BOOKS_DIRECTORY" "$BOOKS_DIRECTORY"
   throw_if_directory_not_present "AUDIOBOOKS_DIRECTORY" "$AUDIOBOOKS_DIRECTORY"
@@ -153,6 +154,14 @@ function setup_nginx_proxy() {
   export NGNIX_PROXY_MANAGER_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/nginx-proxy-manager-server
   ensure_directory_exists "$NGNIX_PROXY_MANAGER_BASE_DIRECTORY/data"
   ensure_directory_exists "$NGNIX_PROXY_MANAGER_BASE_DIRECTORY/letsencrypt"
+}
+
+function setup_navidrome() {
+  throw_if_directory_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
+  throw_if_env_var_not_present "NAVIDROME_DOCKER_TAG" "$NAVIDROME_DOCKER_TAG"
+
+  export NAVIDROME_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/navidrome-server
+  ensure_directory_exists "$NAVIDROME_BASE_DIRECTORY/data"
 }
 
 function setup_plex() {
@@ -279,20 +288,20 @@ function setup_photoviewer() {
   throw_if_directory_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
   throw_if_env_var_not_present "PHOTOVIEWER_DOCKER_TAG" "$PHOTOVIEWER_DOCKER_TAG" 
 
-  export PHOTOVIEW_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/photoview-server
-  ensure_directory_exists "$PHOTOVIEW_BASE_DIRECTORY/cache"
+  export PHOTOVIEWER_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/photoviewer-server
+  ensure_directory_exists "$PHOTOVIEWER_BASE_DIRECTORY/cache"
 
-  safely_set_port_for_env_var "PHOTOVIEW_PORT" "9080"
+  safely_set_port_for_env_var "PHOTOVIEWER_PORT" "9080"
 
-  export PHOTOVIEW_DB_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/photoview-db
-  ensure_directory_exists "$PHOTOVIEW_DB_BASE_DIRECTORY"
+  export PHOTOVIEWER_DB_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/photoviewer-db
+  ensure_directory_exists "$PHOTOVIEWER_DB_BASE_DIRECTORY"
   throw_if_env_var_not_present "PHOTOVIEWER_DB_DOCKER_TAG" "$PHOTOVIEWER_DB_DOCKER_TAG"
 
-  export PHOTOVIEW_DB_NAME=photoview
-  export PHOTOVIEW_DB_USER=photoview
-  export PHOTOVIEW_DB_PASSWORD=password
-  
-  safely_set_port_for_env_var "PHOTOVIEW_DB_PORT" "9081"
+  export PHOTOVIEWER_DB_NAME=photoview
+  export PHOTOVIEWER_DB_USER=photoview
+  export PHOTOVIEWER_DB_PASSWORD=password
+
+  safely_set_port_for_env_var "PHOTOVIEWER_DB_PORT" "9081"
 }
 
 function setup_photouploader() {
@@ -334,7 +343,8 @@ function start_apps() {
   setup_tailscale
   setup_pihole
   setup_nginx_proxy
-  setup_plex
+  setup_navidrome
+  # setup_plex
   setup_calibre_web
   setup_gogs
   setup_home_assistant
