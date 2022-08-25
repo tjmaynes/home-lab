@@ -80,6 +80,24 @@ function check_requirements() {
   throw_if_env_var_not_present "HOST_IP_ADDRESS" "$HOST_IP_ADDRESS"
   throw_if_env_var_not_present "PROXY_IP_ADDRESS" "$PROXY_IP_ADDRESS"
   throw_if_env_var_not_present "DNS_IP_ADDRESS" "$DNS_IP_ADDRESS"
+}
+
+function setup_nfs_docker_mount() {
+  throw_if_env_var_not_present "NFS_IP" "$NFS_IP"
+  throw_if_env_var_not_present "NFS_DOCKER_BASE_DIRECTORY" "$NFS_DOCKER_BASE_DIRECTORY"
+  throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
+
+  ensure_directory_exists "$DOCKER_BASE_DIRECTORY"
+  mount -t nfs "$NFS_IP:$NFS_DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY" || true
+}
+
+function setup_nfs_media_mount() {
+  throw_if_env_var_not_present "NFS_IP" "$NFS_IP"
+  throw_if_env_var_not_present "NFS_MEDIA_BASE_DIRECTORY" "$NFS_MEDIA_BASE_DIRECTORY"
+  throw_if_env_var_not_present "MEDIA_BASE_DIRECTORY" "$MEDIA_BASE_DIRECTORY"
+
+  ensure_directory_exists "$MEDIA_BASE_DIRECTORY"
+  mount -t nfs "$NFS_IP:$NFS_MEDIA_BASE_DIRECTORY" "$MEDIA_BASE_DIRECTORY" || true
 
   throw_if_directory_not_present "VIDEOS_DIRECTORY" "$VIDEOS_DIRECTORY"
   throw_if_directory_not_present "MUSIC_DIRECTORY" "$MUSIC_DIRECTORY"
@@ -87,6 +105,11 @@ function check_requirements() {
   throw_if_directory_not_present "BOOKS_DIRECTORY" "$BOOKS_DIRECTORY"
   throw_if_directory_not_present "AUDIOBOOKS_DIRECTORY" "$AUDIOBOOKS_DIRECTORY"
   throw_if_directory_not_present "PODCASTS_DIRECTORY" "$PODCASTS_DIRECTORY"
+}
+
+function setup_nfs_mounts() {
+  setup_nfs_docker_mount
+  setup_nfs_media_mount
 }
 
 function setup_macvlan_network() {
@@ -338,6 +361,8 @@ function setup_bitwarden() {
 }
 
 function start_apps() {
+  setup_nfs_mounts
+
   setup_macvlan_network
 
   setup_tailscale
