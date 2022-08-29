@@ -179,12 +179,74 @@ function setup_nginx_proxy() {
   ensure_directory_exists "$NGNIX_PROXY_MANAGER_BASE_DIRECTORY/letsencrypt"
 }
 
+function setup_nextcloud_server() {
+  throw_if_directory_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
+  throw_if_env_var_not_present "NEXTCLOUD_DOCKER_TAG" "$NEXTCLOUD_DOCKER_TAG"
+  throw_if_env_var_not_present "NEXTCLOUD_PORT" "$NEXTCLOUD_PORT"
+
+  export NEXTCLOUD_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/nextcloud-server
+  ensure_directory_exists "$NEXTCLOUD_BASE_DIRECTORY/www/html"
+
+  throw_if_env_var_not_present "NEXTCLOUD_ADMIN_USER" "$NEXTCLOUD_ADMIN_USER"
+  throw_if_env_var_not_present "NEXTCLOUD_ADMIN_PASSWORD" "$NEXTCLOUD_ADMIN_PASSWORD"
+  throw_if_env_var_not_present "NEXTCLOUD_DB_USER" "$NEXTCLOUD_DB_USER"
+  throw_if_env_var_not_present "NEXTCLOUD_DB_PASSWORD" "$NEXTCLOUD_DB_PASSWORD"
+  throw_if_env_var_not_present "NEXTCLOUD_DB_NAME" "$NEXTCLOUD_DB_NAME"
+
+  safely_set_port_for_env_var "NEXTCLOUD_PORT" "18080"
+}
+
+function setup_nextcloud_db() {
+  throw_if_directory_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
+  throw_if_env_var_not_present "NEXTCLOUD_DB_DOCKER_TAG" "$NEXTCLOUD_DB_DOCKER_TAG"
+  throw_if_env_var_not_present "NEXTCLOUD_DB_PORT" "$NEXTCLOUD_DB_PORT"
+
+  export NEXTCLOUD_DB_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/nextcloud-db
+  ensure_directory_exists "$NEXTCLOUD_DB_BASE_DIRECTORY/data"
+
+  throw_if_env_var_not_present "NEXTCLOUD_DB_USER" "$NEXTCLOUD_DB_USER"
+  throw_if_env_var_not_present "NEXTCLOUD_DB_PASSWORD" "$NEXTCLOUD_DB_PASSWORD"
+
+  safely_set_port_for_env_var "NEXTCLOUD_DB_PORT" "15432"
+}
+
+function setup_nextcloud_redis() {
+  throw_if_directory_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
+  throw_if_env_var_not_present "NEXTCLOUD_REDIS_DOCKER_TAG" "$NEXTCLOUD_REDIS_DOCKER_TAG"
+  throw_if_env_var_not_present "NEXTCLOUD_REDIS_PORT" "$NEXTCLOUD_REDIS_PORT"
+
+  export NEXTCLOUD_REDIS_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/nextcloud-redis
+  ensure_directory_exists "$NEXTCLOUD_REDIS_BASE_DIRECTORY"
+
+  safely_set_port_for_env_var "NEXTCLOUD_REDIS_PORT" "16379"
+}
+
+function setup_nextcloud_collabora() {
+  throw_if_directory_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
+  throw_if_env_var_not_present "NEXTCLOUD_COLLABORA_DOCKER_TAG" "$NEXTCLOUD_COLLABORA_DOCKER_TAG"
+  throw_if_env_var_not_present "SERVICE_DOMAIN" "$SERVICE_DOMAIN"
+
+  safely_set_port_for_env_var "NEXTCLOUD_COLLABORA_PORT" "19980"
+
+  throw_if_env_var_not_present "NEXTCLOUD_COLLABORA_USERNAME" "$NEXTCLOUD_COLLABORA_USERNAME"
+  throw_if_env_var_not_present "NEXTCLOUD_COLLABORA_PASSWORD" "$NEXTCLOUD_COLLABORA_PASSWORD"
+}
+
+function setup_nextcloud() {
+  setup_nextcloud_db
+  setup_nextcloud_redis
+  setup_nextcloud_collabora
+  setup_nextcloud_server
+}
+
 function setup_navidrome() {
   throw_if_directory_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
   throw_if_env_var_not_present "NAVIDROME_DOCKER_TAG" "$NAVIDROME_DOCKER_TAG"
 
   export NAVIDROME_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/navidrome-server
   ensure_directory_exists "$NAVIDROME_BASE_DIRECTORY/data"
+
+  safely_set_port_for_env_var "NAVIDROME_PORT" "14533"
 }
 
 function setup_plex() {
@@ -204,7 +266,7 @@ function setup_calibre_web() {
   export CALIBRE_WEB_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/calibre-web
   ensure_directory_exists "$CALIBRE_WEB_BASE_DIRECTORY/config"
 
-  safely_set_port_for_env_var "CALIBRE_WEB_PORT" "8083"
+  safely_set_port_for_env_var "CALIBRE_WEB_PORT" "18083"
 }
 
 function setup_gogs() {
@@ -214,8 +276,8 @@ function setup_gogs() {
   export GOGS_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/gogs-web
   ensure_directory_exists "$GOGS_BASE_DIRECTORY/data"
 
-  safely_set_port_for_env_var "GOGS_PORT" "3000"
-  safely_set_port_for_env_var "GOGS_SSH_PORT" "2222"
+  safely_set_port_for_env_var "GOGS_PORT" "13000"
+  safely_set_port_for_env_var "GOGS_SSH_PORT" "12222"
 
   throw_if_env_var_not_present "GOGS_DB_DOCKER_TAG" "$GOGS_DB_DOCKER_TAG"
 
@@ -225,43 +287,25 @@ function setup_gogs() {
   export GOGS_USER=gogs
   export GOGS_DB=gogs
   export GOGS_DB_PASSWORD=gogs
-  safely_set_port_for_env_var "GOGS_DB_PORT" "5433"
+  safely_set_port_for_env_var "GOGS_DB_PORT" "15433"
 }
 
-function setup_remote_homer() {
+function setup_homer() {
   throw_if_directory_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
   throw_if_env_var_not_present "SERVICE_DOMAIN" "$SERVICE_DOMAIN"
   throw_if_env_var_not_present "HOMER_DOCKER_TAG" "$HOMER_DOCKER_TAG"
 
-  export HOMER_REMOTE_WEB_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/homer-remote-web
+  export HOMER_WEB_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/homer-web
   ensure_directory_exists "$HOMER_LOCAL_WEB_BASE_DIRECTORY/www/assets"
 
-  safely_set_port_for_env_var "HOMER_REMOTE_WEB_PORT" "8081"
+  safely_set_port_for_env_var "HOMER_WEB_PORT" "18081"
 
   sed \
     -e "s/%protocol-type%/https/g" \
     -e "s/%service-domain%/${SERVICE_DOMAIN}/g" \
-    data/homer.template.yml > "$HOMER_REMOTE_WEB_BASE_DIRECTORY/www/assets/config.yml"
+    data/homer.template.yml > "$HOMER_WEB_BASE_DIRECTORY/www/assets/config.yml"
 
-  cp -f static/homer-logo.png "$HOMER_REMOTE_WEB_BASE_DIRECTORY/www/assets/logo.png"
-}
-
-function setup_local_homer() {
-  throw_if_directory_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
-  throw_if_env_var_not_present "SERVICE_DOMAIN" "$SERVICE_DOMAIN"
-  throw_if_env_var_not_present "HOMER_DOCKER_TAG" "$HOMER_DOCKER_TAG"
-
-  export HOMER_LOCAL_WEB_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/homer-local-web
-  ensure_directory_exists "$HOMER_REMOTE_WEB_BASE_DIRECTORY/www/assets"
-
-  safely_set_port_for_env_var "HOMER_LOCAL_WEB_PORT" "8080"
-
-  sed \
-    -e "s/%protocol-type%/http/g" \
-    -e "s/%service-domain%/${SERVICE_DOMAIN}/g" \
-    data/homer.template.yml > "$HOMER_LOCAL_WEB_BASE_DIRECTORY/www/assets/config.yml"
-
-  cp -f static/homer-logo.png "$HOMER_LOCAL_WEB_BASE_DIRECTORY/www/assets/logo.png"
+  cp -f static/homer-logo.png "$HOMER_WEB_BASE_DIRECTORY/www/assets/logo.png"
 }
 
 function setup_audiobookshelf() {
@@ -282,49 +326,14 @@ function setup_podgrab() {
   export PODGRAB_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/podgrab-web
   ensure_directory_exists "$PODGRAB_BASE_DIRECTORY/config"
 
-  safely_set_port_for_env_var "PODGRAB_PORT" "9087"
-}
-
-function setup_photoviewer() {
-  throw_if_directory_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
-  throw_if_env_var_not_present "PHOTOVIEWER_DOCKER_TAG" "$PHOTOVIEWER_DOCKER_TAG" 
-
-  export PHOTOVIEWER_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/photoviewer-server
-  ensure_directory_exists "$PHOTOVIEWER_BASE_DIRECTORY/cache"
-
-  safely_set_port_for_env_var "PHOTOVIEWER_PORT" "9080"
-
-  export PHOTOVIEWER_DB_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/photoviewer-db
-  ensure_directory_exists "$PHOTOVIEWER_DB_BASE_DIRECTORY"
-  throw_if_env_var_not_present "PHOTOVIEWER_DB_DOCKER_TAG" "$PHOTOVIEWER_DB_DOCKER_TAG"
-
-  export PHOTOVIEWER_DB_NAME=photoview
-  export PHOTOVIEWER_DB_USER=photoview
-  export PHOTOVIEWER_DB_PASSWORD=password
-
-  safely_set_port_for_env_var "PHOTOVIEWER_DB_PORT" "9081"
-}
-
-function setup_photouploader() {
-  throw_if_directory_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
-  throw_if_env_var_not_present "PHOTOUPLOADER_DOCKER_TAG" "$PHOTOUPLOADER_DOCKER_TAG"
-
-  export PHOTOUPLOADER_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/photouploader-server
-  ensure_directory_exists "$PHOTOUPLOADER_BASE_DIRECTORY/config"
-  ensure_directory_exists "$PHOTOUPLOADER_BASE_DIRECTORY/database"
-
-  touch "$PHOTOUPLOADER_BASE_DIRECTORY/database/filebrowser.db"
-
-  safely_set_port_for_env_var "PHOTOUPLOADER_PORT" "9003"
-
-  cp -f data/photo-uploader.json "$PHOTOUPLOADER_BASE_DIRECTORY/config/settings.json"
+  safely_set_port_for_env_var "PODGRAB_PORT" "18084"
 }
 
 function setup_drawio() {
   throw_if_env_var_not_present "DRAWIO_DOCKER_TAG" "$DRAWIO_DOCKER_TAG"
 
-  safely_set_port_for_env_var "DRAWIO_PORT" "9092"
-  safely_set_port_for_env_var "DRAWIO_HTTPS_PORT" "9093"
+  safely_set_port_for_env_var "DRAWIO_PORT" "18085"
+  safely_set_port_for_env_var "DRAWIO_HTTPS_PORT" "18443"
 }
 
 function setup_bitwarden() {
@@ -334,8 +343,8 @@ function setup_bitwarden() {
   export BITWARDEN_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/bitwarden-server
   ensure_directory_exists "$BITWARDEN_BASE_DIRECTORY/data"
 
-  safely_set_port_for_env_var "BITWARDEN_PORT" "8084"
-  safely_set_port_for_env_var "BITWARDEN_HTTPS_PORT" "8085"
+  safely_set_port_for_env_var "BITWARDEN_PORT" "18086"
+  safely_set_port_for_env_var "BITWARDEN_HTTPS_PORT" "18444"
 }
 
 function start_apps() {
@@ -346,16 +355,14 @@ function start_apps() {
   setup_tailscale
   setup_pihole
   setup_nginx_proxy
-  setup_navidrome
+  setup_nextcloud
   # setup_plex
+  setup_navidrome
   setup_calibre_web
   setup_gogs
-  setup_remote_homer
-  setup_local_homer
+  setup_homer
   setup_audiobookshelf
   setup_podgrab
-  setup_photoviewer
-  setup_photouploader
   setup_drawio
   setup_bitwarden
 

@@ -48,20 +48,76 @@ services:
       DB_SQLITE_FILE: "/data/database.sqlite"
       DISABLE_IPV6: "true"
 
-  navidrome-server:
-    image: deluan/navidrome:${NAVIDROME_DOCKER_TAG}
-    container_name: navidrome-server
-    # user: 1000:1000 # should be owner of volumes
+  nextcloud-server:
+    image: nextcloud:${NEXTCLOUD_DOCKER_TAG}
+    container_name: nextcloud-server
+    restart: always
+    links:
+      - nextcloud-db
+      - nextcloud-redis
     ports:
-      - ${NAVIDROME_PORT}:4533
-    restart: unless-stopped
-    environment:
-      ND_SCANSCHEDULE: 1h
-      ND_LOGLEVEL: info  
-      ND_SESSIONTIMEOUT: 24h
+      - ${NEXTCLOUD_PORT}:80
+    networks:
+      - default
     volumes:
-      - ${NAVIDROME_BASE_DIRECTORY}/data:/data
-      - ${MUSIC_DIRECTORY}:/music:ro
+      - ${NEXTCLOUD_BASE_DIRECTORY}/www/html:/var/www/html
+    environment:
+      - NEXTCLOUD_ADMIN_USER=${NEXTCLOUD_ADMIN_USER}
+      - NEXTCLOUD_ADMIN_PASSWORD=${NEXTCLOUD_ADMIN_PASSWORD}
+      - POSTGRES_USER=${NEXTCLOUD_DB_USER}
+      - POSTGRES_PASSWORD=${NEXTCLOUD_DB_PASSWORD}
+      - POSTGRES_DB=${NEXTCLOUD_DB_NAME}
+      - POSTGRES_HOST=nextcloud-db
+      - REDIS_HOST=nextcloud-redis
+
+  nextcloud-db:
+    image: postgres:${NEXTCLOUD_DB_DOCKER_TAG}
+    container_name: nextcloud-db
+    restart: always
+    ports:
+      - ${NEXTCLOUD_DB_PORT}:5432
+    networks:
+      - default
+    volumes:
+      - ${NEXTCLOUD_DB_BASE_DIRECTORY}/data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=${NEXTCLOUD_DB_USER}
+      - POSTGRES_PASSWORD=${NEXTCLOUD_DB_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${NEXTCLOUD_DB_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  nextcloud-redis:
+    image: redis:${NEXTCLOUD_REDIS_DOCKER_TAG}
+    container_name: nextcloud-redis
+    restart: always
+    ports:
+      - ${NEXTCLOUD_REDIS_PORT}:6379
+    networks:
+      - default
+    volumes:
+      - ${NEXTCLOUD_REDIS_BASE_DIRECTORY}:/var/lib/redis
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  nextcloud-collabora-web:
+    image: collabora/code:${NEXTCLOUD_COLLABORA_DOCKER_TAG}
+    container_name: nextcloud-collabora-web
+    restart: always
+    ports:
+      - ${NEXTCLOUD_COLLABORA_PORT}:9980
+    networks:
+      - default
+    environment:
+      - domain=collabora.${SERVICE_DOMAIN}
+      - username=${NEXTCLOUD_COLLABORA_USERNAME}
+      - password=${NEXTCLOUD_COLLABORA_PASSWORD}
+      - extra_params=--o:ssl.enable=true
 
   # plex-server:
   #   image: plexinc/pms-docker:${PLEX_DOCKER_TAG}
@@ -77,6 +133,21 @@ services:
   #     - ${PLEX_BASE_DIRECTORY}/config:/config
   #     - ${PLEX_BASE_DIRECTORY}/transcode:/transcode
   #     - ${MEDIA_DIRECTORY}:/media
+
+  navidrome-server:
+    image: deluan/navidrome:${NAVIDROME_DOCKER_TAG}
+    container_name: navidrome-server
+    # user: 1000:1000 # should be owner of volumes
+    ports:
+      - ${NAVIDROME_PORT}:4533
+    restart: unless-stopped
+    environment:
+      ND_SCANSCHEDULE: 1h
+      ND_LOGLEVEL: info  
+      ND_SESSIONTIMEOUT: 24h
+    volumes:
+      - ${NAVIDROME_BASE_DIRECTORY}/data:/data
+      - ${MUSIC_DIRECTORY}:/music:ro
 
   calibre-web:
     image: lscr.io/linuxserver/calibre-web:${CALIBRE_WEB_DOCKER_TAG}
@@ -131,29 +202,16 @@ services:
       timeout: 5s
       retries: 5
 
-  homer-remote-web:
+  homer-web:
     image: b4bz/homer:${HOMER_DOCKER_TAG}
-    container_name: homer-remote-web
+    container_name: homer-web
     restart: always
     networks:
       - default
     ports:
-      - ${HOMER_REMOTE_WEB_PORT}:8080
+      - ${HOMER_WEB_PORT}:8080
     volumes:
-      - ${HOMER_REMOTE_WEB_BASE_DIRECTORY}/www/assets:/www/assets
-    environment:
-      - INIT_ASSETS=0
-
-  homer-local-web:
-    image: b4bz/homer:${HOMER_DOCKER_TAG}
-    container_name: homer-local-web
-    restart: always
-    networks:
-      - default
-    ports:
-      - ${HOMER_LOCAL_WEB_PORT}:8080
-    volumes:
-      - ${HOMER_LOCAL_WEB_BASE_DIRECTORY}/www/assets:/www/assets
+      - ${HOMER_WEB_BASE_DIRECTORY}/www/assets:/www/assets
     environment:
       - INIT_ASSETS=0
 
@@ -184,61 +242,6 @@ services:
     ports:
       - ${PODGRAB_PORT}:8080
     restart: unless-stopped
-
-  photoviewer-server:
-    image: viktorstrate/photoview:${PHOTOVIEWER_DOCKER_TAG}
-    container_name: photoviewer-server
-    restart: always
-    ports:
-      - ${PHOTOVIEWER_PORT}:80
-    depends_on:
-      - photoview-db
-    volumes:
-      - ${PHOTOS_DIRECTORY}:/photos:ro
-      - ${PHOTOVIEWER_BASE_DIRECTORY}/cache:/app/cache
-    environment:
-      - PHOTOVIEWER_DATABASE_DRIVER=postgres
-      - PHOTOVIEWER_POSTGRES_URL=postgresql://${PHOTOVIEWER_DB_USER}:${PHOTOVIEWER_DB_PASSWORD}@photoviewer-db/${PHOTOVIEWER_DB_NAME}
-      - PHOTOVIEWER_LISTEN_IP=photoviewer-server
-      - PHOTOVIEWER_LISTEN_PORT=80
-      - PHOTOVIEWER_MEDIA_CACHE=/app/cache
-
-  photoviewer-db:
-    image: postgres:${PHOTOVIEWER_DB_DOCKER_TAG}
-    container_name: photoviewer-db
-    restart: always
-    networks:
-      - default
-    ports:
-      - ${PHOTOVIEWER_DB_PORT}:5432
-    environment:
-      - POSTGRES_USER=${PHOTOVIEWER_DB_USER}
-      - POSTGRES_PASSWORD=${PHOTOVIEWER_DB_PASSWORD}
-      - POSTGRES_DB=${PHOTOVIEWER_DB_NAME}
-    volumes:
-      - ${PHOTOVIEWER_DB_BASE_DIRECTORY}:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${PHOTOVIEWER_DB_USER}"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
-  photouploader-server:
-    image: filebrowser/filebrowser:${PHOTOUPLOADER_DOCKER_TAG}
-    container_name: photouploader-server
-    restart: unless-stopped
-    networks:
-      - default
-    environment:
-      - PUID=${PUID}
-      - PGID=${PGID}
-      - TZ=${TIMEZONE}
-    volumes:
-      - ${PHOTOS_DIRECTORY}:/photos
-      - ${PHOTOUPLOADER_BASE_DIRECTORY}/database/filebrowser.db:/database/filebrowser.db
-      - ${PHOTOUPLOADER_BASE_DIRECTORY}/config:/config
-    ports:
-      - ${PHOTOUPLOADER_PORT}:80
 
   drawio-web:
     image: jgraph/drawio:${DRAWIO_DOCKER_TAG}
