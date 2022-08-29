@@ -131,29 +131,6 @@ services:
       timeout: 5s
       retries: 5
 
-  home-assistant-web:
-    image: ghcr.io/home-assistant/home-assistant:${HOME_ASSISTANT_DOCKER_TAG}
-    container_name: home-assistant-web
-    restart: always
-    network_mode: host
-    volumes:
-      - ${HOME_ASSISTANT_BASE_DIRECTORY}/config:/config
-    environment:
-      - TZ=${TIMEZONE}
-
-  node-red:
-    image: nodered/node-red:${NODE_RED_DOCKER_TAG}
-    container_name: node-red
-    restart: unless-stopped
-    environment:
-      - TZ=${TIMEZONE}
-    ports:
-      - ${NODE_RED_PORT}:1880
-    networks:
-      - default
-    volumes:
-      - ${NODE_RED_BASE_DIRECTORY}/data:/data
-
   homer-remote-web:
     image: b4bz/homer:${HOMER_DOCKER_TAG}
     container_name: homer-remote-web

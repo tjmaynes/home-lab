@@ -28,8 +28,6 @@ make stop
 | [plex-server](https://plex.tv/)                            | media server                       | docker-compose | ✅ |
 | [calibre-web](https://github.com/janeczku/calibre-web)     | web-based ebook-reader             | docker-compose | ✅ |
 | [audiobookshelf](https://www.audiobookshelf.org/)          | podcast & audiobooks server        | docker-compose | ✅ |
-| [home-assistant](https://www.home-assistant.io/)           | home automation server             | docker-compose | ✅ |
-| [node-red](https://nodered.org/)                           | programmable automation interface  | docker-compose | ✅ |
 | [gogs](https://gogs.io/)                                   | git server                         | docker-compose | ✅ |
 | [podgrab](https://github.com/akhilrex/podgrab)             | podcast downloader                 | docker-compose | ✅ |
 | [photoview](https://github.com/photoview/photoview)        | photo gallery                      | docker-compose | ✅ |

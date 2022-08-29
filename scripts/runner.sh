@@ -228,28 +228,6 @@ function setup_gogs() {
   safely_set_port_for_env_var "GOGS_DB_PORT" "5433"
 }
 
-function setup_home_assistant() {
-  throw_if_directory_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
-  throw_if_env_var_not_present "HOME_ASSISTANT_DOCKER_TAG" "$HOME_ASSISTANT_DOCKER_TAG"
-
-  export HOME_ASSISTANT_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/home-assistant-web
-  ensure_directory_exists "$HOME_ASSISTANT_BASE_DIRECTORY/config"
-
-  safely_set_port_for_env_var "HOME_ASSISTANT_PORT" "8123"
-}
-
-function setup_nodered() {
-  throw_if_directory_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
-  throw_if_env_var_not_present "NODE_RED_DOCKER_TAG" "$NODE_RED_DOCKER_TAG"
-
-  export NODE_RED_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/node-red
-  ensure_directory_exists "$NODE_RED_BASE_DIRECTORY/data"
-
-  chmod 777 "$NODE_RED_BASE_DIRECTORY/data"
-
-  safely_set_port_for_env_var "NODE_RED_PORT" "1880"
-}
-
 function setup_remote_homer() {
   throw_if_directory_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
   throw_if_env_var_not_present "SERVICE_DOMAIN" "$SERVICE_DOMAIN"
@@ -372,8 +350,6 @@ function start_apps() {
   # setup_plex
   setup_calibre_web
   setup_gogs
-  setup_home_assistant
-  setup_nodered
   setup_remote_homer
   setup_local_homer
   setup_audiobookshelf
