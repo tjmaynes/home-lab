@@ -271,6 +271,40 @@ services:
       WEBSOCKET_ENABLED: "true"
       SIGNUPS_ALLOWED: "true"
 
+  monitoring-influxdb:
+    image: influxdb:${INFLUXDB_DOCKER_TAG}
+    container_name: monitoring-influxdb
+    restart: always
+    ports:
+      - ${INFLUXDB_PORT}:8086
+    volumes:
+      - ${INFLUXDB_BASE_DIRECTORY}/data:/var/lib/influxdb
+      - ${INFLUXDB_BASE_DIRECTORY}/influxdb.conf:/etc/influxdb/influxdb.conf:ro
+      - ${INFLUXDB_BASE_DIRECTORY}/init:/docker-entrypoint-initdb.d
+    environment:
+      - INFLUXDB_ADMIN_USER=${INFLUXDB_ADMIN_USERNAME}
+      - INFLUXDB_ADMIN_PASSWORD=${INFLUXDB_ADMIN_PASSWORD}
+
+  monitoring-telegraf:
+    image: telegraf:${TELEGRAPF_DOCKER_TAG}
+    container_name: monitoring-telegraf
+    restart: always
+    volumes:
+      - ${INFLUXDB_BASE_DIRECTORY}/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+
+  monitoring-chronograf:
+    image: chronograf:${CHRONOGRAF_DOCKER_TAG}
+    container_name: monitoring-chronograf
+    restart: always
+    ports:
+      - ${CHRONOGRAF_PORT}:8888
+    depends_on:
+      - monitoring-influxdb
+    environment:
+      - INFLUXDB_URL=http://monitoring-influxdb:${INFLUXDB_PORT}
+      - INFLUXDB_USERNAME=${INFLUXDB_ADMIN_USERNAME}
+      - INFLUXDB_PASSWORD=${INFLUXDB_ADMIN_PASSWORD}
+
 networks:
   default:
     driver: bridge

@@ -309,6 +309,31 @@ function setup_bitwarden() {
   safely_set_port_for_env_var "BITWARDEN_HTTPS_PORT" "18444"
 }
 
+function setup_monitoring() {
+  throw_if_directory_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
+
+  # InfluxDB
+  throw_if_env_var_not_present "INFLUXDB_DOCKER_TAG" "$INFLUXDB_DOCKER_TAG"
+  throw_if_env_var_not_present "INFLUXDB_ADMIN_USERNAME" "$INFLUXDB_ADMIN_USERNAME"
+  throw_if_env_var_not_present "INFLUXDB_ADMIN_PASSWORD" "$INFLUXDB_ADMIN_PASSWORD"
+
+  export INFLUXDB_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/monitoring-influxdb
+  ensure_directory_exists "$INFLUXDB_BASE_DIRECTORY/data"
+  ensure_directory_exists "$INFLUXDB_BASE_DIRECTORY/init"
+
+  safely_set_port_for_env_var "INFLUXDB_PORT" "18089"
+
+  # Telegraf
+  throw_if_env_var_not_present "TELEGRAF_DOCKER_TAG" "$INFLUXDB_DOCKER_TAG"
+
+  # Chronograf
+  throw_if_env_var_not_present "CHRONOGRAF_DOCKER_TAG" "$INFLUXDB_DOCKER_TAG"
+  throw_if_env_var_not_present "INFLUXDB_ADMIN_USERNAME" "$INFLUXDB_ADMIN_USERNAME"
+  throw_if_env_var_not_present "INFLUXDB_ADMIN_PASSWORD" "$INFLUXDB_ADMIN_PASSWORD"
+
+  safely_set_port_for_env_var "CHRONOGRAF_PORT" "18888"
+}
+
 function start_apps() {
   setup_cronjobs
   setup_nfs_media_mount
@@ -328,6 +353,7 @@ function start_apps() {
   setup_podgrab
   setup_drawio
   setup_bitwarden
+  setup_monitoring
 
   docker-compose up -d --remove-orphans
 
@@ -336,6 +362,9 @@ function start_apps() {
     --advertise-exit-node \
     --advertise-routes=${SUBNET_IP_ADDRESS}/22 \
     --reset
+
+  docker exec monitoring-inflxudb \
+    influx apply -f https://raw.githubusercontent.com/influxdata/community-templates/master/raspberry-pi/raspberry-pi-system.yml
 }
 
 function stop_apps() {
@@ -357,7 +386,7 @@ function main() {
       stop_apps
       ;;
     *)
-      echo "Unable to run kratos script with parameter 1 '$RUN_TYPE'."
+      echo "Unable to run runner script with parameter 1 '$RUN_TYPE'."
       exit 1
       ;;
   esac
