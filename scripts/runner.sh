@@ -27,44 +27,6 @@ function safely_set_port_for_env_var() {
   export $1=$2
 }
 
-function ensure_directory_exists() {
-  TARGET_DIRECTORY=$1
-
-  if [[ ! -d "$TARGET_DIRECTORY" ]]; then
-    echo "Creating $TARGET_DIRECTORY directory..."
-    mkdir -p "$TARGET_DIRECTORY"
-  fi
-}
-
-function throw_if_program_not_present() {
-  if [[ -z "$(command -v $1)" ]]; then
-    echo "Please install '$1' before running this script"
-    exit 1
-  fi
-}
-
-function throw_if_env_var_not_present() {
-  ENV_VAR_KEY=$1
-  ENV_VAR_VALUE=$2
-
-  if [[ -z "$ENV_VAR_VALUE" ]]; then
-    echo "Please set an environment variable for '$ENV_VAR_KEY' before running this script"
-    exit 1
-  fi
-}
-
-function throw_if_directory_not_present() {
-  DIRECTORY_ENV_VAR_KEY=$1
-  DIRECTORY_ENV_VAR_VALUE=$2
-
-  throw_if_env_var_not_present "$DIRECTORY_ENV_VAR_KEY" "$DIRECTORY_ENV_VAR_VALUE"
-
-  if [[ ! -d "$DIRECTORY_ENV_VAR_VALUE" ]]; then
-    echo "Please create a directory ($DIRECTORY_ENV_VAR_VALUE) for environment variable '$DIRECTORY_ENV_VAR_KEY' before running this script"
-    exit 1
-  fi
-}
-
 function check_requirements() {
   throw_if_program_not_present "docker"
 
@@ -82,22 +44,26 @@ function check_requirements() {
   throw_if_env_var_not_present "DNS_IP_ADDRESS" "$DNS_IP_ADDRESS"
 }
 
-function setup_nfs_docker_mount() {
-  throw_if_env_var_not_present "NFS_IP" "$NFS_IP"
-  throw_if_env_var_not_present "NFS_DOCKER_BASE_DIRECTORY" "$NFS_DOCKER_BASE_DIRECTORY"
-  throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
+function setup_cronjobs() {
+  throw_if_program_not_present "cron"
+  throw_if_program_not_present "rsync"
 
-  ensure_directory_exists "$DOCKER_BASE_DIRECTORY"
-  mount -t nfs "$NFS_IP:$NFS_DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY" || true
+  ln -s .onreboot.crontab /etc/cron.d/onreboot.crontab
+  ln -s .backup.crontab /etc/cron.d/backup.crontab
 }
 
 function setup_nfs_media_mount() {
-  throw_if_env_var_not_present "NFS_IP" "$NFS_IP"
-  throw_if_env_var_not_present "NFS_MEDIA_BASE_DIRECTORY" "$NFS_MEDIA_BASE_DIRECTORY"
+  throw_if_program_not_present "mount"
+
+  throw_if_env_var_not_present "NAS_IP" "$NAS_IP"
+  throw_if_env_var_not_present "NAS_MEDIA_DIRECTORY" "$NAS_MEDIA_DIRECTORY"
   throw_if_env_var_not_present "MEDIA_BASE_DIRECTORY" "$MEDIA_BASE_DIRECTORY"
 
   ensure_directory_exists "$MEDIA_BASE_DIRECTORY"
-  mount -t nfs "$NFS_IP:$NFS_MEDIA_BASE_DIRECTORY" "$MEDIA_BASE_DIRECTORY" || true
+
+  mount \
+    -t nfs \
+    "$NAS_IP:$NAS_MEDIA_DIRECTORY" "$MEDIA_BASE_DIRECTORY" || true
 
   throw_if_directory_not_present "VIDEOS_DIRECTORY" "$VIDEOS_DIRECTORY"
   throw_if_directory_not_present "MUSIC_DIRECTORY" "$MUSIC_DIRECTORY"
@@ -105,11 +71,6 @@ function setup_nfs_media_mount() {
   throw_if_directory_not_present "BOOKS_DIRECTORY" "$BOOKS_DIRECTORY"
   throw_if_directory_not_present "AUDIOBOOKS_DIRECTORY" "$AUDIOBOOKS_DIRECTORY"
   throw_if_directory_not_present "PODCASTS_DIRECTORY" "$PODCASTS_DIRECTORY"
-}
-
-function setup_nfs_mounts() {
-  setup_nfs_docker_mount
-  setup_nfs_media_mount
 }
 
 function setup_macvlan_network() {
@@ -141,7 +102,8 @@ function teardown_macvlan() {
 }
 
 function setup_tailscale() {
-  throw_if_directory_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
+  throw_if_program_not_present "insmod"
+  throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
 
   export TAILSCALE_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/tailscale-agent
   ensure_directory_exists "$TAILSCALE_BASE_DIRECTORY/var/lib"
@@ -161,7 +123,7 @@ function setup_tailscale() {
 }
 
 function setup_pihole() {
-  throw_if_directory_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
+  throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
   throw_if_env_var_not_present "PIHOLE_DOCKER_TAG" "$PIHOLE_DOCKER_TAG"
   throw_if_env_var_not_present "PIHOLE_PASSWORD" "$PIHOLE_PASSWORD"
 
@@ -171,7 +133,7 @@ function setup_pihole() {
 }
 
 function setup_nginx_proxy() {
-  throw_if_directory_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
+  throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
   throw_if_env_var_not_present "NGINX_SERVER_DOCKER_TAG" "$NGINX_SERVER_DOCKER_TAG"
 
   export NGNIX_PROXY_MANAGER_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/nginx-proxy-manager-server
@@ -180,7 +142,7 @@ function setup_nginx_proxy() {
 }
 
 function setup_nextcloud_server() {
-  throw_if_directory_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
+  throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
   throw_if_env_var_not_present "NEXTCLOUD_DOCKER_TAG" "$NEXTCLOUD_DOCKER_TAG"
   throw_if_env_var_not_present "NEXTCLOUD_PORT" "$NEXTCLOUD_PORT"
 
@@ -197,7 +159,7 @@ function setup_nextcloud_server() {
 }
 
 function setup_nextcloud_db() {
-  throw_if_directory_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
+  throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
   throw_if_env_var_not_present "NEXTCLOUD_DB_DOCKER_TAG" "$NEXTCLOUD_DB_DOCKER_TAG"
   throw_if_env_var_not_present "NEXTCLOUD_DB_PORT" "$NEXTCLOUD_DB_PORT"
 
@@ -211,7 +173,7 @@ function setup_nextcloud_db() {
 }
 
 function setup_nextcloud_redis() {
-  throw_if_directory_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
+  throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
   throw_if_env_var_not_present "NEXTCLOUD_REDIS_DOCKER_TAG" "$NEXTCLOUD_REDIS_DOCKER_TAG"
   throw_if_env_var_not_present "NEXTCLOUD_REDIS_PORT" "$NEXTCLOUD_REDIS_PORT"
 
@@ -222,7 +184,7 @@ function setup_nextcloud_redis() {
 }
 
 function setup_nextcloud_collabora() {
-  throw_if_directory_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
+  throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
   throw_if_env_var_not_present "NEXTCLOUD_COLLABORA_DOCKER_TAG" "$NEXTCLOUD_COLLABORA_DOCKER_TAG"
   throw_if_env_var_not_present "SERVICE_DOMAIN" "$SERVICE_DOMAIN"
 
@@ -240,7 +202,7 @@ function setup_nextcloud() {
 }
 
 function setup_navidrome() {
-  throw_if_directory_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
+  throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
   throw_if_env_var_not_present "NAVIDROME_DOCKER_TAG" "$NAVIDROME_DOCKER_TAG"
 
   export NAVIDROME_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/navidrome-server
@@ -250,7 +212,7 @@ function setup_navidrome() {
 }
 
 function setup_plex() {
-  throw_if_directory_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
+  throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
   throw_if_env_var_not_present "PLEX_CLAIM_TOKEN" "$PLEX_CLAIM_TOKEN"
   throw_if_env_var_not_present "PLEX_DOCKER_TAG" "$PLEX_DOCKER_TAG"
 
@@ -260,7 +222,7 @@ function setup_plex() {
 }
 
 function setup_calibre_web() {
-  throw_if_directory_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
+  throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
   throw_if_env_var_not_present "CALIBRE_WEB_DOCKER_TAG" "$CALIBRE_WEB_DOCKER_TAG"
 
   export CALIBRE_WEB_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/calibre-web
@@ -270,7 +232,7 @@ function setup_calibre_web() {
 }
 
 function setup_gogs() {
-  throw_if_directory_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
+  throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
   throw_if_env_var_not_present "GOGS_DOCKER_TAG" "$GOGS_DOCKER_TAG"
 
   export GOGS_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/gogs-web
@@ -291,7 +253,7 @@ function setup_gogs() {
 }
 
 function setup_homer() {
-  throw_if_directory_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
+  throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
   throw_if_env_var_not_present "SERVICE_DOMAIN" "$SERVICE_DOMAIN"
   throw_if_env_var_not_present "HOMER_DOCKER_TAG" "$HOMER_DOCKER_TAG"
 
@@ -309,7 +271,7 @@ function setup_homer() {
 }
 
 function setup_audiobookshelf() {
-  throw_if_directory_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
+  throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
   throw_if_env_var_not_present "AUDIOBOOKSHELF_DOCKER_TAG" "$AUDIOBOOKSHELF_DOCKER_TAG"
 
   export AUDIOBOOKSHELF_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/audiobookshelf-web
@@ -320,7 +282,7 @@ function setup_audiobookshelf() {
 }
 
 function setup_podgrab() {
-  throw_if_directory_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
+  throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
   throw_if_env_var_not_present "PODGRAB_DOCKER_TAG" "$PODGRAB_DOCKER_TAG"
 
   export PODGRAB_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/podgrab-web
@@ -337,7 +299,7 @@ function setup_drawio() {
 }
 
 function setup_bitwarden() {
-  throw_if_directory_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
+  throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
   throw_if_env_var_not_present "BITWARDEN_DOCKER_TAG" "$BITWARDEN_DOCKER_TAG"
 
   export BITWARDEN_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/bitwarden-server
@@ -348,7 +310,8 @@ function setup_bitwarden() {
 }
 
 function start_apps() {
-  setup_nfs_mounts
+  setup_cronjobs
+  setup_nfs_media_mount
 
   setup_macvlan_network
 
@@ -382,6 +345,8 @@ function stop_apps() {
 }
 
 function main() {
+  source ./scripts/common.sh
+
   check_requirements
 
   case "$RUN_TYPE" in

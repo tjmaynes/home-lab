@@ -10,5 +10,8 @@ export PGID := $(shell id -g)
 start:
 	./scripts/runner.sh "$@"
 
+backup:
+	./scripts/$@.sh
+
 stop:
 	./scripts/runner.sh "$@"
