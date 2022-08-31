@@ -292,18 +292,15 @@ services:
     volumes:
       - ${INFLUXDB_BASE_DIRECTORY}/telegraf.conf:/etc/telegraf/telegraf.conf:ro
 
-  monitoring-chronograf:
-    image: chronograf:${CHRONOGRAF_DOCKER_TAG}
-    container_name: monitoring-chronograf
-    restart: always
+  monitoring-grafana:
+    image: grafana/grafana-oss:${GRAFANA_DOCKER_TAG}
+    container_name: monitoring-grafana
     ports:
-      - ${CHRONOGRAF_PORT}:8888
-    depends_on:
-      - monitoring-influxdb
-    environment:
-      - INFLUXDB_URL=http://monitoring-influxdb:${INFLUXDB_PORT}
-      - INFLUXDB_USERNAME=${INFLUXDB_ADMIN_USERNAME}
-      - INFLUXDB_PASSWORD=${INFLUXDB_ADMIN_PASSWORD}
+      - ${GRAFANA_PORT}:3000
+    restart: unless-stopped
+    volumes:
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ${GRAFANA_BASE_DIRECTORY}/var/lib/grafana:/var/lib/grafana
 
 networks:
   default:

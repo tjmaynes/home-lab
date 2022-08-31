@@ -248,7 +248,6 @@ function setup_gogs() {
 
   export GOGS_USER=gogs
   export GOGS_DB=gogs
-  export GOGS_DB_PASSWORD=gogs
   safely_set_port_for_env_var "GOGS_DB_PORT" "15433"
 }
 
@@ -326,12 +325,38 @@ function setup_monitoring() {
   # Telegraf
   throw_if_env_var_not_present "TELEGRAF_DOCKER_TAG" "$INFLUXDB_DOCKER_TAG"
 
-  # Chronograf
-  throw_if_env_var_not_present "CHRONOGRAF_DOCKER_TAG" "$INFLUXDB_DOCKER_TAG"
+  # Grafana
+  throw_if_env_var_not_present "GRAFANA_DOCKER_TAG" "$INFLUXDB_DOCKER_TAG"
   throw_if_env_var_not_present "INFLUXDB_ADMIN_USERNAME" "$INFLUXDB_ADMIN_USERNAME"
   throw_if_env_var_not_present "INFLUXDB_ADMIN_PASSWORD" "$INFLUXDB_ADMIN_PASSWORD"
 
-  safely_set_port_for_env_var "CHRONOGRAF_PORT" "18888"
+  export GRAFANA_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/monitoring-grafana
+  ensure_directory_exists "${GRAFANA_BASE_DIRECTORY}/var/lib/grafana"
+  ensure_directory_exists "${GRAFANA_BASE_DIRECTORY}/provisioning/datasources"
+
+  safely_set_port_for_env_var "GRAFANA_PORT" "18888"
+}
+
+function post_install_monitoring() {
+  throw_if_env_var_not_present "INFLUXDB_ADMIN_USERNAME" "$INFLUXDB_ADMIN_USERNAME"
+  throw_if_env_var_not_present "INFLUXDB_ADMIN_PASSWORD" "$INFLUXDB_ADMIN_PASSWORD"
+
+  throw_if_env_var_not_present "GECK_DOMAIN" "$GECK_DOMAIN"
+  throw_if_env_var_not_present "GECK_INFLUXDB_ADMIN_USERNAME" "$GECK_INFLUXDB_ADMIN_USERNAME"
+  throw_if_env_var_not_present "GECK_INFLUXDB_ADMIN_PASSWORD" "$GECK_INFLUXDB_ADMIN_PASSWORD"
+
+  docker exec monitoring-inflxudb \
+    influx apply -f https://raw.githubusercontent.com/influxdata/community-templates/master/raspberry-pi/raspberry-pi-system.yml
+
+  wait_for_service_to_be_up "http://localhost:18888"
+
+  curl -X PUT \
+    --data-binary '{"name":"Kratos","type":"influxdb","url":"http://localhost:18089","access":"proxy","isDefault":true,"database":"kratos","user":"${INFLUXDB_ADMIN_USERNAME}","password":"${INFLUXDB_ADMIN_PASSWORD}"}' \
+    'http://localhost:18888/api/datasources'
+
+  curl -X PUT \
+    --data-binary '{"name":"GECK","type":"influxdb","url":"http://${GECK_DOMAIN}","access":"proxy","isDefault":false,"database":"geck","user":"${GECK_INFLUXDB_ADMIN_USERNAME}","password":"${GECK_INFLUXDB_ADMIN_PASSWORD}"}' \
+    'http://localhost:18888/api/datasources'
 }
 
 function start_apps() {
@@ -363,8 +388,7 @@ function start_apps() {
     --advertise-routes=${SUBNET_IP_ADDRESS}/22 \
     --reset
 
-  docker exec monitoring-inflxudb \
-    influx apply -f https://raw.githubusercontent.com/influxdata/community-templates/master/raspberry-pi/raspberry-pi-system.yml
+  post_install_monitoring
 }
 
 function stop_apps() {

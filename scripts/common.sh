@@ -39,3 +39,28 @@ function throw_if_directory_not_present() {
     exit 1
   fi
 }
+
+function wait_for_service_to_be_up() {
+  throw_if_program_not_present "curl"
+
+  SERVICE_URL=$1
+
+  if [[ -z "$SERVICE_URL" ]]; then
+    echo "wait_for_service_to_be_up: Please pass an argument for 'SERVICE_URL'"
+    exit 1
+  fi
+
+  attempt_counter=0
+  max_attempts=5
+
+  until $(curl --output /dev/null --silent --head --fail $SERVICE_URL); do
+    if [ ${attempt_counter} -eq ${max_attempts} ];then
+      echo "Max attempts reached"
+      exit 1
+    fi
+
+    printf '.'
+    attempt_counter=$(($attempt_counter+1))
+    sleep 5
+  done
+}
