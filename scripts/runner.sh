@@ -48,8 +48,8 @@ function setup_cronjobs() {
   throw_if_program_not_present "cron"
   throw_if_program_not_present "rsync"
 
-  ln -s .onreboot.crontab /etc/cron.d/onreboot.crontab
-  ln -s .backup.crontab /etc/cron.d/backup.crontab
+  ln -s cronjobs/onreboot.crontab /etc/cron.d/onreboot.crontab
+  ln -s cronjobs/backup.crontab /etc/cron.d/backup.crontab
 }
 
 function setup_nfs_media_mount() {
