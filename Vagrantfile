@@ -9,18 +9,18 @@ Vagrant.configure("2") do |config|
 
   config.vm.box = "ubuntu/bionic64"
 
-  config.vm.synced_folder ".", "/vagrant/kratos"
-  config.ssh.extra_args = ["-t", "cd /vagrant/kratos; bash --login"]
+  config.vm.synced_folder ".", "/vagrant/geck"
+  config.ssh.extra_args = ["-t", "cd /vagrant/geck; bash --login"]
 
   config.vm.disk :disk, size: "20GB", primary: true
 
   config.vm.provision :docker
 
   config.vm.provision "shell", inline: <<-SHELL
-    cd /vagrant/kratos && make install
+    cd /vagrant/geck && make install
   SHELL
 
-  config.vm.hostname = "kratos"
+  config.vm.hostname = "geck"
 
   # supported_programs = %w(gitea jellyfin tinymediamanager portainer flame)
   # environment = "development"

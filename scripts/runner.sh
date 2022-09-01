@@ -30,8 +30,6 @@ function safely_set_port_for_env_var() {
 function check_requirements() {
   throw_if_program_not_present "docker"
 
-  throw_if_env_var_not_present "RUN_TYPE" "$RUN_TYPE"
-
   throw_if_env_var_not_present "TIMEZONE" "$TIMEZONE"
   throw_if_env_var_not_present "PUID" "$PUID"
   throw_if_env_var_not_present "PGID" "$PGID"
@@ -130,6 +128,8 @@ function setup_pihole() {
   export PIHOLE_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/pihole-server
   ensure_directory_exists "$PIHOLE_BASE_DIRECTORY/pihole"
   ensure_directory_exists "$PIHOLE_BASE_DIRECTORY/dnsmasq.d"
+
+  ensure_directory_exists "/etc/timezone"
 }
 
 function setup_nginx_proxy() {
@@ -308,6 +308,28 @@ function setup_bitwarden() {
   safely_set_port_for_env_var "BITWARDEN_HTTPS_PORT" "18444"
 }
 
+function setup_home_assistant() {
+  throw_if_directory_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
+  throw_if_env_var_not_present "HOME_ASSISTANT_DOCKER_TAG" "$HOME_ASSISTANT_DOCKER_TAG"
+
+  export HOME_ASSISTANT_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/home-assistant-web
+  ensure_directory_exists "$HOME_ASSISTANT_BASE_DIRECTORY/config"
+
+  safely_set_port_for_env_var "HOME_ASSISTANT_PORT" "18123"
+}
+
+function setup_nodered() {
+  throw_if_directory_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
+  throw_if_env_var_not_present "NODE_RED_DOCKER_TAG" "$NODE_RED_DOCKER_TAG"
+
+  export NODE_RED_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/node-red
+  ensure_directory_exists "$NODE_RED_BASE_DIRECTORY/data"
+
+  chmod 777 "$NODE_RED_BASE_DIRECTORY/data"
+
+  safely_set_port_for_env_var "NODE_RED_PORT" "11880"
+}
+
 function setup_monitoring() {
   throw_if_directory_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
 
@@ -337,26 +359,22 @@ function setup_monitoring() {
   safely_set_port_for_env_var "GRAFANA_PORT" "18888"
 }
 
+function add_influxdb_to_monitoring() {
+  curl -X PUT \
+    --data-binary '{"name":"GECK","type":"influxdb","url":"http://localhost:18089","access":"proxy","isDefault":true,"database":"geck","user":"${INFLUXDB_ADMIN_USERNAME}","password":"${INFLUXDB_ADMIN_PASSWORD}"}' \
+    'http://localhost:18888/api/datasources'
+}
+
 function post_install_monitoring() {
   throw_if_env_var_not_present "INFLUXDB_ADMIN_USERNAME" "$INFLUXDB_ADMIN_USERNAME"
   throw_if_env_var_not_present "INFLUXDB_ADMIN_PASSWORD" "$INFLUXDB_ADMIN_PASSWORD"
-
-  throw_if_env_var_not_present "GECK_DOMAIN" "$GECK_DOMAIN"
-  throw_if_env_var_not_present "GECK_INFLUXDB_ADMIN_USERNAME" "$GECK_INFLUXDB_ADMIN_USERNAME"
-  throw_if_env_var_not_present "GECK_INFLUXDB_ADMIN_PASSWORD" "$GECK_INFLUXDB_ADMIN_PASSWORD"
 
   docker exec monitoring-inflxudb \
     influx apply -f https://raw.githubusercontent.com/influxdata/community-templates/master/raspberry-pi/raspberry-pi-system.yml
 
   wait_for_service_to_be_up "http://localhost:18888"
 
-  curl -X PUT \
-    --data-binary '{"name":"Kratos","type":"influxdb","url":"http://localhost:18089","access":"proxy","isDefault":true,"database":"kratos","user":"${INFLUXDB_ADMIN_USERNAME}","password":"${INFLUXDB_ADMIN_PASSWORD}"}' \
-    'http://localhost:18888/api/datasources'
-
-  curl -X PUT \
-    --data-binary '{"name":"GECK","type":"influxdb","url":"http://${GECK_DOMAIN}","access":"proxy","isDefault":false,"database":"geck","user":"${GECK_INFLUXDB_ADMIN_USERNAME}","password":"${GECK_INFLUXDB_ADMIN_PASSWORD}"}' \
-    'http://localhost:18888/api/datasources'
+  add_influxdb_to_monitoring
 }
 
 function start_apps() {
@@ -378,6 +396,8 @@ function start_apps() {
   setup_podgrab
   setup_drawio
   setup_bitwarden
+  setup_home_assistant
+  setup_nodered
   setup_monitoring
 
   docker-compose up -d --remove-orphans

@@ -1,6 +1,6 @@
-title: "Kratos Dashboard"
+title: "GECK Dashboard"
 subtitle: "Welcome and please be kind..."
-documentTitle: "Kratos Startpage"
+documentTitle: "GECK Startpage"
 logo: "assets/logo.png"
 
 header: true
@@ -16,7 +16,7 @@ defaults:
 links:
   - name: "Source Code"
     icon: "fab fa-github"
-    url: "https://github.com/tjmaynes/kratos"
+    url: "https://github.com/tjmaynes/geck"
     target: "_blank"
 
 services:
@@ -110,7 +110,7 @@ services:
     items:
       - name: "Admin Portal"
         icon: "fas fa-lock"
-        subtitle: "Admin interface for Kratos home server"
+        subtitle: "Admin interface for GECK home server"
         tag: "app"
         url: "%protocol-type%://admin.%service-domain%"
         target: "_blank"

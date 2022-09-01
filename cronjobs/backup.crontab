@@ -1,2 +1,2 @@
-# "At minute 0 past every 2nd hour from 0 through 6 - run backup for Kratos."
-0 0-6/2 * * * cd /workspace/tjmaynes/kratos && make backup
+# "At minute 0 past every 2nd hour from 0 through 6 - run backup for GECK."
+0 0-6/2 * * * cd /workspace/tjmaynes/geck && make backup

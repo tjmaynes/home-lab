@@ -1,2 +1,2 @@
-# "On reboot - run ensure Kratos is up and running."
-@reboot cd /workspace/tjmaynes/kratos && make start
+# "On reboot - ensure GECK is up and running after reboot."
+@reboot cd /workspace/tjmaynes/geck && make start

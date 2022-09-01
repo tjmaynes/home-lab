@@ -1,5 +1,9 @@
-# Kratos
-> Configuration files and automation scripts for my home server setup.
+<p align="center">
+    <img src="./docs/vault-boy.webp" width="150">
+</p>
+
+# [G.E.C.K](https://fallout.fandom.com/wiki/GECK)
+> Configuration files and automation scripts for my G.E.C.K ([Garden of Eden Creation Kit](https://fallout.fandom.com/wiki/GECK)) server.
 
 ## Requirements
 
@@ -15,6 +19,11 @@ make start
 To stop the home server, run the following command:
 ```bash
 make stop
+```
+
+To backup the home server, run the following command:
+```bash
+make backup
 ```
 
 ## Programs
@@ -33,6 +42,8 @@ make stop
 | [podgrab](https://github.com/akhilrex/podgrab)                        | podcast downloader                 | docker-compose | ✅ |
 | [draw.io](https://github.com/jgraph/drawio)                           | web-base diagramming software      | docker-compose | ✅ |
 | [bitwarden](https://bitwarden.com/)                                   | password manager                   | docker-compose | ✅ |
+| [home-assistant](https://www.home-assistant.io/)                      | home automation server             | docker-compose | ✅ |
+| [node-red](https://nodered.org/)                                      | programmable automation interface  | docker-compose | ✅ |
 | [grafana](https://grafana.com/)                                       | Monitoring dashboard web interface | docker-compose | ✅ |
 | [influxdb](https://www.influxdata.com/)                               | Monitoring database                | docker-compose | ✅ |
 | [telegraf](https://www.influxdata.com/time-series-platform/telegraf/) | Telemetry aggregator for InfluxDB  | docker-compose | ✅ |
