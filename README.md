@@ -2,8 +2,8 @@
     <img src="./docs/vault-boy.webp" width="150">
 </p>
 
-# [G.E.C.K](https://fallout.fandom.com/wiki/GECK)
-> Configuration files and automation scripts for my G.E.C.K ([Garden of Eden Creation Kit](https://fallout.fandom.com/wiki/GECK)) server.
+# [G.E.C.K.](https://fallout.fandom.com/wiki/GECK)
+> Configuration files and automation scripts for my G.E.C.K. ([Garden of Eden Creation Kit](https://fallout.fandom.com/wiki/GECK)) server.
 
 ## Requirements
 
