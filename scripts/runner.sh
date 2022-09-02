@@ -9,7 +9,7 @@ function run_dev_command() {
 
   throw_if_program_not_present "vagrant"
 
-  vagrant up
+  (vagrant destroy --force || true) && vagrant up
 }
 
 function main() {

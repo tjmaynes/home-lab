@@ -3,7 +3,7 @@
 set -eo pipefail
 
 function setup_env_vars() {
-  DEFAULT_ENV_FILE=.envrc.development.$(uname -m)
+  DEFAULT_ENV_FILE=.envrc.development
   if [[ -z "$ENV_FILE" ]]; then
     ENV_FILE=$DEFAULT_ENV_FILE
   fi

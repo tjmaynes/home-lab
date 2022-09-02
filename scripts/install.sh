@@ -7,7 +7,7 @@ function check_requirements() {
   throw_if_program_not_present "usermod"
   throw_if_program_not_present "curl"
 
-  throw_if_env_var_not_present "NONROOT_USERNAME" "$NONROOT_USERNAME"
+  throw_if_env_var_not_present "DOCKER_USER" "$DOCKER_USER"
 }
 
 function main() {
@@ -15,10 +15,10 @@ function main() {
 
   sudo apt-get update && sudo apt-get upgrade
 
-  sudo adduser "$NONROOT_USERNAME"
+  sudo adduser "$DOCKER_USER"
 
   sudo ./scripts/install-docker.sh
-  sudo usermod -aG docker "$NONROOT_USERNAME"
+  sudo usermod -aG docker "$DOCKER_USER"
 
   sudo ./scripts/setup-argon1-fan.sh
 
