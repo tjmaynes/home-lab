@@ -2,6 +2,18 @@
 
 set -eo pipefail
 
+function setup_env_vars() {
+  DEFAULT_ENV_FILE=.envrc.development.$(uname -m)
+  if [[ -z "$ENV_FILE" ]]; then
+    ENV_FILE=$DEFAULT_ENV_FILE
+  fi
+
+  export PUID=$(id -u)
+  export PGID=$(id -g)
+
+  source "$ENV_FILE"
+}
+
 function ensure_directory_exists() {
   TARGET_DIRECTORY=$1
 
@@ -87,3 +99,5 @@ function safely_set_port_for_env_var() {
 
   export $1=$2
 }
+
+setup_env_vars

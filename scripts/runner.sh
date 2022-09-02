@@ -7,8 +7,6 @@ RUN_TYPE=$1
 function main() {
   source ./scripts/common.sh
 
-  check_requirements
-
   case "$RUN_TYPE" in
     "start")
       ./scripts/start.sh
@@ -20,7 +18,7 @@ function main() {
       sudo ./scripts/install.sh
       ;;
     "backup")
-      sudo ./scripts/backup.sh
+      ./scripts/backup.sh
       ;;
     "dev")
       throw_if_program_not_present "vagrant"
