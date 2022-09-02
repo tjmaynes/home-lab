@@ -3,3 +3,9 @@
 
 # Env vars
 .envrc
+
+# Vagrant
+.vagrant/
+
+# Generated
+*.log

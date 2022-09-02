@@ -9,7 +9,7 @@ Vagrant.configure("2") do |config|
 
   config.vm.box = "ubuntu/bionic64"
 
-  config.vm.synced_folder ".", "/vagrant/geck"
+  config.vm.synced_folder ".", "/workspace/tjmaynes/geck"
   config.ssh.extra_args = ["-t", "cd /vagrant/geck; bash --login"]
 
   config.vm.disk :disk, size: "20GB", primary: true
@@ -17,7 +17,10 @@ Vagrant.configure("2") do |config|
   config.vm.provision :docker
 
   config.vm.provision "shell", inline: <<-SHELL
-    cd /vagrant/geck && make install
+    apt-get install make
+    mkdir 
+
+    cd /workspace/tjmaynes/geck && make start
   SHELL
 
   config.vm.hostname = "geck"

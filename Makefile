@@ -1,4 +1,4 @@
-DEFAULT_ENV_FILE := .envrc.development.$(shell arch)
+DEFAULT_ENV_FILE := .envrc.development.$(shell uname -m)
 ENV_FILE := $(or ${ENV_FILE}, ${DEFAULT_ENV_FILE})
 
 include $(ENV_FILE)
@@ -17,4 +17,7 @@ backup:
 	./scripts/runner.sh "$@"
 
 stop:
+	./scripts/runner.sh "$@"
+
+dev:
 	./scripts/runner.sh "$@"
