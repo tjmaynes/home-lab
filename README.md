@@ -31,6 +31,11 @@ To backup the home server, run the following command:
 make backup
 ```
 
+To run the home server using `vagrant`, run the following command:
+```bash
+make dev
+```
+
 ## Programs
 
 | Program                                                               | Usage                              | Tools          | Status |

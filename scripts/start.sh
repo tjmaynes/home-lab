@@ -21,8 +21,8 @@ function setup_cronjobs() {
   throw_if_program_not_present "cron"
   throw_if_program_not_present "rsync"
 
-  ln -s ./cron.d/onreboot.crontab /etc/cron.d/onreboot.crontab
-  ln -s ./cron.d/backup.crontab /etc/cron.d/backup.crontab
+  force_symlink_between_files "$(pwd)/cron.d/onreboot.crontab" "/etc/cron.d/onreboot.crontab"
+  force_symlink_between_files "$(pwd)/cron.d/backup.crontab" "/etc/cron.d/backup.crontab"
 }
 
 function setup_nfs_media_mount() {
@@ -52,7 +52,9 @@ function setup_macvlan_network() {
   throw_if_env_var_not_present "HOST_IP_ADDRESS" "$HOST_IP_ADDRESS"
   throw_if_env_var_not_present "PROXY_IP_ADDRESS" "$PROXY_IP_ADDRESS"
 
-  if ! ip link show | grep "NETWORK_INTERFACE_NAME"; then
+  ip link show
+
+  if ! ip link show | grep "$NETWORK_INTERFACE_NAME"; then
     echo "Please create a virtual network for '$NETWORK_INTERFACE_NAME' before running this script"
     exit 1
   fi
@@ -62,15 +64,6 @@ function setup_macvlan_network() {
     ip addr add $HOST_IP_ADDRESS/32 dev macvlan0
     ip link set macvlan0 up
     ip route add $PROXY_IP_ADDRESS dev macvlan0
-  fi
-}
-
-function teardown_macvlan() {
-  throw_if_program_not_present "ip"
-
-  if ip link show | grep "macvlan0"; then
-    ip link set macvlan0 down
-    ip link delete macvlan0
   fi
 }
 

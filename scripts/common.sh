@@ -52,6 +52,26 @@ function throw_if_directory_not_present() {
   fi
 }
 
+function force_symlink_between_files() {
+  SOURCE=$1
+  TARGET=$2
+
+  if [[ -z "$SOURCE" ]]; then
+    echo "force_symlink_between_files: Please provide a source for arg 1"
+    exit 1
+  fi
+
+  if [[ -z "$TARGET" ]]; then
+    echo "force_symlink_between_files: Please provide a target for arg 2"
+    exit 1
+  fi
+
+  if [[ ! "$(readlink $TARGET)" -ef "$SOURCE" ]]; then
+    rm -rf "$TARGET"
+    ln -s "$TARGET" "$SOURCE"
+  fi
+}
+
 function wait_for_service_to_be_up() {
   throw_if_program_not_present "curl"
 

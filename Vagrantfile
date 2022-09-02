@@ -16,8 +16,17 @@ Vagrant.configure("2") do |config|
 
   config.vm.provision :docker
 
-  config.vm.provision "shell", inline: <<-SHELL
-    apt-get install make
+  config.vm.provision "shell", run: "always", inline: <<-SHELL
+    sudo apt-get install make
+
+    mkdir -p #{ENV['VIDEOS_DIRECTORY']}
+    mkdir -p #{ENV['PHOTOS_DIRECTORY']}
+    mkdir -p #{ENV['MUSIC_DIRECTORY']}
+    mkdir -p #{ENV['BOOKS_DIRECTORY']}
+    mkdir -p #{ENV['AUDIOBOOKS_DIRECTORY']}
+    mkdir -p #{ENV['PODCASTS_DIRECTORY']}
+
+    ifconfig #{ENV['NETWORK_INTERFACE_NAME']} #{ENV['HOST_IP_ADDRESS']} netmask 255.255.255.0 up
 
     cd /workspace/tjmaynes/geck && make start
   SHELL
