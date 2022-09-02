@@ -18,6 +18,8 @@ function check_requirements() {
 }
 
 function setup_cronjobs() {
+  add_step "Setting up cronjobs"
+
   throw_if_program_not_present "cron"
   throw_if_program_not_present "rsync"
 
@@ -26,6 +28,8 @@ function setup_cronjobs() {
 }
 
 function setup_nfs_media_mount() {
+  add_step "Adding NFS Media mount"
+
   throw_if_program_not_present "mount"
 
   throw_if_env_var_not_present "NAS_IP" "$NAS_IP"
@@ -47,6 +51,8 @@ function setup_nfs_media_mount() {
 }
 
 function setup_macvlan_network() {
+  add_step "Setting up macvlan network"
+
   throw_if_program_not_present "ip"
   throw_if_env_var_not_present "NETWORK_INTERFACE_NAME" "$NETWORK_INTERFACE_NAME"
   throw_if_env_var_not_present "HOST_IP_ADDRESS" "$HOST_IP_ADDRESS"
@@ -68,6 +74,8 @@ function setup_macvlan_network() {
 }
 
 function setup_tailscale() {
+  add_step "Setting up tailscale"
+
   throw_if_program_not_present "insmod"
   throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
 
@@ -89,6 +97,8 @@ function setup_tailscale() {
 }
 
 function setup_pihole() {
+  add_step "Setting up pihole"
+
   throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
   throw_if_env_var_not_present "PIHOLE_DOCKER_TAG" "$PIHOLE_DOCKER_TAG"
   throw_if_env_var_not_present "PIHOLE_PASSWORD" "$PIHOLE_PASSWORD"
@@ -110,6 +120,8 @@ function setup_nginx_proxy() {
 }
 
 function setup_nextcloud_server() {
+  add_step "Setting up nextcloud"
+
   throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
   throw_if_env_var_not_present "NEXTCLOUD_DOCKER_TAG" "$NEXTCLOUD_DOCKER_TAG"
   throw_if_env_var_not_present "NEXTCLOUD_PORT" "$NEXTCLOUD_PORT"
@@ -127,6 +139,8 @@ function setup_nextcloud_server() {
 }
 
 function setup_nextcloud_db() {
+  add_step "Setting up nextcloud-db"
+
   throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
   throw_if_env_var_not_present "NEXTCLOUD_DB_DOCKER_TAG" "$NEXTCLOUD_DB_DOCKER_TAG"
   throw_if_env_var_not_present "NEXTCLOUD_DB_PORT" "$NEXTCLOUD_DB_PORT"

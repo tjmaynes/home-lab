@@ -120,4 +120,20 @@ function safely_set_port_for_env_var() {
   export $1=$2
 }
 
+STEPS=$()
+STEP_COUNT=1
+function add_step() {
+  STEP=$1
+
+  if [[ -z "$STEP" ]]; then
+    echo "add_step: Please pass a string for argument 1"
+    exit 1
+  fi
+
+  echo "step ${STEP_COUNT}: $1"
+
+  STEP_COUNT+=1
+  STEPS+=(STEP)
+}
+
 setup_env_vars
