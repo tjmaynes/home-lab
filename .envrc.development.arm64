@@ -1,3 +1,4 @@
+export NONROOT_USERNAME=geck
 export TIMEZONE=America/Chicago
 export NAS_IP=192.168.4.76
 export NAS_USER=geck

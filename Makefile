@@ -7,11 +7,14 @@ export $(shell sed 's/=.*//' $(ENV_FILE))
 export PUID := $(shell id -u)
 export PGID := $(shell id -g)
 
+install:
+	./scripts/runner.sh "$@"
+
 start:
 	./scripts/runner.sh "$@"
 
 backup:
-	./scripts/$@.sh
+	./scripts/runner.sh "$@"
 
 stop:
 	./scripts/runner.sh "$@"

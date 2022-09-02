@@ -11,6 +11,11 @@
 - [Docker](https://www.docker.com/#)
 
 ## Usage
+To install home server dependencies, run the following command:
+```bash
+make install
+```
+
 To start the home server, run the following command:
 ```bash
 make start

@@ -4,29 +4,6 @@ set -eo pipefail
 
 RUN_TYPE=$1
 
-USED_PORTS=$(lsof -i -n -P | awk '{print $9}' | grep ':' | cut -d ":" -f 2 | sort | uniq | grep -v '\->' | grep -v '*')
-function safely_set_port_for_env_var() {
-  ENV_VAR_KEY=$1
-  NEW_PORT=$2
-
-  if [[ -z "$ENV_VAR_KEY" ]]; then
-    echo "safely_set_port_for_env_var: Please pass an environment variable key as first argument"
-    exit 1
-  elif [[ -z "$NEW_PORT" ]]; then
-    echo "safely_set_port_for_env_var: Please pass a valid port as second argument"
-    exit 1
-  fi
-
-  if echo $USED_PORTS | grep -w -q "$NEW_PORT"; then
-    echo "Port '$NEW_PORT' for '$ENV_VAR_KEY' is already in use! Please choose another port to set for '$ENV_VAR_KEY'."
-    exit 1
-  fi
-
-  USED_PORTS+=($NEW_PORT)
-
-  export $1=$2
-}
-
 function check_requirements() {
   throw_if_program_not_present "docker"
 
@@ -46,8 +23,8 @@ function setup_cronjobs() {
   throw_if_program_not_present "cron"
   throw_if_program_not_present "rsync"
 
-  ln -s cronjobs/onreboot.crontab /etc/cron.d/onreboot.crontab
-  ln -s cronjobs/backup.crontab /etc/cron.d/backup.crontab
+  ln -s ./cron.d/onreboot.crontab /etc/cron.d/onreboot.crontab
+  ln -s ./cron.d/backup.crontab /etc/cron.d/backup.crontab
 }
 
 function setup_nfs_media_mount() {
@@ -428,6 +405,12 @@ function main() {
       ;;
     "stop")
       stop_apps
+      ;;
+    "install")
+      sudo ./scripts/install.sh
+      ;;
+    "backup")
+      sudo ./scripts/backup.sh
       ;;
     *)
       echo "Unable to run runner script with parameter 1 '$RUN_TYPE'."
