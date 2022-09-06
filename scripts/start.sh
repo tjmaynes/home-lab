@@ -23,8 +23,8 @@ function setup_cronjobs() {
   throw_if_program_not_present "cron"
   throw_if_program_not_present "rsync"
 
-  force_symlink_between_files "$(pwd)/cron.d/onreboot.crontab" "/etc/cron.d/onreboot.crontab"
-  force_symlink_between_files "$(pwd)/cron.d/backup.crontab" "/etc/cron.d/backup.crontab"
+  force_symlink_between_files "/etc/cron.d/onreboot.crontab" "$(pwd)/cron.d/onreboot.crontab"
+  force_symlink_between_files "/etc/cron.d/backup.crontab" "$(pwd)/cron.d/backup.crontab"
 }
 
 function setup_nfs_media_mount() {
@@ -77,6 +77,7 @@ function setup_tailscale() {
   add_step "Setting up tailscale"
 
   throw_if_program_not_present "insmod"
+  throw_if_program_not_present "lsmod"
   throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
 
   export TAILSCALE_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/tailscale-agent
@@ -92,7 +93,11 @@ function setup_tailscale() {
   fi
 
   if ( !(lsmod | grep -q "^tun\s") ); then
-    insmod /lib/modules/tun.ko
+    uname -r
+    find /lib/modules/$(uname -r) -name tun.ko -exec file {} \;
+    TUN_LOCATION=$(find /lib/modules/$(uname -r) -name tun.ko -exec file {} \;)
+    echo $TUN_LOCATION
+    insmod $TUN_LOCATION
   fi
 }
 

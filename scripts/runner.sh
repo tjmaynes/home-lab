@@ -2,40 +2,19 @@
 
 set -eo pipefail
 
-RUN_TYPE=$1
-
-function run_dev_command() {
-  source ./scripts/common.sh
-
-  throw_if_program_not_present "vagrant"
-
-  (vagrant destroy --force || true) && vagrant up
-}
+GIVEN_RUN_TYPE=$1
 
 function main() {
-  case "$RUN_TYPE" in
-    "start")
-      ./scripts/start.sh
-      ;;
-    "stop")
-      ./scripts/stop.sh
-      ;;
-    "install")
-      sudo ./scripts/install.sh
-      ;;
-    "backup")
-      ./scripts/backup.sh
-      ;;
-    "dev")
-      run_dev_command
-      ;;
-    *)
-      echo "Unable to run runner script with parameter 1 '$RUN_TYPE'."
-      exit 1
-      ;;
-  esac
-
-  echo "Done!"
+  if [[ -z "$GIVEN_RUN_TYPE" ]]; then
+    echo "Please pass an argument for 'GIVEN_RUN_TYPE'."
+    exit 1
+  elif [[ ! -f "./scripts/$GIVEN_RUN_TYPE.sh" ]]; then
+    echo "Unable to run script with argument 1 '$GIVEN_RUN_TYPE'."
+    exit 1
+  else
+    ./scripts/$GIVEN_RUN_TYPE.sh
+    echo "Done!"
+  fi
 }
 
 main

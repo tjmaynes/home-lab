@@ -66,9 +66,9 @@ function force_symlink_between_files() {
     exit 1
   fi
 
-  if [[ ! "$(readlink $TARGET)" -ef "$SOURCE" ]]; then
-    rm -rf "$TARGET"
-    ln -s "$TARGET" "$SOURCE"
+  if [ ! "$(readlink -- "$TARGET")" = "$SOURCE" ]; then
+    rm -rf "$SOURCE"
+    ln -s "$SOURCE" "$TARGET"
   fi
 }
 
@@ -132,7 +132,7 @@ function add_step() {
 
   echo "step ${STEP_COUNT}: $1"
 
-  STEP_COUNT+=1
+  ((STEP_COUNT+=1))
   STEPS+=(STEP)
 }
 

@@ -3,7 +3,7 @@
 
 Vagrant.configure("2") do |config|
   config.vm.provider "virtualbox" do |v|
-    v.memory = 2096
+    v.memory = 4096
     v.cpus = 2
   end
 
@@ -16,6 +16,8 @@ Vagrant.configure("2") do |config|
 
   config.vm.provision :docker
 
+  config.tun.enabled = true
+
   config.vm.provision "shell", run: "always", inline: <<-SHELL
     sudo apt-get install make
 
@@ -26,7 +28,7 @@ Vagrant.configure("2") do |config|
     mkdir -p #{ENV['AUDIOBOOKS_DIRECTORY']}
     mkdir -p #{ENV['PODCASTS_DIRECTORY']}
 
-    ifconfig #{ENV['NETWORK_INTERFACE_NAME']} #{ENV['HOST_IP_ADDRESS']} netmask 255.255.255.0 up
+    #ifconfig #{ENV['NETWORK_INTERFACE_NAME']} #{ENV['HOST_IP_ADDRESS']} netmask 255.255.255.0 up
 
     cd /workspace/tjmaynes/geck && make start
   SHELL
