@@ -4,9 +4,6 @@ install:
 start:
 	./scripts/runner.sh "$@"
 
-backup:
-	./scripts/runner.sh "$@"
-
 stop:
 	./scripts/runner.sh "$@"
 

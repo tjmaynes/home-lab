@@ -1,6 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-set -eo pipefail
+set -e
+set -x
 
 function check_requirements() {
   throw_if_program_not_present "docker"
@@ -15,39 +16,6 @@ function check_requirements() {
   throw_if_env_var_not_present "HOST_IP_ADDRESS" "$HOST_IP_ADDRESS"
   throw_if_env_var_not_present "PROXY_IP_ADDRESS" "$PROXY_IP_ADDRESS"
   throw_if_env_var_not_present "DNS_IP_ADDRESS" "$DNS_IP_ADDRESS"
-}
-
-function setup_cronjobs() {
-  add_step "Setting up cronjobs"
-
-  throw_if_program_not_present "cron"
-  throw_if_program_not_present "rsync"
-
-  force_symlink_between_files "/etc/cron.d/onreboot.crontab" "$(pwd)/cron.d/onreboot.crontab"
-  force_symlink_between_files "/etc/cron.d/backup.crontab" "$(pwd)/cron.d/backup.crontab"
-}
-
-function setup_nfs_media_mount() {
-  add_step "Adding NFS Media mount"
-
-  throw_if_program_not_present "mount"
-
-  throw_if_env_var_not_present "NAS_IP" "$NAS_IP"
-  throw_if_env_var_not_present "NAS_MEDIA_DIRECTORY" "$NAS_MEDIA_DIRECTORY"
-  throw_if_env_var_not_present "MEDIA_BASE_DIRECTORY" "$MEDIA_BASE_DIRECTORY"
-
-  ensure_directory_exists "$MEDIA_BASE_DIRECTORY"
-
-  mount \
-    -t nfs \
-    "$NAS_IP:$NAS_MEDIA_DIRECTORY" "$MEDIA_BASE_DIRECTORY" || true
-
-  throw_if_directory_not_present "VIDEOS_DIRECTORY" "$VIDEOS_DIRECTORY"
-  throw_if_directory_not_present "MUSIC_DIRECTORY" "$MUSIC_DIRECTORY"
-  throw_if_directory_not_present "PHOTOS_DIRECTORY" "$PHOTOS_DIRECTORY"
-  throw_if_directory_not_present "BOOKS_DIRECTORY" "$BOOKS_DIRECTORY"
-  throw_if_directory_not_present "AUDIOBOOKS_DIRECTORY" "$AUDIOBOOKS_DIRECTORY"
-  throw_if_directory_not_present "PODCASTS_DIRECTORY" "$PODCASTS_DIRECTORY"
 }
 
 function setup_macvlan_network() {
@@ -71,6 +39,29 @@ function setup_macvlan_network() {
     ip link set macvlan0 up
     ip route add $PROXY_IP_ADDRESS dev macvlan0
   fi
+}
+
+function setup_pihole() {
+  add_step "Setting up pihole"
+
+  throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
+  throw_if_env_var_not_present "PIHOLE_DOCKER_TAG" "$PIHOLE_DOCKER_TAG"
+  throw_if_env_var_not_present "PIHOLE_PASSWORD" "$PIHOLE_PASSWORD"
+
+  export PIHOLE_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/pihole-server
+  ensure_directory_exists "$PIHOLE_BASE_DIRECTORY/pihole"
+  ensure_directory_exists "$PIHOLE_BASE_DIRECTORY/dnsmasq.d"
+
+  ensure_directory_exists "/etc/timezone"
+}
+
+function setup_nginx_proxy() {
+  throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
+  throw_if_env_var_not_present "NGINX_SERVER_DOCKER_TAG" "$NGINX_SERVER_DOCKER_TAG"
+
+  export NGNIX_PROXY_MANAGER_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/nginx-proxy-manager-server
+  ensure_directory_exists "$NGNIX_PROXY_MANAGER_BASE_DIRECTORY/data"
+  ensure_directory_exists "$NGNIX_PROXY_MANAGER_BASE_DIRECTORY/letsencrypt"
 }
 
 function setup_tailscale() {
@@ -101,27 +92,16 @@ function setup_tailscale() {
   fi
 }
 
-function setup_pihole() {
-  add_step "Setting up pihole"
+function setup_duplicati_web() {
+  add_step "Setting up duplicati"
 
   throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
-  throw_if_env_var_not_present "PIHOLE_DOCKER_TAG" "$PIHOLE_DOCKER_TAG"
-  throw_if_env_var_not_present "PIHOLE_PASSWORD" "$PIHOLE_PASSWORD"
+  throw_if_env_var_not_present "DUPLICATI_DOCKER_TAG" "$DUPLICATI_DOCKER_TAG"
 
-  export PIHOLE_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/pihole-server
-  ensure_directory_exists "$PIHOLE_BASE_DIRECTORY/pihole"
-  ensure_directory_exists "$PIHOLE_BASE_DIRECTORY/dnsmasq.d"
+  export DUPLICATI_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/duplicai-web
+  ensure_directory_exists "$DUPLICATI_BASE_DIRECTORY/config"
 
-  ensure_directory_exists "/etc/timezone"
-}
-
-function setup_nginx_proxy() {
-  throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
-  throw_if_env_var_not_present "NGINX_SERVER_DOCKER_TAG" "$NGINX_SERVER_DOCKER_TAG"
-
-  export NGNIX_PROXY_MANAGER_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/nginx-proxy-manager-server
-  ensure_directory_exists "$NGNIX_PROXY_MANAGER_BASE_DIRECTORY/data"
-  ensure_directory_exists "$NGNIX_PROXY_MANAGER_BASE_DIRECTORY/letsencrypt"
+  safely_set_port_for_env_var "DUPLICATI_PORT" "18200"
 }
 
 function setup_nextcloud_server() {
@@ -129,7 +109,6 @@ function setup_nextcloud_server() {
 
   throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
   throw_if_env_var_not_present "NEXTCLOUD_DOCKER_TAG" "$NEXTCLOUD_DOCKER_TAG"
-  throw_if_env_var_not_present "NEXTCLOUD_PORT" "$NEXTCLOUD_PORT"
 
   export NEXTCLOUD_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/nextcloud-server
   ensure_directory_exists "$NEXTCLOUD_BASE_DIRECTORY/www/html"
@@ -148,7 +127,6 @@ function setup_nextcloud_db() {
 
   throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
   throw_if_env_var_not_present "NEXTCLOUD_DB_DOCKER_TAG" "$NEXTCLOUD_DB_DOCKER_TAG"
-  throw_if_env_var_not_present "NEXTCLOUD_DB_PORT" "$NEXTCLOUD_DB_PORT"
 
   export NEXTCLOUD_DB_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/nextcloud-db
   ensure_directory_exists "$NEXTCLOUD_DB_BASE_DIRECTORY/data"
@@ -160,9 +138,10 @@ function setup_nextcloud_db() {
 }
 
 function setup_nextcloud_redis() {
+  add_step "Setting up nextcloud-redis"
+
   throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
   throw_if_env_var_not_present "NEXTCLOUD_REDIS_DOCKER_TAG" "$NEXTCLOUD_REDIS_DOCKER_TAG"
-  throw_if_env_var_not_present "NEXTCLOUD_REDIS_PORT" "$NEXTCLOUD_REDIS_PORT"
 
   export NEXTCLOUD_REDIS_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/nextcloud-redis
   ensure_directory_exists "$NEXTCLOUD_REDIS_BASE_DIRECTORY"
@@ -171,6 +150,8 @@ function setup_nextcloud_redis() {
 }
 
 function setup_nextcloud_collabora() {
+  add_step "Setting up nextcloud-collabora"
+
   throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
   throw_if_env_var_not_present "NEXTCLOUD_COLLABORA_DOCKER_TAG" "$NEXTCLOUD_COLLABORA_DOCKER_TAG"
   throw_if_env_var_not_present "SERVICE_DOMAIN" "$SERVICE_DOMAIN"
@@ -189,6 +170,8 @@ function setup_nextcloud() {
 }
 
 function setup_navidrome() {
+  add_step "Setting up navidrome"
+
   throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
   throw_if_env_var_not_present "NAVIDROME_DOCKER_TAG" "$NAVIDROME_DOCKER_TAG"
 
@@ -199,6 +182,8 @@ function setup_navidrome() {
 }
 
 function setup_plex() {
+  add_step "Setting up plex"
+
   throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
   throw_if_env_var_not_present "PLEX_CLAIM_TOKEN" "$PLEX_CLAIM_TOKEN"
   throw_if_env_var_not_present "PLEX_DOCKER_TAG" "$PLEX_DOCKER_TAG"
@@ -209,6 +194,8 @@ function setup_plex() {
 }
 
 function setup_calibre_web() {
+  add_step "Setting up calibre-web"
+
   throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
   throw_if_env_var_not_present "CALIBRE_WEB_DOCKER_TAG" "$CALIBRE_WEB_DOCKER_TAG"
 
@@ -219,6 +206,8 @@ function setup_calibre_web() {
 }
 
 function setup_gogs() {
+  add_step "Setting up gogs"
+
   throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
   throw_if_env_var_not_present "GOGS_DOCKER_TAG" "$GOGS_DOCKER_TAG"
 
@@ -239,6 +228,8 @@ function setup_gogs() {
 }
 
 function setup_homer() {
+  add_step "Setting up homer"
+
   throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
   throw_if_env_var_not_present "SERVICE_DOMAIN" "$SERVICE_DOMAIN"
   throw_if_env_var_not_present "HOMER_DOCKER_TAG" "$HOMER_DOCKER_TAG"
@@ -257,6 +248,8 @@ function setup_homer() {
 }
 
 function setup_audiobookshelf() {
+  add_step "Setting up audiobookshelf"
+
   throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
   throw_if_env_var_not_present "AUDIOBOOKSHELF_DOCKER_TAG" "$AUDIOBOOKSHELF_DOCKER_TAG"
 
@@ -268,6 +261,8 @@ function setup_audiobookshelf() {
 }
 
 function setup_podgrab() {
+  add_step "Setting up podgrab"
+
   throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
   throw_if_env_var_not_present "PODGRAB_DOCKER_TAG" "$PODGRAB_DOCKER_TAG"
 
@@ -278,6 +273,8 @@ function setup_podgrab() {
 }
 
 function setup_drawio() {
+  add_step "Setting up drawio"
+
   throw_if_env_var_not_present "DRAWIO_DOCKER_TAG" "$DRAWIO_DOCKER_TAG"
 
   safely_set_port_for_env_var "DRAWIO_PORT" "18085"
@@ -285,6 +282,8 @@ function setup_drawio() {
 }
 
 function setup_bitwarden() {
+  add_step "Setting up bitwarden"
+
   throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
   throw_if_env_var_not_present "BITWARDEN_DOCKER_TAG" "$BITWARDEN_DOCKER_TAG"
 
@@ -295,29 +294,9 @@ function setup_bitwarden() {
   safely_set_port_for_env_var "BITWARDEN_HTTPS_PORT" "18444"
 }
 
-function setup_home_assistant() {
-  throw_if_directory_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
-  throw_if_env_var_not_present "HOME_ASSISTANT_DOCKER_TAG" "$HOME_ASSISTANT_DOCKER_TAG"
-
-  export HOME_ASSISTANT_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/home-assistant-web
-  ensure_directory_exists "$HOME_ASSISTANT_BASE_DIRECTORY/config"
-
-  safely_set_port_for_env_var "HOME_ASSISTANT_PORT" "18123"
-}
-
-function setup_nodered() {
-  throw_if_directory_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
-  throw_if_env_var_not_present "NODE_RED_DOCKER_TAG" "$NODE_RED_DOCKER_TAG"
-
-  export NODE_RED_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/node-red
-  ensure_directory_exists "$NODE_RED_BASE_DIRECTORY/data"
-
-  chmod 777 "$NODE_RED_BASE_DIRECTORY/data"
-
-  safely_set_port_for_env_var "NODE_RED_PORT" "11880"
-}
-
 function setup_monitoring() {
+  add_step "Setting up monitoring"
+
   throw_if_directory_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
 
   # InfluxDB
@@ -348,11 +327,13 @@ function setup_monitoring() {
 
 function add_influxdb_to_monitoring() {
   curl -X PUT \
-    --data-binary '{"name":"GECK","type":"influxdb","url":"http://localhost:18089","access":"proxy","isDefault":true,"database":"geck","user":"${INFLUXDB_ADMIN_USERNAME}","password":"${INFLUXDB_ADMIN_PASSWORD}"}' \
+    --data-binary '{"name":"Zeus","type":"influxdb","url":"http://localhost:18089","access":"proxy","isDefault":true,"database":"zeus","user":"${INFLUXDB_ADMIN_USERNAME}","password":"${INFLUXDB_ADMIN_PASSWORD}"}' \
     'http://localhost:18888/api/datasources'
 }
 
 function post_install_monitoring() {
+  add_step "Running post intstall - monitoring"
+
   throw_if_env_var_not_present "INFLUXDB_ADMIN_USERNAME" "$INFLUXDB_ADMIN_USERNAME"
   throw_if_env_var_not_present "INFLUXDB_ADMIN_PASSWORD" "$INFLUXDB_ADMIN_PASSWORD"
 
@@ -368,9 +349,6 @@ function main() {
   source ./scripts/common.sh
 
   check_requirements
-
-  setup_cronjobs
-  setup_nfs_media_mount
 
   setup_macvlan_network
 

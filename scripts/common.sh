@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -eo pipefail
 
@@ -19,7 +19,7 @@ function ensure_directory_exists() {
 
   if [[ ! -d "$TARGET_DIRECTORY" ]]; then
     echo "Creating $TARGET_DIRECTORY directory..."
-    mkdir -p "$TARGET_DIRECTORY"
+    sudo mkdir -p "$TARGET_DIRECTORY"
   fi
 }
 
@@ -66,9 +66,16 @@ function force_symlink_between_files() {
     exit 1
   fi
 
-  if [ ! "$(readlink -- "$TARGET")" = "$SOURCE" ]; then
-    rm -rf "$SOURCE"
-    ln -s "$SOURCE" "$TARGET"
+  if [[ -L "$TARGET" ]]; then
+    sudo unlink "$TARGET"
+  fi
+
+  sudo ln -s "$SOURCE" "$TARGET"
+}
+
+function ensure_program_installed() {
+  if [[ ! -z "$1" ]] && [[ -z "$(command -v $1)" ]]; then
+    sudo apt-get install "$1" -y
   fi
 }
 
@@ -97,7 +104,7 @@ function wait_for_service_to_be_up() {
   done
 }
 
-USED_PORTS=$(lsof -i -n -P | awk '{print $9}' | grep ':' | cut -d ":" -f 2 | sort | uniq | grep -v '\->' | grep -v '*')
+# USED_PORTS=$(lsof -i -n -P | awk '{print $9}' | grep ':' | cut -d ':' -f 2 | sort | uniq | grep -v '\->' | grep -v '*')
 function safely_set_port_for_env_var() {
   ENV_VAR_KEY=$1
   NEW_PORT=$2
@@ -110,12 +117,12 @@ function safely_set_port_for_env_var() {
     exit 1
   fi
 
-  if echo $USED_PORTS | grep -w -q "$NEW_PORT"; then
-    echo "Port '$NEW_PORT' for '$ENV_VAR_KEY' is already in use! Please choose another port to set for '$ENV_VAR_KEY'."
-    exit 1
-  fi
+  # if echo $USED_PORTS | grep -w -q "$NEW_PORT"; then
+  #   echo "Port '$NEW_PORT' for '$ENV_VAR_KEY' is already in use! Please choose another port to set for '$ENV_VAR_KEY'."
+  #   exit 1
+  # fi
 
-  USED_PORTS+=($NEW_PORT)
+  # USED_PORTS+=($NEW_PORT)
 
   export $1=$2
 }

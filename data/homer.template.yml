@@ -1,6 +1,6 @@
-title: "GECK Dashboard"
+title: "Zeus Dashboard"
 subtitle: "Welcome and please be kind..."
-documentTitle: "GECK Startpage"
+documentTitle: "Zeus Startpage"
 logo: "assets/logo.png"
 
 header: true
@@ -16,7 +16,7 @@ defaults:
 links:
   - name: "Source Code"
     icon: "fab fa-github"
-    url: "https://github.com/tjmaynes/geck"
+    url: "https://github.com/tjmaynes/zeus"
     target: "_blank"
 
 services:
@@ -110,7 +110,7 @@ services:
     items:
       - name: "Admin Portal"
         icon: "fas fa-lock"
-        subtitle: "Admin interface for GECK home server"
+        subtitle: "Admin interface for Zeus home server"
         tag: "app"
         url: "%protocol-type%://admin.%service-domain%"
         target: "_blank"
@@ -119,6 +119,18 @@ services:
         subtitle: "Monitoring interface for servers"
         tag: "app"
         url: "%protocol-type%://monitoring.%service-domain%"
+        target: "_blank"
+      - name: "Zeus - Backups"
+        icon: "fas fa-dashboard"
+        subtitle: "Backup interface for Zeus"
+        tag: "app"
+        url: "%protocol-type%://backup-zeus.%service-domain%"
+        target: "_blank"
+      - name: "GECK - Backups"
+        icon: "fas fa-dashboard"
+        subtitle: "Backup interface for G.E.C.K."
+        tag: "app"
+        url: "%protocol-type%://backup-geck.%service-domain%"
         target: "_blank"
       - name: "Podgrab"
         icon: "fas fa-cloud-download"

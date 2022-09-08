@@ -1,2 +1,2 @@
-# "On reboot - ensure GECK is up and running after reboot."
-@reboot cd /workspace/tjmaynes/geck && make start
+# "On reboot - ensure Zeus is up and running after reboot."
+@reboot cd /workspace/tjmaynes/zeus && make start

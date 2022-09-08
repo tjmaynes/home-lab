@@ -9,8 +9,8 @@ Vagrant.configure("2") do |config|
 
   config.vm.box = "ubuntu/bionic64"
 
-  config.vm.synced_folder ".", "/workspace/tjmaynes/geck"
-  config.ssh.extra_args = ["-t", "cd /vagrant/geck; bash --login"]
+  config.vm.synced_folder ".", "/workspace/tjmaynes/zeus"
+  config.ssh.extra_args = ["-t", "cd /vagrant/zeus; bash --login"]
 
   config.vm.disk :disk, size: "20GB", primary: true
 
@@ -30,10 +30,10 @@ Vagrant.configure("2") do |config|
 
     #ifconfig #{ENV['NETWORK_INTERFACE_NAME']} #{ENV['HOST_IP_ADDRESS']} netmask 255.255.255.0 up
 
-    cd /workspace/tjmaynes/geck && make start
+    cd /workspace/tjmaynes/zeus && make start
   SHELL
 
-  config.vm.hostname = "geck"
+  config.vm.hostname = "zeus"
 
   # supported_programs = %w(gitea jellyfin tinymediamanager portainer flame)
   # environment = "development"
