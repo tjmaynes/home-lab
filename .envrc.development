@@ -40,6 +40,8 @@ export INFLUXDB_ADMIN_USERNAME=zeus
 # Replace-me
 export SERVICE_DOMAIN=lan
 export PIHOLE_PASSWORD=some-password
+export PLEX_CLAIM_TOKEN=some-token
+export GOGS_USER=gogs
+export GOGS_DB=gogs
 export GOGS_DB_PASSWORD=gogs
 export INFLUXDB_ADMIN_PASSWORD=some-password
-export PLEX_CLAIM_TOKEN=some-token

@@ -97,8 +97,6 @@ function setup_duplicati_web() {
 
   export DUPLICATI_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/duplicai-web
   ensure_directory_exists "$DUPLICATI_BASE_DIRECTORY/config"
-
-  safely_set_port_for_env_var "DUPLICATI_PORT" "18200"
 }
 
 function setup_nextcloud_server() {
@@ -184,8 +182,6 @@ function setup_navidrome() {
 
   export NAVIDROME_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/navidrome-server
   ensure_directory_exists "$NAVIDROME_BASE_DIRECTORY/data"
-
-  safely_set_port_for_env_var "NAVIDROME_PORT" "14533"
 }
 
 function setup_calibre_web() {
@@ -195,8 +191,6 @@ function setup_calibre_web() {
 
   export CALIBRE_WEB_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/calibre-web
   ensure_directory_exists "$CALIBRE_WEB_BASE_DIRECTORY/config"
-
-  safely_set_port_for_env_var "CALIBRE_WEB_PORT" "18083"
 }
 
 function setup_gogs() {
@@ -207,15 +201,8 @@ function setup_gogs() {
   export GOGS_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/gogs-web
   ensure_directory_exists "$GOGS_BASE_DIRECTORY/data"
 
-  safely_set_port_for_env_var "GOGS_PORT" "13000"
-  safely_set_port_for_env_var "GOGS_SSH_PORT" "12222"
-
   export GOGS_DB_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/gogs-db
   ensure_directory_exists "$GOGS_DB_BASE_DIRECTORY"
-
-  export GOGS_USER=gogs
-  export GOGS_DB=gogs
-  safely_set_port_for_env_var "GOGS_DB_PORT" "15433"
 }
 
 function setup_homer() {
@@ -226,8 +213,6 @@ function setup_homer() {
 
   export HOMER_WEB_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/homer-web
   ensure_directory_exists "$HOMER_LOCAL_WEB_BASE_DIRECTORY/www/assets"
-
-  safely_set_port_for_env_var "HOMER_WEB_PORT" "18081"
 
   sed \
     -e "s/%protocol-type%/https/g" \
@@ -245,8 +230,6 @@ function setup_audiobookshelf() {
   export AUDIOBOOKSHELF_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/audiobookshelf-web
   ensure_directory_exists "$AUDIOBOOKSHELF_BASE_DIRECTORY/config"
   ensure_directory_exists "$AUDIOBOOKSHELF_BASE_DIRECTORY/metadata"
-
-  safely_set_port_for_env_var "AUDIOBOOKSHELF_PORT" "13378"
 }
 
 function setup_podgrab() {
@@ -256,15 +239,13 @@ function setup_podgrab() {
 
   export PODGRAB_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/podgrab-web
   ensure_directory_exists "$PODGRAB_BASE_DIRECTORY/config"
-
-  safely_set_port_for_env_var "PODGRAB_PORT" "18084"
 }
 
 function setup_drawio() {
   add_step "Setting up drawio"
 
-  safely_set_port_for_env_var "DRAWIO_PORT" "18085"
-  safely_set_port_for_env_var "DRAWIO_HTTPS_PORT" "18443"
+  safely_set_port_for_env_var "DRAWIO_PORT" ""
+  safely_set_port_for_env_var "DRAWIO_HTTPS_PORT" ""
 }
 
 function setup_bitwarden() {
@@ -274,9 +255,6 @@ function setup_bitwarden() {
 
   export BITWARDEN_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/bitwarden-server
   ensure_directory_exists "$BITWARDEN_BASE_DIRECTORY/data"
-
-  safely_set_port_for_env_var "BITWARDEN_PORT" "18086"
-  safely_set_port_for_env_var "BITWARDEN_HTTPS_PORT" "18444"
 }
 
 function setup_monitoring() {
@@ -292,8 +270,6 @@ function setup_monitoring() {
   ensure_directory_exists "$INFLUXDB_BASE_DIRECTORY/data"
   ensure_directory_exists "$INFLUXDB_BASE_DIRECTORY/init"
 
-  safely_set_port_for_env_var "INFLUXDB_PORT" "18089"
-
   # Grafana
   throw_if_env_var_not_present "INFLUXDB_ADMIN_USERNAME" "$INFLUXDB_ADMIN_USERNAME"
   throw_if_env_var_not_present "INFLUXDB_ADMIN_PASSWORD" "$INFLUXDB_ADMIN_PASSWORD"
@@ -301,8 +277,6 @@ function setup_monitoring() {
   export GRAFANA_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/monitoring-grafana
   ensure_directory_exists "${GRAFANA_BASE_DIRECTORY}/var/lib/grafana"
   ensure_directory_exists "${GRAFANA_BASE_DIRECTORY}/provisioning/datasources"
-
-  safely_set_port_for_env_var "GRAFANA_PORT" "18888"
 }
 
 function add_influxdb_to_monitoring() {
