@@ -1,34 +1,63 @@
-version: "2"
+version: "3.6"
 
 services:
   pihole-server:
-    image: pihole/pihole:2022.07.1
+    image: pihole/pihole:2022.09.3
     container_name: pihole-server
-    restart: always
+    restart: unless-stopped
     networks:
+      pihole_network:
+        ipv4_address: 172.30.9.3
       macvlan_network:
-        ipv4_address: ${DNS_IP_ADDRESS}
-    cap_add:
-      - NET_ADMIN
-    volumes:
-      - ${PIHOLE_BASE_DIRECTORY}/pihole/:/etc/pihole/
-      - ${PIHOLE_BASE_DIRECTORY}/dnsmasq.d/:/etc/dnsmasq.d/
-      - /etc/localtime:/etc/localtime:ro
+        ipv4_address: 192.168.4.200
     dns:
       - 1.1.1.1
       - 1.0.0.1
     ports:
-      - 443/tcp
-      - 53/tcp
-      - 53/udp
-      - 67/udp
-      - 80/tcp
+      - target: 53
+        published: 53
+        protocol: tcp
+      - target: 53
+        published: 53
+        protocol: udp
+      - target: 67
+        published: 67
+        protocol: udp
+      - target: 80
+        published: 80
+        protocol: tcp
+      - target: 443
+        published: 443
+        protocol: tcp
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${PIHOLE_BASE_DIRECTORY}/pihole/:/etc/pihole/
+      - ${PIHOLE_BASE_DIRECTORY}/dnsmasq.d/:/etc/dnsmasq.d/
     environment:
-      DNSMASQ_LISTENING: all
       TZ: ${TIMEZONE}
-      ServerIP: ${DNS_IP_ADDRESS}
       WEBPASSWORD: ${PIHOLE_PASSWORD}
-      DELAY_STARTUP: 20
+      DNSMASQ_LISTENING: all
+      FTLCONF_LOCAL_IPV4: 192.168.4.200
+      PIHOLE_DNS_: "172.30.9.2#5053;no"
+    depends_on:
+      - cloudflared-agent
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=0
+
+  cloudflared-agent:
+    image: cloudflare/cloudflared:2022.9.0-arm64
+    container_name: cloudflared-agent
+    restart: unless-stopped
+    command: proxy-dns
+    networks:
+      pihole_network:
+        ipv4_address: 172.30.9.2
+    environment:
+      TUNNEL_DNS_UPSTREAM: "https://1.1.1.1/dns-query,https://1.0.0.1/dns-query,https://9.9.9.9/dns-query"
+      TUNNEL_DNS_PORT: 5053
+      TUNNEL_DNS_ADDRESS: "0.0.0.0"
 
   nginx-server:
     image: jc21/nginx-proxy-manager:2.9.18
@@ -36,7 +65,7 @@ services:
     restart: unless-stopped
     networks:
       macvlan_network:
-        ipv4_address: ${PROXY_IP_ADDRESS}
+        ipv4_address: 192.168.4.201
     ports:
       - 80:80
       - 443:443
@@ -48,25 +77,22 @@ services:
       DB_SQLITE_FILE: "/data/database.sqlite"
       DISABLE_IPV6: "true"
 
-  duplicati-web:
-    image: lscr.io/linuxserver/duplicati:2.0.6
-    container_name: duplicati-web
+  tailscale-agent:
+    image: tailscale/tailscale:v1.29.125
+    container_name: tailscale-agent
     restart: unless-stopped
-    ports:
-      - 18200:8200
-    networks:
-      - default
+    hostname: zeus
+    privileged: true
+    network_mode: host
     volumes:
-      - ${DUPLICATI_BASE_DIRECTORY}/config:/config
-      # - </path/to/backups>:/backups
-      - ${DOCKER_BASE_DIRECTORY}:/source
-    environment:
-      - PUID=${PUID}
-      - PGID=${PGID}
-      - TZ=${TIMEZONE}
+      - ${TAILSCALE_BASE_DIRECTORY}/var/lib:/var/lib
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    command: tailscaled
 
   plex-server:
-    image: plexinc/pms-docker:1.28.0.5999-97678ded3
+    image: lscr.io/linuxserver/plex:arm64v8-1.28.2
     container_name: plex-server
     restart: unless-stopped
     network_mode: host
@@ -74,18 +100,19 @@ services:
       - PUID=${PUID}
       - PGID=${PGID}
       - TZ=${TIMEZONE}
+      - VERSION=docker
       - CLAIM_TOKEN=${PLEX_CLAIM_TOKEN}
     volumes:
       - ${PLEX_BASE_DIRECTORY}/config:/config
       - ${PLEX_BASE_DIRECTORY}/transcode:/transcode
-      - ${MEDIA_DIRECTORY}:/media
+      - ${MEDIA_BASE_DIRECTORY}:/media
 
   navidrome-server:
     image: deluan/navidrome:sha-e981ee2
     container_name: navidrome-server
     user: ${PUID}:${PGID}
     ports:
-      - 14533:4533
+      - 19000:4533
     restart: unless-stopped
     environment:
       ND_SCANSCHEDULE: 1h
@@ -116,11 +143,11 @@ services:
     image: gogs/gogs:0.12
     container_name: gogs-web
     restart: always
+    networks:
+      - default
     ports:
       - 13000:3000
       - 12222:22
-    networks:
-      - default
     environment:
       - RUN_CROND=true
     volumes:
@@ -149,7 +176,7 @@ services:
       retries: 5
 
   homer-web:
-    image: b4bz/homer:v22.07.2
+    image: b4bz/homer:v22.08.1
     container_name: homer-web
     restart: always
     networks:
@@ -162,7 +189,7 @@ services:
       - INIT_ASSETS=0
 
   audiobookshelf-web:
-    image: ghcr.io/advplyr/audiobookshelf:2.1.2
+    image: ghcr.io/advplyr/audiobookshelf:2.1.4
     container_name: audiobookshelf-web
     networks:
       - default
@@ -180,14 +207,16 @@ services:
   podgrab-web:
     image: akhilrex/podgrab:1.0.0
     container_name: podgrab-web
+    restart: unless-stopped
+    networks:
+      - default
+    ports:
+      - 18084:8080
     environment:
       - CHECK_FREQUENCY=240
     volumes:
       - ${PODGRAB_BASE_DIRECTORY}/config:/config
       - ${PODCASTS_DIRECTORY}:/assets
-    ports:
-      - 18084:8080
-    restart: unless-stopped
 
   bitwarden-server:
     image: vaultwarden/server:1.25.2-alpine
@@ -204,35 +233,30 @@ services:
       WEBSOCKET_ENABLED: "true"
       SIGNUPS_ALLOWED: "true"
 
-  monitoring-influxdb:
-    image: influxdb:1.8.10
-    container_name: monitoring-influxdb
+  portainer-server:
+    image: portainer/portainer-ce:2.15.0-alpine
+    container_name: portainer-server
     restart: always
+    networks:
+      - default
     ports:
-      - 18089:8086
+      - 19001:9000
+    security_opt:
+      - no-new-privileges:true
     volumes:
-      - ${INFLUXDB_BASE_DIRECTORY}/data:/var/lib/influxdb
-      - ${INFLUXDB_BASE_DIRECTORY}/influxdb.conf:/etc/influxdb/influxdb.conf:ro
-      - ${INFLUXDB_BASE_DIRECTORY}/init:/docker-entrypoint-initdb.d
-    environment:
-      - INFLUXDB_ADMIN_USER=${INFLUXDB_ADMIN_USERNAME}
-      - INFLUXDB_ADMIN_PASSWORD=${INFLUXDB_ADMIN_PASSWORD}
-
-  monitoring-telegraf:
-    image: telegraf:1.23.4
-    container_name: monitoring-telegraf
-    restart: always
-    volumes:
-      - ${INFLUXDB_BASE_DIRECTORY}/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/lib/docker/volumes:/var/lib/docker/volumes
 
   monitoring-grafana:
     image: grafana/grafana-oss:9.1.2
     container_name: monitoring-grafana
+    user: ${PUID}:${PGID}
     ports:
       - 18888:3000
     restart: unless-stopped
     volumes:
-      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ${GRAFANA_BASE_DIRECTORY}/provisioning/datasources:/etc/grafana/provisioning/datasources
       - ${GRAFANA_BASE_DIRECTORY}/var/lib/grafana:/var/lib/grafana
 
 networks:
@@ -240,13 +264,9 @@ networks:
     driver: bridge
 
   macvlan_network:
-    driver: macvlan
-    driver_opts:
-      parent: ovs_eth0
+    external: true
+
+  pihole_network:
     ipam:
       config:
-        - subnet: ${SUBNET_IP_ADDRESS}/22
-          gateway: ${GATEWAY_IP_ADDRESS}
-          ip_range: ${DNS_IP_ADDRESS}/32
-          aux_addresses:
-            host: ${HOST_IP_ADDRESS}
+        - subnet: 172.30.9.0/29

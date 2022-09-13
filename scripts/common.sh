@@ -19,7 +19,7 @@ function ensure_directory_exists() {
 
   if [[ ! -d "$TARGET_DIRECTORY" ]]; then
     echo "Creating $TARGET_DIRECTORY directory..."
-    sudo mkdir -p "$TARGET_DIRECTORY"
+    sudo -u "$NONROOT_USER" mkdir -p "$TARGET_DIRECTORY"
   fi
 }
 
@@ -52,6 +52,15 @@ function throw_if_directory_not_present() {
   fi
 }
 
+function throw_if_file_not_present() {
+  FILE=$1
+
+  if [[ ! -f "$FILE" ]]; then
+    echo "Please create '$FILE' before running this script"
+    exit 1
+  fi
+}
+
 function force_symlink_between_files() {
   SOURCE=$1
   TARGET=$2
@@ -67,15 +76,15 @@ function force_symlink_between_files() {
   fi
 
   if [[ -L "$TARGET" ]]; then
-    sudo unlink "$TARGET"
+    unlink "$TARGET"
   fi
 
-  sudo ln -s "$SOURCE" "$TARGET"
+  ln -s "$SOURCE" "$TARGET"
 }
 
 function ensure_program_installed() {
   if [[ ! -z "$1" ]] && [[ -z "$(command -v $1)" ]]; then
-    sudo apt-get install "$1" -y
+    apt-get install "$1" -y
   fi
 }
 

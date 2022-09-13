@@ -9,17 +9,22 @@
 ## Usage
 To install home server dependencies, run the following command:
 ```bash
-make install
+ENV_FILE=.envrc.production make install
 ```
 
 To start the home server, run the following command:
 ```bash
-make start
+ENV_FILE=.envrc.production make start
 ```
 
 To stop the home server, run the following command:
 ```bash
-make stop
+ENV_FILE=.envrc.production make stop
+```
+
+To run a full backup of the home server, run the following command:
+```bash
+ENV_FILE=.envrc.production make backup
 ```
 
 To run the home server using `vagrant`, run the following command:
@@ -34,7 +39,6 @@ make dev
 | [pi-hole](https://pi-hole.net/)                                       | dns server                         | docker-compose | ✅ |
 | [nginx-proxy-manager](https://nginxproxymanager.com/)                 | reverse-proxy server               | docker-compose | ✅ |
 | [tailscale-agent](https://tailscale.com/)                             | modern vpn service                 | docker-compose | ✅ |
-| [duplicati](https://www.duplicati.com/)                               | automated backup solution          | docker-compose | ✅ |
 | [homer](https://github.com/bastienwirtz/homer)                        | start-page                         | docker-compose | ✅ |
 | [plex-server](https://plex.tv/)                                       | media server                       | docker-compose | ✅ |
 | [navidrome](https://github.com/navidrome/navidrome)                   | modern music server                | docker-compose | ✅ |
@@ -43,6 +47,5 @@ make dev
 | [gogs](https://gogs.io/)                                              | git server                         | docker-compose | ✅ |
 | [podgrab](https://github.com/akhilrex/podgrab)                        | podcast downloader                 | docker-compose | ✅ |
 | [bitwarden](https://bitwarden.com/)                                   | password manager                   | docker-compose | ✅ |
-| [grafana](https://grafana.com/)                                       | Monitoring dashboard web interface | docker-compose | ✅ |
-| [influxdb](https://www.influxdata.com/)                               | Monitoring database                | docker-compose | ✅ |
-| [telegraf](https://www.influxdata.com/time-series-platform/telegraf/) | Telemetry aggregator for InfluxDB  | docker-compose | ✅ |
+| [portainer](https://docs.portainer.io/v/ce-2.9/start/install)         | monitoring docker containers       | docker-compose | ✅ |
+| [grafana](https://grafana.com/)                                       | monitoring dashboard web interface | docker-compose | ✅ |

@@ -7,5 +7,11 @@ start:
 stop:
 	./scripts/runner.sh "$@"
 
+backup:
+	./scripts/runner.sh "$@"
+
 dev:
+	./scripts/runner.sh "$@"
+
+macvlan:
 	./scripts/runner.sh "$@"

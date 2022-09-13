@@ -1,2 +1,0 @@
-# "On reboot - ensure Zeus is up and running after reboot."
-@reboot cd /workspace/tjmaynes/zeus && make start

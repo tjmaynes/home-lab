@@ -8,58 +8,66 @@ function check_requirements() {
   throw_if_env_var_not_present "NONROOT_USER" "$NONROOT_USER"
 }
 
+function setup_macvlan_service() {
+  if [[ ! -f "/etc/systemd/system/macvlan.service" ]]; then
+    sudo tee -a /etc/systemd/system/macvlan.service <<EOF
+[Unit]
+Description=Setup Macvlan Network
+After=network.target
+
+[Service]
+WorkingDirectory=/home/$NONROOT_USER/workspace/tjmaynes/zeus
+ExecStart=sudo make macvlan
+
+[Install]
+WantedBy=default.target
+EOF
+  fi
+
+  sudo systemctl enable macvlan
+}
+
+function setup_start_zeus_service() {
+  if [[ ! -f "/etc/systemd/system/start-zeus.service" ]]; then
+    sudo tee -a /etc/systemd/system/start-zeus.service <<EOF
+[Unit]
+Description=Start Zeus
+After=network.target
+
+[Service]
+Environment="ENV_FILE=.envrc.production"
+WorkingDirectory=/home/$NONROOT_USER/workspace/tjmaynes/zeus
+ExecStart=make start
+
+[Install]
+WantedBy=default.target
+EOF
+  fi
+
+  sudo systemctl enable start-zeus
+}
+
 function setup_cronjobs() {
   throw_if_program_not_present "cron"
 
-  force_symlink_between_files "$(pwd)/cron.d/onreboot.crontab" "/etc/cron.d/onreboot.crontab"
-}
-
-function setup_nfs_media_mount() {
-  throw_if_program_not_present "mount"
-
-  throw_if_env_var_not_present "NAS_IP" "$NAS_IP"
-  throw_if_env_var_not_present "NAS_MEDIA_DIRECTORY" "$NAS_MEDIA_DIRECTORY"
-  throw_if_env_var_not_present "MEDIA_BASE_DIRECTORY" "$MEDIA_BASE_DIRECTORY"
-
-  ensure_directory_exists "$MEDIA_BASE_DIRECTORY"
-
-  sudo mount -t nfs "$NAS_IP:$NAS_MEDIA_DIRECTORY" "$MEDIA_BASE_DIRECTORY" || true
-
-  throw_if_directory_not_present "VIDEOS_DIRECTORY" "$VIDEOS_DIRECTORY"
-  throw_if_directory_not_present "MUSIC_DIRECTORY" "$MUSIC_DIRECTORY"
-  throw_if_directory_not_present "PHOTOS_DIRECTORY" "$PHOTOS_DIRECTORY"
-  throw_if_directory_not_present "BOOKS_DIRECTORY" "$BOOKS_DIRECTORY"
-  throw_if_directory_not_present "AUDIOBOOKS_DIRECTORY" "$AUDIOBOOKS_DIRECTORY"
-  throw_if_directory_not_present "PODCASTS_DIRECTORY" "$PODCASTS_DIRECTORY"
-}
-
-function setup_nfs_backup_mount() {
-  throw_if_program_not_present "mount"
-
-  throw_if_env_var_not_present "NAS_IP" "$NAS_IP"
-  throw_if_env_var_not_present "NAS_BACKUP_DIRECTORY" "$NAS_BACKUP_DIRECTORY"
-  throw_if_env_var_not_present "LOCAL_BACKUP_DIRECTORY" "$LOCAL_BACKUP_DIRECTORY"
-
-  ensure_directory_exists "$LOCAL_BACKUP_DIRECTORY"
-
-  sudo mount -t nfs "$NAS_IP:$NAS_BACKUP_DIRECTORY" "$LOCAL_BACKUP_DIRECTORY" || true
-}
-
-function setup_nfs_mounts() {
-  setup_nfs_backup_mount
-  setup_nfs_media_mount
+  BACKUP_CRONTAB="0 0-6/2 * * *  cd ~/workspace/tjmaynes/zeus && ENV_FILE=.envrc.production sudo make backup"
+  if ! crontab -l | grep "$BACKUP_CRONTAB"; then
+    echo -e "Backups are not setup. Copy command and paste via 'crontab -e': $BACKUP_CRONTAB"
+  fi
 }
 
 function install_docker() {
   if [[ -z "$(command -v docker)" ]]; then
-    sudo ./scripts/install-docker.sh
+    ./scripts/install-docker.sh
   fi
 
-  sudo usermod -aG docker "$NONROOT_USER"
+  usermod -aG docker "$NONROOT_USER"
 }
 
 function install_argon_one_case() {
-  sudo ./scripts/setup-argon1-fan.sh
+  if [[ -z "$(command -v argonone-config)" ]]; then
+    ./scripts/setup-argon1-fan.sh
+  fi
 }
 
 function install_required_programs() {
@@ -68,9 +76,53 @@ function install_required_programs() {
   ensure_program_installed "lsof"
   ensure_program_installed "ffmpeg"
   ensure_program_installed "vim"
+  ensure_program_installed "htop"
 
   install_docker
   install_argon_one_case
+}
+
+function setup_nfs_media_mount() {
+  throw_if_program_not_present "mount"
+
+  throw_if_env_var_not_present "NAS_IP" "$NAS_IP"
+  throw_if_env_var_not_present "NAS_MEDIA_DIRECTORY" "$NAS_MEDIA_DIRECTORY"
+  throw_if_env_var_not_present "MEDIA_BASE_DIRECTORY" "$MEDIA_BASE_DIRECTORY"
+  
+  ensure_directory_exists "$MEDIA_BASE_DIRECTORY"
+
+  FSTAB_CONFIG="$NAS_IP:$NAS_MEDIA_DIRECTORY $MEDIA_BASE_DIRECTORY nfs rw,relatime,user,noauto 0 0"
+  if ! cat /etc/fstab | grep -q "$FSTAB_CONFIG"; then
+    echo "$FSTAB_CONFIG" >> /etc/fstab
+  fi
+}
+
+function setup_nfs_mounts() {
+  setup_nfs_media_mount
+}
+
+function setup_sysctl() {
+  IPV4_CONFIG="net.ipv4.ip_forward=1"
+  if ! cat /etc/sysctl.conf | grep "$IPV4_CONFIG"; then
+    echo "$IPV4_CONFIG" >> /etc/sysctl.conf
+  fi
+
+  IPV6_CONFIG="net.ipv6.conf.all.forwarding=1"
+  if ! cat /etc/sysctl.conf | grep "$IPV6_CONFIG"; then
+    echo "$IPV6_CONFIG" >> /etc/sysctl.conf
+  fi
+}
+
+function turn_off_wifi() {
+  ensure_program_installed "rfkill"
+
+  rfkill block wifi
+}
+
+function turn_off_bluetooth() {
+  ensure_program_installed "rfkill"
+
+  rfkill block bluetooth
 }
 
 function main() {
@@ -78,14 +130,24 @@ function main() {
 
   check_requirements
 
-  sudo apt-get update && sudo apt-get upgrade -y
+  apt-get update && apt-get upgrade -y
 
   install_required_programs
 
+  setup_macvlan_service
+  setup_start_zeus_service
+
+  setup_sysctl
   setup_cronjobs
   setup_nfs_mounts
 
-  sudo reboot
+  throw_if_program_not_present "raspi-config"
+  raspi-config nonint do_boot_wait 0
+
+  turn_off_wifi
+  turn_off_bluetooth
+
+  reboot
 }
 
 main

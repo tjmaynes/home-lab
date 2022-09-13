@@ -2,7 +2,7 @@
 .DS_Store
 
 # Env vars
-.envrc
+.envrc*
 
 # Vagrant
 .vagrant/
