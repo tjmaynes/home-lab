@@ -35,9 +35,9 @@ make dev
 | [nginx-proxy-manager](https://nginxproxymanager.com/)                 | reverse-proxy server               | docker-compose | ✅ |
 | [tailscale-agent](https://tailscale.com/)                             | modern vpn service                 | docker-compose | ✅ |
 | [duplicati](https://www.duplicati.com/)                               | automated backup solution          | docker-compose | ✅ |
-| [nextcloud](https://nextcloud.com/)                                   | dropbox replacement                | docker-compose | ✅ |
 | [homer](https://github.com/bastienwirtz/homer)                        | start-page                         | docker-compose | ✅ |
 | [plex-server](https://plex.tv/)                                       | media server                       | docker-compose | ✅ |
+| [navidrome](https://github.com/navidrome/navidrome)                   | modern music server                | docker-compose | ✅ |
 | [calibre-web](https://github.com/janeczku/calibre-web)                | web-based ebook-reader             | docker-compose | ✅ |
 | [audiobookshelf](https://www.audiobookshelf.org/)                     | podcast & audiobooks server        | docker-compose | ✅ |
 | [gogs](https://gogs.io/)                                              | git server                         | docker-compose | ✅ |

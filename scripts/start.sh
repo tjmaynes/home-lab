@@ -99,71 +99,6 @@ function setup_duplicati_web() {
   ensure_directory_exists "$DUPLICATI_BASE_DIRECTORY/config"
 }
 
-function setup_nextcloud_server() {
-  add_step "Setting up nextcloud"
-
-  throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
-  throw_if_env_var_not_present "NEXTCLOUD_DOCKER_TAG" "$NEXTCLOUD_DOCKER_TAG"
-
-  export NEXTCLOUD_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/nextcloud-server
-  ensure_directory_exists "$NEXTCLOUD_BASE_DIRECTORY/www/html"
-
-  throw_if_env_var_not_present "NEXTCLOUD_ADMIN_USER" "$NEXTCLOUD_ADMIN_USER"
-  throw_if_env_var_not_present "NEXTCLOUD_ADMIN_PASSWORD" "$NEXTCLOUD_ADMIN_PASSWORD"
-  throw_if_env_var_not_present "NEXTCLOUD_DB_USER" "$NEXTCLOUD_DB_USER"
-  throw_if_env_var_not_present "NEXTCLOUD_DB_PASSWORD" "$NEXTCLOUD_DB_PASSWORD"
-  throw_if_env_var_not_present "NEXTCLOUD_DB_NAME" "$NEXTCLOUD_DB_NAME"
-
-  safely_set_port_for_env_var "NEXTCLOUD_PORT" "18080"
-}
-
-function setup_nextcloud_db() {
-  add_step "Setting up nextcloud-db"
-
-  throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
-  throw_if_env_var_not_present "NEXTCLOUD_DB_DOCKER_TAG" "$NEXTCLOUD_DB_DOCKER_TAG"
-
-  export NEXTCLOUD_DB_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/nextcloud-db
-  ensure_directory_exists "$NEXTCLOUD_DB_BASE_DIRECTORY/data"
-
-  throw_if_env_var_not_present "NEXTCLOUD_DB_USER" "$NEXTCLOUD_DB_USER"
-  throw_if_env_var_not_present "NEXTCLOUD_DB_PASSWORD" "$NEXTCLOUD_DB_PASSWORD"
-
-  safely_set_port_for_env_var "NEXTCLOUD_DB_PORT" "15432"
-}
-
-function setup_nextcloud_redis() {
-  add_step "Setting up nextcloud-redis"
-
-  throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
-  throw_if_env_var_not_present "NEXTCLOUD_REDIS_DOCKER_TAG" "$NEXTCLOUD_REDIS_DOCKER_TAG"
-
-  export NEXTCLOUD_REDIS_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/nextcloud-redis
-  ensure_directory_exists "$NEXTCLOUD_REDIS_BASE_DIRECTORY"
-
-  safely_set_port_for_env_var "NEXTCLOUD_REDIS_PORT" "16379"
-}
-
-function setup_nextcloud_collabora() {
-  add_step "Setting up nextcloud-collabora"
-
-  throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
-  throw_if_env_var_not_present "NEXTCLOUD_COLLABORA_DOCKER_TAG" "$NEXTCLOUD_COLLABORA_DOCKER_TAG"
-  throw_if_env_var_not_present "SERVICE_DOMAIN" "$SERVICE_DOMAIN"
-
-  safely_set_port_for_env_var "NEXTCLOUD_COLLABORA_PORT" "19980"
-
-  throw_if_env_var_not_present "NEXTCLOUD_COLLABORA_USERNAME" "$NEXTCLOUD_COLLABORA_USERNAME"
-  throw_if_env_var_not_present "NEXTCLOUD_COLLABORA_PASSWORD" "$NEXTCLOUD_COLLABORA_PASSWORD"
-}
-
-function setup_nextcloud() {
-  setup_nextcloud_db
-  setup_nextcloud_redis
-  setup_nextcloud_collabora
-  setup_nextcloud_server
-}
-
 function setup_plex() {
   add_step "Setting up plex"
 
@@ -309,8 +244,7 @@ function main() {
   setup_tailscale
   setup_pihole
   setup_nginx_proxy
-  setup_nextcloud
-  # setup_plex
+  setup_plex
   setup_navidrome
   setup_calibre_web
   setup_gogs
