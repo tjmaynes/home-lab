@@ -189,19 +189,6 @@ services:
       - 18084:8080
     restart: unless-stopped
 
-  drawio-web:
-    image: jgraph/drawio:20.2.3
-    container_name: drawio-web
-    restart: unless-stopped
-    ports:
-      - 18085:8080
-      - 18443:8443
-    environment:
-      ORGANISATION_UNIT: unit
-      ORGANISATION: bewoogie
-      CITY: Remote
-      STATE: Remote
-
   bitwarden-server:
     image: vaultwarden/server:1.25.2-alpine
     container_name: bitwarden-server

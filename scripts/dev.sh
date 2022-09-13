@@ -15,7 +15,7 @@ function main() {
 
   install_vagrant_plugin "vagrant-tun"
 
-  # (vagrant destroy --force || true) && \
+  (vagrant destroy --force || true) && \
     vagrant up
 }
 

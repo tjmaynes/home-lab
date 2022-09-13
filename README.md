@@ -42,7 +42,6 @@ make dev
 | [audiobookshelf](https://www.audiobookshelf.org/)                     | podcast & audiobooks server        | docker-compose | ✅ |
 | [gogs](https://gogs.io/)                                              | git server                         | docker-compose | ✅ |
 | [podgrab](https://github.com/akhilrex/podgrab)                        | podcast downloader                 | docker-compose | ✅ |
-| [draw.io](https://github.com/jgraph/drawio)                           | web-base diagramming software      | docker-compose | ✅ |
 | [bitwarden](https://bitwarden.com/)                                   | password manager                   | docker-compose | ✅ |
 | [grafana](https://grafana.com/)                                       | Monitoring dashboard web interface | docker-compose | ✅ |
 | [influxdb](https://www.influxdata.com/)                               | Monitoring database                | docker-compose | ✅ |

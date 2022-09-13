@@ -10,12 +10,7 @@ function check_requirements() {
   throw_if_env_var_not_present "PUID" "$PUID"
   throw_if_env_var_not_present "PGID" "$PGID"
 
-  throw_if_env_var_not_present "NETWORK_INTERFACE_NAME" "$NETWORK_INTERFACE_NAME"
-  throw_if_env_var_not_present "SUBNET_IP_ADDRESS" "$SUBNET_IP_ADDRESS"
-  throw_if_env_var_not_present "GATEWAY_IP_ADDRESS" "$GATEWAY_IP_ADDRESS"
-  throw_if_env_var_not_present "HOST_IP_ADDRESS" "$HOST_IP_ADDRESS"
-  throw_if_env_var_not_present "PROXY_IP_ADDRESS" "$PROXY_IP_ADDRESS"
-  throw_if_env_var_not_present "DNS_IP_ADDRESS" "$DNS_IP_ADDRESS"
+  throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
 }
 
 function setup_macvlan_network() {
@@ -44,7 +39,7 @@ function setup_macvlan_network() {
 function setup_pihole() {
   add_step "Setting up pihole"
 
-  throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
+  throw_if_env_var_not_present "DNS_IP_ADDRESS" "$DNS_IP_ADDRESS"
   throw_if_env_var_not_present "PIHOLE_PASSWORD" "$PIHOLE_PASSWORD"
 
   export PIHOLE_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/pihole-server
@@ -55,7 +50,7 @@ function setup_pihole() {
 }
 
 function setup_nginx_proxy() {
-  throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
+  throw_if_env_var_not_present "PROXY_IP_ADDRESS" "$PROXY_IP_ADDRESS"
 
   export NGNIX_PROXY_MANAGER_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/nginx-proxy-manager-server
   ensure_directory_exists "$NGNIX_PROXY_MANAGER_BASE_DIRECTORY/data"
@@ -67,7 +62,6 @@ function setup_tailscale() {
 
   throw_if_program_not_present "insmod"
   throw_if_program_not_present "lsmod"
-  throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
 
   export TAILSCALE_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/tailscale-agent
   ensure_directory_exists "$TAILSCALE_BASE_DIRECTORY/var/lib"
@@ -93,8 +87,6 @@ function setup_tailscale() {
 function setup_duplicati_web() {
   add_step "Setting up duplicati"
 
-  throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
-
   export DUPLICATI_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/duplicai-web
   ensure_directory_exists "$DUPLICATI_BASE_DIRECTORY/config"
 }
@@ -102,7 +94,6 @@ function setup_duplicati_web() {
 function setup_plex() {
   add_step "Setting up plex"
 
-  throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
   throw_if_env_var_not_present "PLEX_CLAIM_TOKEN" "$PLEX_CLAIM_TOKEN"
 
   export PLEX_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/plex-server
@@ -113,8 +104,6 @@ function setup_plex() {
 function setup_navidrome() {
   add_step "Setting up navidrome"
 
-  throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
-
   export NAVIDROME_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/navidrome-server
   ensure_directory_exists "$NAVIDROME_BASE_DIRECTORY/data"
 }
@@ -122,16 +111,12 @@ function setup_navidrome() {
 function setup_calibre_web() {
   add_step "Setting up calibre-web"
 
-  throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
-
   export CALIBRE_WEB_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/calibre-web
   ensure_directory_exists "$CALIBRE_WEB_BASE_DIRECTORY/config"
 }
 
 function setup_gogs() {
   add_step "Setting up gogs"
-
-  throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
 
   export GOGS_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/gogs-web
   ensure_directory_exists "$GOGS_BASE_DIRECTORY/data"
@@ -143,7 +128,6 @@ function setup_gogs() {
 function setup_homer() {
   add_step "Setting up homer"
 
-  throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
   throw_if_env_var_not_present "SERVICE_DOMAIN" "$SERVICE_DOMAIN"
 
   export HOMER_WEB_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/homer-web
@@ -160,8 +144,6 @@ function setup_homer() {
 function setup_audiobookshelf() {
   add_step "Setting up audiobookshelf"
 
-  throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
-
   export AUDIOBOOKSHELF_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/audiobookshelf-web
   ensure_directory_exists "$AUDIOBOOKSHELF_BASE_DIRECTORY/config"
   ensure_directory_exists "$AUDIOBOOKSHELF_BASE_DIRECTORY/metadata"
@@ -170,23 +152,12 @@ function setup_audiobookshelf() {
 function setup_podgrab() {
   add_step "Setting up podgrab"
 
-  throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
-
   export PODGRAB_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/podgrab-web
   ensure_directory_exists "$PODGRAB_BASE_DIRECTORY/config"
 }
 
-function setup_drawio() {
-  add_step "Setting up drawio"
-
-  safely_set_port_for_env_var "DRAWIO_PORT" ""
-  safely_set_port_for_env_var "DRAWIO_HTTPS_PORT" ""
-}
-
 function setup_bitwarden() {
   add_step "Setting up bitwarden"
-
-  throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
 
   export BITWARDEN_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/bitwarden-server
   ensure_directory_exists "$BITWARDEN_BASE_DIRECTORY/data"
@@ -194,8 +165,6 @@ function setup_bitwarden() {
 
 function setup_monitoring() {
   add_step "Setting up monitoring"
-
-  throw_if_directory_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
 
   # InfluxDB
   throw_if_env_var_not_present "INFLUXDB_ADMIN_USERNAME" "$INFLUXDB_ADMIN_USERNAME"
@@ -251,10 +220,7 @@ function main() {
   setup_homer
   setup_audiobookshelf
   setup_podgrab
-  setup_drawio
   setup_bitwarden
-  setup_home_assistant
-  setup_nodered
   setup_monitoring
 
   docker-compose up -d --remove-orphans
