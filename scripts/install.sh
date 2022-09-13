@@ -42,7 +42,7 @@ function setup_nfs_backup_mount() {
 
   ensure_directory_exists "$LOCAL_BACKUP_DIRECTORY"
 
-  mount -t nfs "$NAS_IP:$NAS_BACKUP_DIRECTORY" "$LOCAL_BACKUP_DIRECTORY" || true
+  sudo mount -t nfs "$NAS_IP:$NAS_BACKUP_DIRECTORY" "$LOCAL_BACKUP_DIRECTORY" || true
 }
 
 function setup_nfs_mounts() {

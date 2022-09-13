@@ -45,7 +45,6 @@ function setup_pihole() {
   add_step "Setting up pihole"
 
   throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
-  throw_if_env_var_not_present "PIHOLE_DOCKER_TAG" "$PIHOLE_DOCKER_TAG"
   throw_if_env_var_not_present "PIHOLE_PASSWORD" "$PIHOLE_PASSWORD"
 
   export PIHOLE_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/pihole-server
@@ -57,7 +56,6 @@ function setup_pihole() {
 
 function setup_nginx_proxy() {
   throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
-  throw_if_env_var_not_present "NGINX_SERVER_DOCKER_TAG" "$NGINX_SERVER_DOCKER_TAG"
 
   export NGNIX_PROXY_MANAGER_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/nginx-proxy-manager-server
   ensure_directory_exists "$NGNIX_PROXY_MANAGER_BASE_DIRECTORY/data"
@@ -96,7 +94,6 @@ function setup_duplicati_web() {
   add_step "Setting up duplicati"
 
   throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
-  throw_if_env_var_not_present "DUPLICATI_DOCKER_TAG" "$DUPLICATI_DOCKER_TAG"
 
   export DUPLICATI_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/duplicai-web
   ensure_directory_exists "$DUPLICATI_BASE_DIRECTORY/config"
@@ -169,11 +166,21 @@ function setup_nextcloud() {
   setup_nextcloud_server
 }
 
+function setup_plex() {
+  add_step "Setting up plex"
+
+  throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
+  throw_if_env_var_not_present "PLEX_CLAIM_TOKEN" "$PLEX_CLAIM_TOKEN"
+
+  export PLEX_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/plex-server
+  ensure_directory_exists "$PLEX_BASE_DIRECTORY/config"
+  ensure_directory_exists "$PLEX_BASE_DIRECTORY/transcode"
+}
+
 function setup_navidrome() {
   add_step "Setting up navidrome"
 
   throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
-  throw_if_env_var_not_present "NAVIDROME_DOCKER_TAG" "$NAVIDROME_DOCKER_TAG"
 
   export NAVIDROME_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/navidrome-server
   ensure_directory_exists "$NAVIDROME_BASE_DIRECTORY/data"
@@ -181,23 +188,10 @@ function setup_navidrome() {
   safely_set_port_for_env_var "NAVIDROME_PORT" "14533"
 }
 
-function setup_plex() {
-  add_step "Setting up plex"
-
-  throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
-  throw_if_env_var_not_present "PLEX_CLAIM_TOKEN" "$PLEX_CLAIM_TOKEN"
-  throw_if_env_var_not_present "PLEX_DOCKER_TAG" "$PLEX_DOCKER_TAG"
-
-  export PLEX_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/plex-server
-  ensure_directory_exists "$PLEX_BASE_DIRECTORY/config"
-  ensure_directory_exists "$PLEX_BASE_DIRECTORY/transcode"
-}
-
 function setup_calibre_web() {
   add_step "Setting up calibre-web"
 
   throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
-  throw_if_env_var_not_present "CALIBRE_WEB_DOCKER_TAG" "$CALIBRE_WEB_DOCKER_TAG"
 
   export CALIBRE_WEB_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/calibre-web
   ensure_directory_exists "$CALIBRE_WEB_BASE_DIRECTORY/config"
@@ -209,15 +203,12 @@ function setup_gogs() {
   add_step "Setting up gogs"
 
   throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
-  throw_if_env_var_not_present "GOGS_DOCKER_TAG" "$GOGS_DOCKER_TAG"
 
   export GOGS_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/gogs-web
   ensure_directory_exists "$GOGS_BASE_DIRECTORY/data"
 
   safely_set_port_for_env_var "GOGS_PORT" "13000"
   safely_set_port_for_env_var "GOGS_SSH_PORT" "12222"
-
-  throw_if_env_var_not_present "GOGS_DB_DOCKER_TAG" "$GOGS_DB_DOCKER_TAG"
 
   export GOGS_DB_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/gogs-db
   ensure_directory_exists "$GOGS_DB_BASE_DIRECTORY"
@@ -232,7 +223,6 @@ function setup_homer() {
 
   throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
   throw_if_env_var_not_present "SERVICE_DOMAIN" "$SERVICE_DOMAIN"
-  throw_if_env_var_not_present "HOMER_DOCKER_TAG" "$HOMER_DOCKER_TAG"
 
   export HOMER_WEB_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/homer-web
   ensure_directory_exists "$HOMER_LOCAL_WEB_BASE_DIRECTORY/www/assets"
@@ -251,7 +241,6 @@ function setup_audiobookshelf() {
   add_step "Setting up audiobookshelf"
 
   throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
-  throw_if_env_var_not_present "AUDIOBOOKSHELF_DOCKER_TAG" "$AUDIOBOOKSHELF_DOCKER_TAG"
 
   export AUDIOBOOKSHELF_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/audiobookshelf-web
   ensure_directory_exists "$AUDIOBOOKSHELF_BASE_DIRECTORY/config"
@@ -264,7 +253,6 @@ function setup_podgrab() {
   add_step "Setting up podgrab"
 
   throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
-  throw_if_env_var_not_present "PODGRAB_DOCKER_TAG" "$PODGRAB_DOCKER_TAG"
 
   export PODGRAB_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/podgrab-web
   ensure_directory_exists "$PODGRAB_BASE_DIRECTORY/config"
@@ -275,8 +263,6 @@ function setup_podgrab() {
 function setup_drawio() {
   add_step "Setting up drawio"
 
-  throw_if_env_var_not_present "DRAWIO_DOCKER_TAG" "$DRAWIO_DOCKER_TAG"
-
   safely_set_port_for_env_var "DRAWIO_PORT" "18085"
   safely_set_port_for_env_var "DRAWIO_HTTPS_PORT" "18443"
 }
@@ -285,7 +271,6 @@ function setup_bitwarden() {
   add_step "Setting up bitwarden"
 
   throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
-  throw_if_env_var_not_present "BITWARDEN_DOCKER_TAG" "$BITWARDEN_DOCKER_TAG"
 
   export BITWARDEN_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/bitwarden-server
   ensure_directory_exists "$BITWARDEN_BASE_DIRECTORY/data"
@@ -300,7 +285,6 @@ function setup_monitoring() {
   throw_if_directory_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
 
   # InfluxDB
-  throw_if_env_var_not_present "INFLUXDB_DOCKER_TAG" "$INFLUXDB_DOCKER_TAG"
   throw_if_env_var_not_present "INFLUXDB_ADMIN_USERNAME" "$INFLUXDB_ADMIN_USERNAME"
   throw_if_env_var_not_present "INFLUXDB_ADMIN_PASSWORD" "$INFLUXDB_ADMIN_PASSWORD"
 
@@ -310,11 +294,7 @@ function setup_monitoring() {
 
   safely_set_port_for_env_var "INFLUXDB_PORT" "18089"
 
-  # Telegraf
-  throw_if_env_var_not_present "TELEGRAF_DOCKER_TAG" "$INFLUXDB_DOCKER_TAG"
-
   # Grafana
-  throw_if_env_var_not_present "GRAFANA_DOCKER_TAG" "$INFLUXDB_DOCKER_TAG"
   throw_if_env_var_not_present "INFLUXDB_ADMIN_USERNAME" "$INFLUXDB_ADMIN_USERNAME"
   throw_if_env_var_not_present "INFLUXDB_ADMIN_PASSWORD" "$INFLUXDB_ADMIN_PASSWORD"
 

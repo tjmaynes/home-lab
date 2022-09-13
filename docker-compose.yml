@@ -2,7 +2,7 @@ version: "2"
 
 services:
   pihole-server:
-    image: pihole/pihole:${PIHOLE_DOCKER_TAG}
+    image: pihole/pihole:2022.07.1
     container_name: pihole-server
     restart: always
     networks:
@@ -31,7 +31,7 @@ services:
       DELAY_STARTUP: 20
 
   nginx-server:
-    image: jc21/nginx-proxy-manager:${NGINX_SERVER_DOCKER_TAG}
+    image: jc21/nginx-proxy-manager:2.9.18
     container_name: nginx-proxy
     restart: unless-stopped
     networks:
@@ -49,7 +49,7 @@ services:
       DISABLE_IPV6: "true"
 
   duplicati-web:
-    image: lscr.io/linuxserver/duplicati:${DUPLICATI_DOCKER_TAG}
+    image: lscr.io/linuxserver/duplicati:2.0.6
     container_name: duplicati-web
     restart: unless-stopped
     ports:
@@ -136,25 +136,25 @@ services:
       - password=${NEXTCLOUD_COLLABORA_PASSWORD}
       - extra_params=--o:ssl.enable=true
 
-  # plex-server:
-  #   image: plexinc/pms-docker:${PLEX_DOCKER_TAG}
-  #   container_name: plex-server
-  #   restart: unless-stopped
-  #   network_mode: host
-  #   environment:
-  #     - PUID=${PUID}
-  #     - PGID=${PGID}
-  #     - TZ=${TIMEZONE}
-  #     - CLAIM_TOKEN=${PLEX_CLAIM_TOKEN}
-  #   volumes:
-  #     - ${PLEX_BASE_DIRECTORY}/config:/config
-  #     - ${PLEX_BASE_DIRECTORY}/transcode:/transcode
-  #     - ${MEDIA_DIRECTORY}:/media
+  plex-server:
+    image: plexinc/pms-docker:1.28.0.5999-97678ded3
+    container_name: plex-server
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+      - CLAIM_TOKEN=${PLEX_CLAIM_TOKEN}
+    volumes:
+      - ${PLEX_BASE_DIRECTORY}/config:/config
+      - ${PLEX_BASE_DIRECTORY}/transcode:/transcode
+      - ${MEDIA_DIRECTORY}:/media
 
   navidrome-server:
-    image: deluan/navidrome:${NAVIDROME_DOCKER_TAG}
+    image: deluan/navidrome:sha-e981ee2
     container_name: navidrome-server
-    # user: 1000:1000 # should be owner of volumes
+    user: ${PUID}:${PGID}
     ports:
       - ${NAVIDROME_PORT}:4533
     restart: unless-stopped
@@ -167,7 +167,7 @@ services:
       - ${MUSIC_DIRECTORY}:/music:ro
 
   calibre-web:
-    image: lscr.io/linuxserver/calibre-web:${CALIBRE_WEB_DOCKER_TAG}
+    image: lscr.io/linuxserver/calibre-web:0.6.19
     container_name: calibre-web
     restart: unless-stopped
     networks:
@@ -184,7 +184,7 @@ services:
       - ${BOOKS_DIRECTORY}:/books:ro
 
   gogs-web:
-    image: gogs/gogs:${GOGS_DOCKER_TAG}
+    image: gogs/gogs:0.12
     container_name: gogs-web
     restart: always
     ports:
@@ -200,7 +200,7 @@ services:
       - gogs-db
 
   gogs-db:
-    image: postgres:${GOGS_DB_DOCKER_TAG}
+    image: postgres:14
     container_name: gogs-db
     restart: always
     networks:
@@ -220,7 +220,7 @@ services:
       retries: 5
 
   homer-web:
-    image: b4bz/homer:${HOMER_DOCKER_TAG}
+    image: b4bz/homer:v22.07.2
     container_name: homer-web
     restart: always
     networks:
@@ -233,7 +233,7 @@ services:
       - INIT_ASSETS=0
 
   audiobookshelf-web:
-    image: ghcr.io/advplyr/audiobookshelf:${AUDIOBOOKSHELF_DOCKER_TAG}
+    image: ghcr.io/advplyr/audiobookshelf:2.1.2
     container_name: audiobookshelf-web
     networks:
       - default
@@ -249,7 +249,7 @@ services:
       - ${AUDIOBOOKSHELF_BASE_DIRECTORY}/metadata:/metadata
 
   podgrab-web:
-    image: akhilrex/podgrab:${PODGRAB_DOCKER_TAG}
+    image: akhilrex/podgrab:1.0.0
     container_name: podgrab-web
     environment:
       - CHECK_FREQUENCY=240
@@ -261,7 +261,7 @@ services:
     restart: unless-stopped
 
   drawio-web:
-    image: jgraph/drawio:${DRAWIO_DOCKER_TAG}
+    image: jgraph/drawio:20.2.3
     container_name: drawio-web
     restart: unless-stopped
     ports:
@@ -274,7 +274,7 @@ services:
       STATE: Remote
 
   bitwarden-server:
-    image: vaultwarden/server:${BITWARDEN_DOCKER_TAG}
+    image: vaultwarden/server:1.25.2-alpine
     container_name: bitwarden-server
     restart: always
     networks:
@@ -289,7 +289,7 @@ services:
       SIGNUPS_ALLOWED: "true"
 
   monitoring-influxdb:
-    image: influxdb:${INFLUXDB_DOCKER_TAG}
+    image: influxdb:1.8.10
     container_name: monitoring-influxdb
     restart: always
     ports:
@@ -303,14 +303,14 @@ services:
       - INFLUXDB_ADMIN_PASSWORD=${INFLUXDB_ADMIN_PASSWORD}
 
   monitoring-telegraf:
-    image: telegraf:${TELEGRAPF_DOCKER_TAG}
+    image: telegraf:1.23.4
     container_name: monitoring-telegraf
     restart: always
     volumes:
       - ${INFLUXDB_BASE_DIRECTORY}/telegraf.conf:/etc/telegraf/telegraf.conf:ro
 
   monitoring-grafana:
-    image: grafana/grafana-oss:${GRAFANA_DOCKER_TAG}
+    image: grafana/grafana-oss:9.1.2
     container_name: monitoring-grafana
     ports:
       - ${GRAFANA_PORT}:3000
