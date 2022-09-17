@@ -6,7 +6,8 @@ services:
     container_name: nginx-proxy
     restart: unless-stopped
     networks:
-      - default
+      macvlan_network:
+        ipv4_address: 192.168.4.201
     ports:
       - 80:80
       - 443:443
@@ -18,21 +19,35 @@ services:
       DB_SQLITE_FILE: "/data/database.sqlite"
       DISABLE_IPV6: "true"
 
-  plex-server:
-    image: lscr.io/linuxserver/plex:arm64v8-1.28.2
-    container_name: plex-server
+  jellyfin-server:
+    image: linuxserver/jellyfin:10.8.4
+    container_name: jellyfin-server
     restart: unless-stopped
     network_mode: host
+    volumes:
+      - ${JELLYFIN_BASE_DIRECTORY}/config:/config
+      - ${MEDIA_BASE_DIRECTORY}:/media
     environment:
+      - TZ=${TIMEZONE}
       - PUID=${PUID}
       - PGID=${PGID}
-      - TZ=${TIMEZONE}
-      - VERSION=docker
-      - CLAIM_TOKEN=${PLEX_CLAIM_TOKEN}
-    volumes:
-      - ${PLEX_BASE_DIRECTORY}/config:/config
-      - ${PLEX_BASE_DIRECTORY}/transcode:/transcode
-      - ${MEDIA_BASE_DIRECTORY}:/media
+      - JELLYFIN_PublishedServerUrl=${HOST_IP}
+
+  # plex-server:
+  #   image: lscr.io/linuxserver/plex:arm64v8-1.28.2
+  #   container_name: plex-server
+  #   restart: unless-stopped
+  #   network_mode: host
+  #   environment:
+  #     - PUID=${PUID}
+  #     - PGID=${PGID}
+  #     - TZ=${TIMEZONE}
+  #     - VERSION=docker
+  #     - CLAIM_TOKEN=${PLEX_CLAIM_TOKEN}
+  #   volumes:
+  #     - ${PLEX_BASE_DIRECTORY}/config:/config
+  #     - ${PLEX_BASE_DIRECTORY}/transcode:/transcode
+  #     - ${MEDIA_BASE_DIRECTORY}:/media
 
   navidrome-server:
     image: deluan/navidrome:sha-e981ee2
@@ -48,6 +63,24 @@ services:
     volumes:
       - ${NAVIDROME_BASE_DIRECTORY}/data:/data
       - ${MUSIC_DIRECTORY}:/music:ro
+
+  bonob-agent:
+    image: simojenki/bonob:v0.6.2
+    container_name: bonob-agent
+    restart: unless-stopped
+    user: ${PUID}:${PGID}
+    network_mode: host
+    ports:
+      - 14534:4534
+    environment:
+      BNB_PORT: 14534
+      BNB_URL: http://${HOST_IP}:14534
+      # BNB_SECRET: ${BONOB_SECRET_KEY}
+      BNB_SONOS_AUTO_REGISTER: true
+      BNB_SONOS_DEVICE_DISCOVERY: true
+      # BNB_SONOS_SERVICE_ID: 246
+      BNB_SONOS_SEED_HOST: ${BONOB_SEED_HOST}
+      BNB_SUBSONIC_URL: http://${HOST_IP}:19000
 
   calibre-web:
     image: lscr.io/linuxserver/calibre-web:0.6.19
@@ -214,3 +247,6 @@ services:
 networks:
   default:
     driver: bridge
+
+  macvlan_network:
+    external: true

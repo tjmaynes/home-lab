@@ -26,6 +26,7 @@ export PODCASTS_DIRECTORY=${MEDIA_BASE_DIRECTORY}/Podcasts
 # Docker
 export DOCKER_BASE_DIRECTORY=${BASE_DIRECTORY}/docker
 export NGNIX_PROXY_MANAGER_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/nginx-proxy-manager-server
+export JELLYFIN_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/jellyfin-server
 export HOMER_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/homer-web
 export PLEX_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/plex-server
 export NAVIDROME_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/navidrome-server
@@ -42,5 +43,8 @@ export GOGS_USER=gogs
 export GOGS_DB=gogs
 
 # Replace-me
+export HOST_IP=some-ip-address
+export BONOB_SECRET_KEY=some-secret-key
+export BONOB_SEED_HOST=some-ip-address
 export PLEX_CLAIM_TOKEN=some-token
-export GOGS_DB_PASSWORD=gogs
+export GOGS_DB_PASSWORD=some-password

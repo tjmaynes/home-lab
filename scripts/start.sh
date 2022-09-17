@@ -19,6 +19,17 @@ function setup_nginx_proxy() {
   ensure_directory_exists "$NGNIX_PROXY_MANAGER_BASE_DIRECTORY/letsencrypt"
 }
 
+function setup_jellyfin() {
+  add_step "Setting up jellyfin"
+
+  throw_if_env_var_not_present "MEDIA_BASE_DIRECTORY" "$MEDIA_BASE_DIRECTORY"
+  throw_if_env_var_not_present "HOST_IP" "$HOST_IP"
+
+  throw_if_env_var_not_present "JELLYFIN_BASE_DIRECTORY" "$JELLYFIN_BASE_DIRECTORY"
+  ensure_directory_exists "$JELLYFIN_BASE_DIRECTORY/config"
+  ensure_directory_exists "$JELLYFIN_BASE_DIRECTORY/plugins"
+}
+
 function setup_plex() {
   add_step "Setting up plex"
 
@@ -33,9 +44,13 @@ function setup_plex() {
 function setup_navidrome() {
   add_step "Setting up navidrome"
 
-  throw_if_env_var_not_present "NAVIDROME_BASE_DIRECTORY" "$NAVIDROME_BASE_DIRECTORY"
+  throw_if_env_var_not_present "MUSIC_DIRECTORY" "$MUSIC_DIRECTORY"
 
+  throw_if_env_var_not_present "NAVIDROME_BASE_DIRECTORY" "$NAVIDROME_BASE_DIRECTORY"
   ensure_directory_exists "$NAVIDROME_BASE_DIRECTORY/data"
+
+  throw_if_env_var_not_present "BONOB_SECRET_KEY" "$BONOB_SECRET_KEY"
+  throw_if_env_var_not_present "BONOB_SEED_HOST" "$BONOB_SEED_HOST"
 }
 
 function setup_calibre_web() {
@@ -164,6 +179,7 @@ function main() {
   setup_nfs_media_mount
 
   setup_nginx_proxy
+  setup_jellyfin
   setup_plex
   setup_navidrome
   setup_calibre_web
@@ -175,6 +191,16 @@ function main() {
   setup_home_assistant
   setup_nodered
   setup_monitoring
+
+  if ! docker network ls | grep "macvlan_network"; then
+    docker network create -d macvlan \
+      -o parent=eth0 \
+      --subnet 192.168.4.0/22 \
+      --gateway 192.168.4.1 \
+      --ip-range 192.168.4.200/32 \
+      --aux-address 'host=192.168.4.210' \
+      macvlan_network
+  fi
 
   docker compose up -d --remove-orphans
 }

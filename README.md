@@ -42,8 +42,10 @@ make backup
 | :-------------------------------------------------------------------- | :--------------------------------: | :------------: | :----: |
 | [nginx-proxy-manager](https://nginxproxymanager.com/)                 | reverse-proxy server               | docker-compose | ✅ |
 | [homer](https://github.com/bastienwirtz/homer)                        | start-page                         | docker-compose | ✅ |
+| [jellyfin](https://jellyfin.org/)                                     | media server                       | docker-compose | ✅ |
 | [plex-server](https://plex.tv/)                                       | media server                       | docker-compose | ✅ |
 | [navidrome](https://github.com/navidrome/navidrome)                   | modern music server                | docker-compose | ✅ |
+| [bonob-agent](https://github.com/simojenki/bonob)                     | modern music server                | docker-compose | ✅ |
 | [calibre-web](https://github.com/janeczku/calibre-web)                | web-based ebook-reader             | docker-compose | ✅ |
 | [audiobookshelf](https://www.audiobookshelf.org/)                     | podcast & audiobooks server        | docker-compose | ✅ |
 | [gogs](https://gogs.io/)                                              | git server                         | docker-compose | ✅ |
