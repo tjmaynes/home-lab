@@ -12,40 +12,11 @@ function check_requirements() {
   throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
 }
 
-function setup_pihole() {
-  add_step "Setting up pihole"
-
-  throw_if_file_not_present "/etc/timezone"
-
-  throw_if_env_var_not_present "PIHOLE_BASE_DIRECTORY" "$PIHOLE_BASE_DIRECTORY"
-  throw_if_env_var_not_present "PIHOLE_PASSWORD" "$PIHOLE_PASSWORD"
-
-  ensure_directory_exists "$PIHOLE_BASE_DIRECTORY/pihole"
-  ensure_directory_exists "$PIHOLE_BASE_DIRECTORY/dnsmasq.d"
-}
-
 function setup_nginx_proxy() {
   throw_if_env_var_not_present "NGNIX_PROXY_MANAGER_BASE_DIRECTORY" "$NGNIX_PROXY_MANAGER_BASE_DIRECTORY"
 
   ensure_directory_exists "$NGNIX_PROXY_MANAGER_BASE_DIRECTORY/data"
   ensure_directory_exists "$NGNIX_PROXY_MANAGER_BASE_DIRECTORY/letsencrypt"
-}
-
-function setup_tailscale() {
-  add_step "Setting up tailscale"
-
-  throw_if_env_var_not_present "TAILSCALE_BASE_DIRECTORY" "$TAILSCALE_BASE_DIRECTORY"
-
-  ensure_directory_exists "$TAILSCALE_BASE_DIRECTORY/var/lib"
-
-  if [[ ! -c "/dev/net/tun" ]]; then
-    if [[ ! -d "/dev/net" ]]; then
-      mkdir -m 755 /dev/net
-    fi
-
-    mknod /dev/net/tun c 10 200
-    chmod 0755 /dev/net/tun
-  fi
 }
 
 function setup_plex() {
@@ -90,16 +61,16 @@ function setup_homer() {
 
   throw_if_env_var_not_present "SERVICE_DOMAIN" "$SERVICE_DOMAIN"
 
-  throw_if_env_var_not_present "HOMER_WEB_BASE_DIRECTORY" "$HOMER_WEB_BASE_DIRECTORY"
+  throw_if_env_var_not_present "HOMER_BASE_DIRECTORY" "$HOMER_BASE_DIRECTORY"
 
-  ensure_directory_exists "$HOMER_WEB_BASE_DIRECTORY/www/assets"
+  ensure_directory_exists "$HOMER_BASE_DIRECTORY/www/assets"
 
   sed \
     -e "s/%protocol-type%/http/g" \
     -e "s/%service-domain%/${SERVICE_DOMAIN}/g" \
-    data/homer.template.yml > "$HOMER_WEB_BASE_DIRECTORY/www/assets/config.yml"
+    data/homer.template.yml > "$HOMER_BASE_DIRECTORY/www/assets/config.yml"
 
-  cp -f static/homer-logo.png "$HOMER_WEB_BASE_DIRECTORY/www/assets/logo.png"
+  cp -f static/homer-logo.png "$HOMER_BASE_DIRECTORY/www/assets/logo.png"
 }
 
 function setup_audiobookshelf() {
@@ -125,6 +96,24 @@ function setup_bitwarden() {
   throw_if_env_var_not_present "BITWARDEN_BASE_DIRECTORY" "$BITWARDEN_BASE_DIRECTORY"
 
   ensure_directory_exists "$BITWARDEN_BASE_DIRECTORY/data"
+}
+
+function setup_home_assistant() {
+  add_step "Setting up home assistant"
+
+  throw_if_env_var_not_present "HOME_ASSISTANT_BASE_DIRECTORY" "$HOME_ASSISTANT_BASE_DIRECTORY"
+
+  ensure_directory_exists "$HOME_ASSISTANT_BASE_DIRECTORY/config"
+}
+
+function setup_nodered() {
+  add_step "Setting up nodered"
+
+  throw_if_env_var_not_present "NODERED_BASE_DIRECTORY" "$NODERED_BASE_DIRECTORY"
+
+  ensure_directory_exists "$NODERED_BASE_DIRECTORY/data"
+
+  chmod 777 "$NODERED_BASE_DIRECTORY/data"
 }
 
 function setup_monitoring() {
@@ -174,8 +163,6 @@ function main() {
 
   setup_nfs_media_mount
 
-  setup_tailscale
-  setup_pihole
   setup_nginx_proxy
   setup_plex
   setup_navidrome
@@ -185,28 +172,11 @@ function main() {
   setup_audiobookshelf
   setup_podgrab
   setup_bitwarden
+  setup_home_assistant
+  setup_nodered
   setup_monitoring
 
-  if ! docker network ls | grep "macvlan_network"; then
-    docker network create -d macvlan \
-      -o parent=eth0 \
-      --subnet 192.168.4.0/22 \
-      --gateway 192.168.4.1 \
-      --ip-range 192.168.4.200/32 \
-      --aux-address 'host=192.168.4.210' \
-      macvlan_network
-  fi
-
   docker compose up -d --remove-orphans
-
-  throw_if_env_var_not_present "PIHOLE_PASSWORD" "$PIHOLE_PASSWORD"
-  docker exec pihole-server pihole -a -p $PIHOLE_PASSWORD
-
-  docker exec tailscale-agent tailscale up \
-    --accept-dns=false \
-    --advertise-exit-node \
-    --advertise-routes=192.168.4.0/22 \
-    --reset
 }
 
 main

@@ -1,6 +1,6 @@
-title: "Zeus Dashboard"
+title: "G.E.C.K. Dashboard"
 subtitle: "Welcome and please be kind..."
-documentTitle: "Zeus Startpage"
+documentTitle: "G.E.C.K."
 logo: "assets/logo.png"
 
 header: true
@@ -16,7 +16,7 @@ defaults:
 links:
   - name: "Source Code"
     icon: "fab fa-github"
-    url: "https://github.com/tjmaynes/zeus"
+    url: "https://github.com/tjmaynes/geck"
     target: "_blank"
 
 services:
@@ -98,7 +98,7 @@ services:
     items:
       - name: "Admin Portal"
         icon: "fas fa-lock"
-        subtitle: "Admin interface for Zeus home server"
+        subtitle: "Admin interface for geck home server"
         tag: "app"
         url: "%protocol-type%://admin.%service-domain%"
         target: "_blank"

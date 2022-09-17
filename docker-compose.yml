@@ -1,71 +1,12 @@
-version: "3.6"
+version: "3.8"
 
 services:
-  pihole-server:
-    image: pihole/pihole:2022.09.3
-    container_name: pihole-server
-    restart: unless-stopped
-    networks:
-      pihole_network:
-        ipv4_address: 172.30.9.3
-      macvlan_network:
-        ipv4_address: 192.168.4.200
-    dns:
-      - 1.1.1.1
-      - 1.0.0.1
-    ports:
-      - target: 53
-        published: 53
-        protocol: tcp
-      - target: 53
-        published: 53
-        protocol: udp
-      - target: 67
-        published: 67
-        protocol: udp
-      - target: 80
-        published: 80
-        protocol: tcp
-      - target: 443
-        published: 443
-        protocol: tcp
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - ${PIHOLE_BASE_DIRECTORY}/pihole/:/etc/pihole/
-      - ${PIHOLE_BASE_DIRECTORY}/dnsmasq.d/:/etc/dnsmasq.d/
-    environment:
-      TZ: ${TIMEZONE}
-      WEBPASSWORD: ${PIHOLE_PASSWORD}
-      DNSMASQ_LISTENING: all
-      FTLCONF_LOCAL_IPV4: 192.168.4.200
-      PIHOLE_DNS_: "172.30.9.2#5053;no"
-    depends_on:
-      - cloudflared-agent
-    cap_add:
-      - NET_ADMIN
-    sysctls:
-      - net.ipv6.conf.all.disable_ipv6=0
-
-  cloudflared-agent:
-    image: cloudflare/cloudflared:2022.9.0-arm64
-    container_name: cloudflared-agent
-    restart: unless-stopped
-    command: proxy-dns
-    networks:
-      pihole_network:
-        ipv4_address: 172.30.9.2
-    environment:
-      TUNNEL_DNS_UPSTREAM: "https://1.1.1.1/dns-query,https://1.0.0.1/dns-query,https://9.9.9.9/dns-query"
-      TUNNEL_DNS_PORT: 5053
-      TUNNEL_DNS_ADDRESS: "0.0.0.0"
-
   nginx-server:
     image: jc21/nginx-proxy-manager:2.9.18
     container_name: nginx-proxy
     restart: unless-stopped
     networks:
-      macvlan_network:
-        ipv4_address: 192.168.4.201
+      - default
     ports:
       - 80:80
       - 443:443
@@ -76,20 +17,6 @@ services:
     environment:
       DB_SQLITE_FILE: "/data/database.sqlite"
       DISABLE_IPV6: "true"
-
-  tailscale-agent:
-    image: tailscale/tailscale:v1.29.125
-    container_name: tailscale-agent
-    restart: unless-stopped
-    hostname: zeus
-    privileged: true
-    network_mode: host
-    volumes:
-      - ${TAILSCALE_BASE_DIRECTORY}/var/lib:/var/lib
-    cap_add:
-      - NET_ADMIN
-      - SYS_MODULE
-    command: tailscaled
 
   plex-server:
     image: lscr.io/linuxserver/plex:arm64v8-1.28.2
@@ -184,7 +111,7 @@ services:
     ports:
       - 18081:8080
     volumes:
-      - ${HOMER_WEB_BASE_DIRECTORY}/www/assets:/www/assets
+      - ${HOMER_BASE_DIRECTORY}/www/assets:/www/assets
     environment:
       - INIT_ASSETS=0
 
@@ -233,6 +160,29 @@ services:
       WEBSOCKET_ENABLED: "true"
       SIGNUPS_ALLOWED: "true"
 
+  home-assistant-web:
+    image: ghcr.io/home-assistant/home-assistant:2022.9
+    container_name: home-assistant-web
+    restart: always
+    network_mode: host
+    volumes:
+      - ${HOME_ASSISTANT_BASE_DIRECTORY}/config:/config
+    environment:
+      - TZ=${TIMEZONE}
+
+  node-red:
+    image: nodered/node-red:2.2.3-12
+    container_name: node-red
+    restart: unless-stopped
+    environment:
+      - TZ=${TIMEZONE}
+    ports:
+      - 18800:1880
+    networks:
+      - default
+    volumes:
+      - ${NODERED_BASE_DIRECTORY}/data:/data
+
   portainer-server:
     image: portainer/portainer-ce:2.15.0-alpine
     container_name: portainer-server
@@ -252,6 +202,8 @@ services:
     image: grafana/grafana-oss:9.1.2
     container_name: monitoring-grafana
     user: ${PUID}:${PGID}
+    networks:
+      - default
     ports:
       - 18888:3000
     restart: unless-stopped
@@ -262,11 +214,3 @@ services:
 networks:
   default:
     driver: bridge
-
-  macvlan_network:
-    external: true
-
-  pihole_network:
-    ipam:
-      config:
-        - subnet: 172.30.9.0/29

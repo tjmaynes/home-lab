@@ -3,15 +3,15 @@
 set -eo pipefail
 
 function setup_env_vars() {
-  DEFAULT_ENV_FILE=.envrc.development
-  if [[ -z "$ENV_FILE" ]]; then
-    ENV_FILE=$DEFAULT_ENV_FILE
+  if [[ ! -f ".envrc.production" ]]; then
+    echo "Please create a production config: .envrc.production"
+    exit 1
   fi
 
   export PUID=$(id -u)
   export PGID=$(id -g)
 
-  source "$ENV_FILE"
+  source .envrc.production
 }
 
 function ensure_directory_exists() {
