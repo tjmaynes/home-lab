@@ -6,10 +6,8 @@ export BASE_DIRECTORY=/home/${NONROOT_USER}
 
 # NAS
 export NAS_IP=192.168.4.76
-export NAS_USER=${NONROOT_USER}
-export NAS_BASE_DIRECTORY=/volume1
-export NAS_MEDIA_DIRECTORY=${NAS_BASE_DIRECTORY}/dionysus
-export NAS_BACKUP_DIRECTORY=${NAS_BASE_DIRECTORY}/NetBackup/${NONROOT_USER}
+export NAS_MEDIA_DIRECTORY=dionysus
+export NAS_BACKUP_DIRECTORY=${NONROOT_USER}
 
 # Backup
 export BACKUP_BASE_DIRECTORY=${BASE_DIRECTORY}/backups
@@ -27,7 +25,6 @@ export PODCASTS_DIRECTORY=${MEDIA_BASE_DIRECTORY}/Podcasts
 export DOCKER_BASE_DIRECTORY=${BASE_DIRECTORY}/docker
 export NGNIX_PROXY_MANAGER_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/nginx-proxy-manager-server
 export HOMER_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/homer-web
-export TAILSCALE_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/tailscale-agent
 export JELLYFIN_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/jellyfin-server
 export PLEX_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/plex-server
 export NAVIDROME_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/navidrome-server
@@ -45,6 +42,7 @@ export GOGS_DB=gogs
 
 # Replace-me
 export HOST_IP=some-ip-address
+export NAS_MOUNT_PASSWORD=some-password
 export BONOB_SECRET_KEY=some-secret-key
 export BONOB_SEED_HOST=some-ip-address
 export PLEX_CLAIM_TOKEN=some-token

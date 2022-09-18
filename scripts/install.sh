@@ -62,25 +62,6 @@ function install_required_programs() {
   install_argon_one_case
 }
 
-function setup_nfs_media_mount() {
-  throw_if_program_not_present "mount"
-
-  throw_if_env_var_not_present "NAS_IP" "$NAS_IP"
-  throw_if_env_var_not_present "NAS_MEDIA_DIRECTORY" "$NAS_MEDIA_DIRECTORY"
-  throw_if_env_var_not_present "MEDIA_BASE_DIRECTORY" "$MEDIA_BASE_DIRECTORY"
-  
-  ensure_directory_exists "$MEDIA_BASE_DIRECTORY"
-
-  FSTAB_CONFIG="$NAS_IP:$NAS_MEDIA_DIRECTORY $MEDIA_BASE_DIRECTORY nfs rw,relatime,user,noauto 0 0"
-  if ! cat /etc/fstab | grep -q "$FSTAB_CONFIG"; then
-    echo "$FSTAB_CONFIG" >> /etc/fstab
-  fi
-}
-
-function setup_nfs_mounts() {
-  setup_nfs_media_mount
-}
-
 function setup_sysctl() {
   IPV4_CONFIG="net.ipv4.ip_forward=1"
   if ! cat /etc/sysctl.conf | grep "$IPV4_CONFIG"; then
@@ -118,7 +99,6 @@ function main() {
 
   setup_sysctl
   setup_cronjobs
-  setup_nfs_mounts
 
   throw_if_program_not_present "raspi-config"
   raspi-config nonint do_boot_wait 0

@@ -14,6 +14,26 @@ function setup_env_vars() {
   source .envrc.production
 }
 
+function setup_nas_mount() {
+  throw_if_env_var_not_present "NONROOT_USER" "$NONROOT_USER"
+  throw_if_env_var_not_present "NAS_MOUNT_PASSWORD" "$NAS_MOUNT_PASSWORD"
+  throw_if_env_var_not_present "NAS_IP" "$NAS_IP"
+
+  delay=0
+  while ! mount | grep "//$NAS_IP/$1 on $2 type cifs" > /dev/null; do
+    sleep $delay
+
+    if [ "$delay" -gt 60 ]; then
+        exit 1
+    fi
+
+    sudo mount -t cifs //$NAS_IP/$1 $2 \
+      -o username=$NONROOT_USER,password=$NAS_MOUNT_PASSWORD || true
+
+    delay=$((delay+5))
+  done
+}
+
 function ensure_directory_exists() {
   TARGET_DIRECTORY=$1
 

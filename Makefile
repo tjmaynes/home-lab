@@ -13,8 +13,5 @@ stop:
 backup:
 	./scripts/runner.sh "$@"
 
-macvlan:
-	./scripts/runner.sh "$@"
-
 debug.service:
 	journalctl -u start-geck.service -b

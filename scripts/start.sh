@@ -19,23 +19,6 @@ function setup_nginx_proxy() {
   ensure_directory_exists "$NGNIX_PROXY_MANAGER_BASE_DIRECTORY/letsencrypt"
 }
 
-function setup_tailscale() {
-  add_step "Setting up tailscale"
-
-  throw_if_env_var_not_present "TAILSCALE_BASE_DIRECTORY" "$TAILSCALE_BASE_DIRECTORY"
-
-  ensure_directory_exists "$TAILSCALE_BASE_DIRECTORY/var/lib"
-
-  if [[ ! -c "/dev/net/tun" ]]; then
-    if [[ ! -d "/dev/net" ]]; then
-      mkdir -m 755 /dev/net
-    fi
-
-    mknod /dev/net/tun c 10 200
-    chmod 0755 /dev/net/tun
-  fi
-}
-
 function setup_jellyfin() {
   add_step "Setting up jellyfin"
 
@@ -162,23 +145,10 @@ function setup_nfs_media_mount() {
 
   throw_if_program_not_present "mount"
 
-  throw_if_env_var_not_present "NAS_IP" "$NAS_IP"
-
   throw_if_env_var_not_present "NAS_MEDIA_DIRECTORY" "$NAS_MEDIA_DIRECTORY"
   throw_if_env_var_not_present "MEDIA_BASE_DIRECTORY" "$MEDIA_BASE_DIRECTORY"
 
-  delay=0
-  while ! mount | grep "$NAS_IP:$NAS_MEDIA_DIRECTORY on $MEDIA_BASE_DIRECTORY type nfs" > /dev/null; do
-    sleep $delay
-
-    if [ "$delay" -gt 60 ]; then
-        exit 1
-    fi
-
-    sudo -u "$NONROOT_USER" mount -t nfs "$NAS_IP:$NAS_MEDIA_DIRECTORY" "$MEDIA_BASE_DIRECTORY" || true
-
-    delay=$((delay+5))
-  done
+  setup_nas_mount "$NAS_MEDIA_DIRECTORY" "$MEDIA_BASE_DIRECTORY"
 
   throw_if_directory_not_present "VIDEOS_DIRECTORY" "$VIDEOS_DIRECTORY"
   throw_if_directory_not_present "MUSIC_DIRECTORY" "$MUSIC_DIRECTORY"
@@ -196,7 +166,6 @@ function main() {
   setup_nfs_media_mount
 
   setup_nginx_proxy
-  setup_tailscale
   setup_homer
   setup_jellyfin
   setup_plex
@@ -211,10 +180,6 @@ function main() {
   setup_monitoring
 
   docker compose up -d --remove-orphans
-
-  docker exec tailscale-agent tailscale up \
-    --advertise-routes=192.168.4.0/22 \
-    --reset
 }
 
 main
