@@ -41,6 +41,7 @@ make backup
 | Program                                                               | Usage                              | Tools          | Status |
 | :-------------------------------------------------------------------- | :--------------------------------: | :------------: | :----: |
 | [nginx-proxy-manager](https://nginxproxymanager.com/)                 | reverse-proxy server               | docker-compose | ✅ |
+| [tailscale-agent](https://tailscale.com/)                             | modern vpn service                 | docker-compose | ✅ |
 | [homer](https://github.com/bastienwirtz/homer)                        | start-page                         | docker-compose | ✅ |
 | [jellyfin](https://jellyfin.org/)                                     | media server                       | docker-compose | ✅ |
 | [plex-server](https://plex.tv/)                                       | media server                       | docker-compose | ✅ |

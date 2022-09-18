@@ -19,6 +19,23 @@ function setup_nginx_proxy() {
   ensure_directory_exists "$NGNIX_PROXY_MANAGER_BASE_DIRECTORY/letsencrypt"
 }
 
+function setup_tailscale() {
+  add_step "Setting up tailscale"
+
+  throw_if_env_var_not_present "TAILSCALE_BASE_DIRECTORY" "$TAILSCALE_BASE_DIRECTORY"
+
+  ensure_directory_exists "$TAILSCALE_BASE_DIRECTORY/var/lib"
+
+  if [[ ! -c "/dev/net/tun" ]]; then
+    if [[ ! -d "/dev/net" ]]; then
+      mkdir -m 755 /dev/net
+    fi
+
+    mknod /dev/net/tun c 10 200
+    chmod 0755 /dev/net/tun
+  fi
+}
+
 function setup_jellyfin() {
   add_step "Setting up jellyfin"
 
@@ -179,30 +196,25 @@ function main() {
   setup_nfs_media_mount
 
   setup_nginx_proxy
+  setup_tailscale
+  setup_homer
   setup_jellyfin
   setup_plex
   setup_navidrome
   setup_calibre_web
-  setup_gogs
-  setup_homer
   setup_audiobookshelf
+  setup_gogs
   setup_podgrab
   setup_bitwarden
   setup_home_assistant
   setup_nodered
   setup_monitoring
 
-  if ! docker network ls | grep "macvlan_network"; then
-    docker network create -d macvlan \
-      -o parent=eth0 \
-      --subnet 192.168.4.0/22 \
-      --gateway 192.168.4.1 \
-      --ip-range 192.168.4.200/32 \
-      --aux-address 'host=192.168.4.210' \
-      macvlan_network
-  fi
-
   docker compose up -d --remove-orphans
+
+  docker exec tailscale-agent tailscale up \
+    --advertise-routes=192.168.4.0/22 \
+    --reset
 }
 
 main
