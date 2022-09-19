@@ -109,6 +109,31 @@ services:
       - ${CALIBRE_WEB_BASE_DIRECTORY}/config:/config
       - ${BOOKS_DIRECTORY}:/books:ro
 
+  miniflux-web:
+    image: miniflux/miniflux:2.0.38
+    container_name: miniflux-web
+    ports:
+      - 18050:8080
+    environment:
+      - DATABASE_URL=postgres://${MINIFLUX_DB_USERNAME}:${MINIFLUX_DB_PASSWORD}@miniflux-db/miniflux?sslmode=disable
+      - RUN_MIGRATIONS=1
+      - CREATE_ADMIN=1
+      - ADMIN_USERNAME=${MINIFLUX_ADMIN_USERNAME}
+      - ADMIN_PASSWORD=${MINIFLUX_ADMIN_PASSWORD}
+    depends_on:
+      - miniflux-db
+  
+  miniflux-db:
+    image: postgres:14
+    container_name: miniflux-db
+    ports:
+      - 15434:5432
+    environment:
+      - POSTGRES_USER=${MINIFLUX_DB_USERNAME}
+      - POSTGRES_PASSWORD=${MINIFLUX_DB_PASSWORD}
+    volumes:
+      - ${MINIFLUX_DB_BASE_DIRECTORY}:/var/lib/postgresql/data
+
   gogs-web:
     image: gogs/gogs:0.12
     container_name: gogs-web
@@ -241,12 +266,17 @@ services:
       - ${GRAFANA_AGENT_BASE_DIRECTORY}/data:/etc/agent/data
       - ${GRAFANA_AGENT_BASE_DIRECTORY}/agent.yaml:/etc/agent/agent.yaml
 
-  grafana-loki:
-    image: grafana/loki:main
-    container_name: grafana-loki
-    command: -config.file=/etc/loki/local-config.yaml
-    ports:
-      - "3100:3100"
+  promtail-agent:
+    image: grafana/promtail:main
+    container_name: promtail-agent
+    user: ${PUID}:${PGID}
+    networks:
+      - default
+    volumes:
+      - /var/log:/var/log
+      - /var/lib/docker/:/var/lib/docker:ro
+      - ${PROMTAIL_AGENT_BASE_DIRECTORY}/config.yaml:/etc/promtail/config.yaml
+    command: -config.file=/etc/promtail/config.yaml
 
 networks:
   default:
