@@ -131,13 +131,64 @@ function setup_nodered() {
   chmod 777 "$NODERED_BASE_DIRECTORY/data"
 }
 
-function setup_monitoring() {
+function setup_grafana_agent() {
   add_step "Setting up monitoring"
 
-  throw_if_env_var_not_present "GRAFANA_BASE_DIRECTORY" "$GRAFANA_BASE_DIRECTORY"
+  throw_if_env_var_not_present "GRAFANA_AGENT_BASE_DIRECTORY" "$GRAFANA_AGENT_BASE_DIRECTORY"
+  ensure_directory_exists "${GRAFANA_AGENT_BASE_DIRECTORY}/data"
 
-  ensure_directory_exists "${GRAFANA_BASE_DIRECTORY}/var/lib/grafana"
-  ensure_directory_exists "${GRAFANA_BASE_DIRECTORY}/provisioning/datasources"
+  throw_if_env_var_not_present "GRAFANA_USERNAME" "$GRAFANA_USERNAME"
+  throw_if_env_var_not_present "GRAFANA_PASSWORD" "$GRAFANA_PASSWORD"
+
+  if [[ ! -f "${GRAFANA_AGENT_BASE_DIRECTORY}/agent.yaml" ]]; then
+    sudo tee -a "${GRAFANA_AGENT_BASE_DIRECTORY}/agent.yaml" <<EOF
+server:
+  log_level: info
+
+metrics:
+  wal_directory: /tmp/wal
+  global:
+    remote_write:
+      - url: https://prometheus-prod-10-prod-us-central-0.grafana.net/api/prom/push
+        basic_auth:
+          username: ${GRAFANA_USERNAME}
+          password: ${GRAFANA_PASSWORD}
+
+integrations:
+  agent:
+    enabled: true
+
+  node_exporter:
+    enabled: true
+    relabel_configs:
+    - replacement: hostname
+      target_label: instance
+
+logs:
+  configs:
+  - name: integrations
+    clients:
+      - url: http://grafana-loki:3100/loki/api/v1/push
+    positions:
+      filename: /tmp/positions.yaml
+    scrape_configs:
+    - job_name: integrations/node_exporter_journal_scrape
+      journal:
+        max_age: 24h
+        labels:
+          instance: hostname
+          job: integrations/node_exporter
+      relabel_configs:
+      - source_labels: ['__journal__systemd_unit']
+        target_label: 'unit'
+      - source_labels: ['__journal__boot_id']
+        target_label: 'boot_id'
+      - source_labels: ['__journal__transport']
+        target_label: 'transport'
+      - source_labels: ['__journal_priority_keyword']
+        target_label: 'level'
+EOF
+  fi
 }
 
 function setup_nfs_media_mount() {
@@ -177,7 +228,7 @@ function main() {
   setup_bitwarden
   setup_home_assistant
   setup_nodered
-  setup_monitoring
+  setup_grafana_agent
 
   docker compose up -d --remove-orphans
 }

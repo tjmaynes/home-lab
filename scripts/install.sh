@@ -33,6 +33,13 @@ function setup_cronjobs() {
   BACKUP_CRONTAB="0 0-6/2 * * *  cd ~/workspace/tjmaynes/geck && sudo make backup"
   if ! crontab -l | grep "$BACKUP_CRONTAB"; then
     echo -e "Backups are not setup. Copy command and paste via 'crontab -e': $BACKUP_CRONTAB"
+    exit 1
+  fi
+
+  CRON_LINE="#cron.*"
+  if ! cat /etc/rsyslog.conf | grep "$CRON_LINE"; then
+    echo -e "Cron logging is not configured. Uncomment 'cron' line in /etc/rsyslog.conf"
+    exit 1
   fi
 }
 

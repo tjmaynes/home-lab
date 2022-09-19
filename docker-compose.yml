@@ -228,18 +228,25 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - /var/lib/docker/volumes:/var/lib/docker/volumes
 
-  monitoring-grafana:
-    image: grafana/grafana-oss:9.1.2
-    container_name: monitoring-grafana
+  grafana-agent:
+    image: grafana/agent:main
+    container_name: grafana-agent
+    restart: unless-stopped
     user: ${PUID}:${PGID}
     networks:
       - default
     ports:
-      - 18888:3000
-    restart: unless-stopped
+      - 12345:12345
     volumes:
-      - ${GRAFANA_BASE_DIRECTORY}/provisioning/datasources:/etc/grafana/provisioning/datasources
-      - ${GRAFANA_BASE_DIRECTORY}/var/lib/grafana:/var/lib/grafana
+      - ${GRAFANA_AGENT_BASE_DIRECTORY}/data:/etc/agent/data
+      - ${GRAFANA_AGENT_BASE_DIRECTORY}/agent.yaml:/etc/agent/agent.yaml
+
+  grafana-loki:
+    image: grafana/loki:main
+    container_name: grafana-loki
+    command: -config.file=/etc/loki/local-config.yaml
+    ports:
+      - "3100:3100"
 
 networks:
   default:

@@ -36,7 +36,7 @@ export PODGRAB_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/podgrab-web
 export BITWARDEN_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/bitwarden-server
 export HOME_ASSISTANT_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/home-assistant-server
 export NODERED_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/nodered-web
-export GRAFANA_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/monitoring-grafana
+export GRAFANA_AGENT_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/grafana-agent
 export GOGS_USER=gogs
 export GOGS_DB=gogs
 
@@ -47,3 +47,5 @@ export BONOB_SECRET_KEY=some-secret-key
 export BONOB_SEED_HOST=some-ip-address
 export PLEX_CLAIM_TOKEN=some-token
 export GOGS_DB_PASSWORD=some-password
+export GRAFANA_USERNAME=some-username
+export GRAFANA_PASSWORD=some-password

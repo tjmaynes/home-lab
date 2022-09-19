@@ -54,4 +54,5 @@ make backup
 | [home-assistant](https://www.home-assistant.io/)                      | home automation server             | docker-compose | ✅ |
 | [node-red](https://nodered.org/)                                      | programmable automation interface  | docker-compose | ✅ |
 | [portainer](https://docs.portainer.io/v/ce-2.9/start/install)         | monitoring docker containers       | docker-compose | ✅ |
-| [grafana](https://grafana.com/)                                       | monitoring dashboard web interface | docker-compose | ✅ |
+| [grafana-agent](https://github.com/grafana/agent)                     | monitoring agent for grafana cloud | docker-compose | ✅ |
+| [grafana-loki](https://grafana.com/oss/loki/)                         | logging agent for grafana cloud    | docker-compose | ✅ |
