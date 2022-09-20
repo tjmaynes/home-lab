@@ -43,6 +43,40 @@ function setup_cronjobs() {
   fi
 }
 
+function setup_static_ip() {
+  throw_if_env_var_not_present "HOST_IP" "$HOST_IP"
+
+  IPV6_CONFIG="net.ipv6.conf.all.forwarding=1"
+  if ! cat /etc/sysctl.conf | grep "$IPV6_CONFIG"; then
+    echo "$IPV6_CONFIG" | sudo tee -a /etc/sysctl.conf
+  fi
+
+  if [[ -f "/etc/dhcpcd.conf" ]]; then
+    rm -f "/etc/dhcpcd.conf"
+  fi
+
+  tee -a "/etc/dhcpcd.conf" <<EOF
+hostname
+
+clientid
+
+persistant
+
+option rapid_commit
+option domain_name_servers, domain_name, domain_search, host_name
+option classless_static_routes
+option interface_mtu
+
+require dhcp_server_identifier
+
+slaac private
+
+interface eth0
+static ip_address=${HOST_IP}/24
+static routers=${HOST_ROUTER_IP}
+EOF
+}
+
 function install_docker() {
   if [[ -z "$(command -v docker)" ]]; then
     ./scripts/install-docker.sh
@@ -106,6 +140,7 @@ function main() {
 
   setup_sysctl
   setup_cronjobs
+  setup_static_ip
 
   throw_if_program_not_present "raspi-config"
   raspi-config nonint do_boot_wait 0

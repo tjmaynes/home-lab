@@ -12,21 +12,12 @@ function check_requirements() {
   throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
 }
 
-function setup_tailscale() {
-  add_step "Setting up tailscale"
+function setup_cloudflare_tunnel() {
+  throw_if_env_var_not_present "CLOUDFLARE_BASE_DIRECTORY" "$CLOUDFLARE_BASE_DIRECTORY"
 
-  throw_if_env_var_not_present "TAILSCALE_BASE_DIRECTORY" "$TAILSCALE_BASE_DIRECTORY"
+  ensure_directory_exists "$CLOUDFLARE_BASE_DIRECTORY/etc/cloudflared"
 
-  ensure_directory_exists "$TAILSCALE_BASE_DIRECTORY/var/lib"
-
-  if [[ ! -c "/dev/net/tun" ]]; then
-    if [[ ! -d "/dev/net" ]]; then
-      mkdir -m 755 /dev/net
-    fi
-
-    mknod /dev/net/tun c 10 200
-    chmod 0755 /dev/net/tun
-  fi
+  throw_if_env_var_not_present "CLOUDFLARE_TUNNEL_TOKEN" "$CLOUDFLARE_TUNNEL_TOKEN"
 }
 
 function setup_nginx_proxy() {
@@ -45,17 +36,6 @@ function setup_jellyfin() {
   throw_if_env_var_not_present "JELLYFIN_BASE_DIRECTORY" "$JELLYFIN_BASE_DIRECTORY"
   ensure_directory_exists "$JELLYFIN_BASE_DIRECTORY/config"
   ensure_directory_exists "$JELLYFIN_BASE_DIRECTORY/plugins"
-}
-
-function setup_plex() {
-  add_step "Setting up plex"
-
-  throw_if_env_var_not_present "PLEX_BASE_DIRECTORY" "$PLEX_BASE_DIRECTORY"
-
-  ensure_directory_exists "$PLEX_BASE_DIRECTORY/config"
-  ensure_directory_exists "$PLEX_BASE_DIRECTORY/transcode"
-
-  throw_if_env_var_not_present "PLEX_CLAIM_TOKEN" "$PLEX_CLAIM_TOKEN"
 }
 
 function setup_navidrome() {
@@ -111,7 +91,7 @@ function setup_homer() {
   ensure_directory_exists "$HOMER_BASE_DIRECTORY/www/assets"
 
   sed \
-    -e "s/%protocol-type%/http/g" \
+    -e "s/%protocol-type%/https/g" \
     -e "s/%service-domain%/${SERVICE_DOMAIN}/g" \
     data/homer.template.yml > "$HOMER_BASE_DIRECTORY/www/assets/config.yml"
 
@@ -186,11 +166,10 @@ function main() {
 
   setup_nfs_media_mount
 
-  setup_tailscale
+  setup_cloudflare_tunnel
   setup_nginx_proxy
   setup_homer
   setup_jellyfin
-  setup_plex
   setup_navidrome
   setup_calibre_web
   setup_miniflux_web
@@ -204,10 +183,6 @@ function main() {
   ./scripts/setup-monitoring.sh
 
   docker compose up -d --remove-orphans
-
-  docker exec tailscale-agent tailscale up \
-    --advertise-routes=192.168.4.0/22 \
-    --reset
 }
 
 main

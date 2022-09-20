@@ -79,6 +79,7 @@ function setup_promtail_agent() {
   if [[ ! -f "${PROMTAIL_AGENT_BASE_DIRECTORY}/config.yaml" ]]; then
     sudo tee -a "${PROMTAIL_AGENT_BASE_DIRECTORY}/config.yaml" <<EOF
 server:
+  http_listen_address: 0.0.0.0
   http_listen_port: 9080
   grpc_listen_port: 0
 

@@ -1,19 +1,16 @@
 version: "3.8"
 
 services:
-  tailscale-agent:
-    image: tailscale/tailscale:v1.29.125
-    container_name: tailscale-agent
+  cloudflared-tunnel:
+    image: cloudflare/cloudflared:2022.9.0-arm64
+    container_name: cloudflared-tunnel
     restart: unless-stopped
-    hostname: geck
-    privileged: true
+    command: tunnel run
     network_mode: host
     volumes:
-      - ${TAILSCALE_BASE_DIRECTORY}/var/lib:/var/lib
-    cap_add:
-      - NET_ADMIN
-      - SYS_MODULE
-    command: tailscaled
+      - ${CLOUDFLARE_BASE_DIRECTORY}:/etc/cloudflared
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
 
   nginx-server:
     image: jc21/nginx-proxy-manager:2.9.18
@@ -56,22 +53,6 @@ services:
       - PUID=${PUID}
       - PGID=${PGID}
       - JELLYFIN_PublishedServerUrl=${HOST_IP}
-
-  # plex-server:
-  #   image: lscr.io/linuxserver/plex:arm64v8-1.28.2
-  #   container_name: plex-server
-  #   restart: unless-stopped
-  #   network_mode: host
-  #   environment:
-  #     - PUID=${PUID}
-  #     - PGID=${PGID}
-  #     - TZ=${TIMEZONE}
-  #     - VERSION=docker
-  #     - CLAIM_TOKEN=${PLEX_CLAIM_TOKEN}
-  #   volumes:
-  #     - ${PLEX_BASE_DIRECTORY}/config:/config
-  #     - ${PLEX_BASE_DIRECTORY}/transcode:/transcode
-  #     - ${MEDIA_BASE_DIRECTORY}:/media
 
   navidrome-server:
     image: deluan/navidrome:sha-e981ee2
@@ -122,6 +103,22 @@ services:
     volumes:
       - ${CALIBRE_WEB_BASE_DIRECTORY}/config:/config
       - ${BOOKS_DIRECTORY}:/books:ro
+
+  audiobookshelf-web:
+    image: ghcr.io/advplyr/audiobookshelf:2.1.5
+    container_name: audiobookshelf-web
+    networks:
+      - default
+    ports:
+      - 13378:80
+    environment:
+      - AUDIOBOOKSHELF_UID=${PUID}
+      - AUDIOBOOKSHELF_GID=${PGID}
+    volumes:
+      - ${AUDIOBOOKS_DIRECTORY}:/audiobooks
+      - ${PODCASTS_DIRECTORY}:/podcasts
+      - ${AUDIOBOOKSHELF_BASE_DIRECTORY}/config:/config
+      - ${AUDIOBOOKSHELF_BASE_DIRECTORY}/metadata:/metadata
 
   miniflux-web:
     image: miniflux/miniflux:2.0.38
@@ -183,22 +180,6 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-
-  audiobookshelf-web:
-    image: ghcr.io/advplyr/audiobookshelf:2.1.4
-    container_name: audiobookshelf-web
-    networks:
-      - default
-    ports:
-      - 13378:80
-    environment:
-      - AUDIOBOOKSHELF_UID=${PUID}
-      - AUDIOBOOKSHELF_GID=${PGID}
-    volumes:
-      - ${AUDIOBOOKS_DIRECTORY}:/audiobooks
-      - ${PODCASTS_DIRECTORY}:/podcasts
-      - ${AUDIOBOOKSHELF_BASE_DIRECTORY}/config:/config
-      - ${AUDIOBOOKSHELF_BASE_DIRECTORY}/metadata:/metadata
 
   podgrab-web:
     image: akhilrex/podgrab:1.0.0

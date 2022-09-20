@@ -40,7 +40,7 @@ make backup
 
 | Program                                                                               | Usage                              | Tools          | Status |
 | :------------------------------------------------------------------------------------ | :--------------------------------: | :------------: | :----: |
-| [tailscale-agent](https://tailscale.com/)                                             | modern vpn service                 | docker-compose | ✅ |
+| [cloudfared-tunnel](https://github.com/cloudflare/cloudflared)                        | cloudflare tunnel client           | docker-compose | ✅ |
 | [nginx-proxy-manager](https://nginxproxymanager.com/)                                 | reverse-proxy server               | docker-compose | ✅ |
 | [homer](https://github.com/bastienwirtz/homer)                                        | start-page                         | docker-compose | ✅ |
 | [jellyfin](https://jellyfin.org/)                                                     | media server                       | docker-compose | ✅ |

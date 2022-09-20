@@ -23,7 +23,7 @@ export PODCASTS_DIRECTORY=${MEDIA_BASE_DIRECTORY}/Podcasts
 
 # Docker
 export DOCKER_BASE_DIRECTORY=${BASE_DIRECTORY}/docker
-export TAILSCALE_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/tailscale-agent
+export CLOUDFLARE_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/cloudflared-tunnel
 export NGNIX_PROXY_MANAGER_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/nginx-proxy-manager-server
 export HOMER_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/homer-web
 export JELLYFIN_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/jellyfin-server
@@ -43,10 +43,10 @@ export PROMTAIL_AGENT_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/promtail-agent
 
 # Replace-me
 export HOST_IP=some-ip-address
+export HOST_ROUTER_IP=some-ip-address
 export NAS_MOUNT_PASSWORD=some-password
 export BONOB_SECRET_KEY=some-secret-key
 export BONOB_SEED_HOST=some-ip-address
-export PLEX_CLAIM_TOKEN=some-token
 export MINIFLUX_DB_USERNAME=miniflux
 export MINIFLUX_DB_PASSWORD=some-password
 export MINIFLUX_ADMIN_USERNAME=admin
@@ -58,3 +58,4 @@ export GRAFANA_USERNAME=some-username
 export GRAFANA_API_KEY=some-password
 export LOKI_USERNAME=some-password
 export LOKI_URI=some-uri
+export CLOUDFLARE_TUNNEL_TOKEN=some-token
