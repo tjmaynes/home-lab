@@ -12,6 +12,23 @@ function check_requirements() {
   throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
 }
 
+function setup_tailscale() {
+  add_step "Setting up tailscale"
+
+  throw_if_env_var_not_present "TAILSCALE_BASE_DIRECTORY" "$TAILSCALE_BASE_DIRECTORY"
+
+  ensure_directory_exists "$TAILSCALE_BASE_DIRECTORY/var/lib"
+
+  if [[ ! -c "/dev/net/tun" ]]; then
+    if [[ ! -d "/dev/net" ]]; then
+      mkdir -m 755 /dev/net
+    fi
+
+    mknod /dev/net/tun c 10 200
+    chmod 0755 /dev/net/tun
+  fi
+}
+
 function setup_nginx_proxy() {
   throw_if_env_var_not_present "NGNIX_PROXY_MANAGER_BASE_DIRECTORY" "$NGNIX_PROXY_MANAGER_BASE_DIRECTORY"
 
@@ -169,6 +186,7 @@ function main() {
 
   setup_nfs_media_mount
 
+  setup_tailscale
   setup_nginx_proxy
   setup_homer
   setup_jellyfin
@@ -186,6 +204,10 @@ function main() {
   ./scripts/setup-monitoring.sh
 
   docker compose up -d --remove-orphans
+
+  docker exec tailscale-agent tailscale up \
+    --advertise-routes=192.168.4.0/22 \
+    --reset
 }
 
 main

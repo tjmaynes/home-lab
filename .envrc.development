@@ -23,6 +23,7 @@ export PODCASTS_DIRECTORY=${MEDIA_BASE_DIRECTORY}/Podcasts
 
 # Docker
 export DOCKER_BASE_DIRECTORY=${BASE_DIRECTORY}/docker
+export TAILSCALE_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/tailscale-agent
 export NGNIX_PROXY_MANAGER_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/nginx-proxy-manager-server
 export HOMER_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/homer-web
 export JELLYFIN_BASE_DIRECTORY=${BASE_DIRECTORY}/docker/jellyfin-server
@@ -54,4 +55,6 @@ export GOGS_USER=gogs
 export GOGS_DB=gogs
 export GOGS_DB_PASSWORD=some-password
 export GRAFANA_USERNAME=some-username
+export GRAFANA_API_KEY=some-password
+export LOKI_USERNAME=some-password
 export LOKI_URI=some-uri

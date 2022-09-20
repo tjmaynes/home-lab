@@ -16,7 +16,7 @@ function setup_grafana_agent() {
   ensure_directory_exists "${GRAFANA_AGENT_BASE_DIRECTORY}/data"
 
   throw_if_env_var_not_present "GRAFANA_USERNAME" "$GRAFANA_USERNAME"
-  throw_if_env_var_not_present "GRAFANA_PASSWORD" "$GRAFANA_PASSWORD"
+  throw_if_env_var_not_present "GRAFANA_API_KEY" "$GRAFANA_API_KEY"
   throw_if_env_var_not_present "LOKI_URI" "$LOKI_URI"
 
   if [[ ! -f "${GRAFANA_AGENT_BASE_DIRECTORY}/agent.yaml" ]]; then
@@ -31,11 +31,12 @@ metrics:
       - url: https://prometheus-prod-10-prod-us-central-0.grafana.net/api/prom/push
         basic_auth:
           username: ${GRAFANA_USERNAME}
-          password: ${GRAFANA_PASSWORD}
+          password: ${GRAFANA_API_KEY}
 
 integrations:
   agent:
     enabled: true
+    instance: geck
 
   node_exporter:
     enabled: true
@@ -53,7 +54,7 @@ logs:
       journal:
         max_age: 24h
         labels:
-          instance: hostname
+          instance: geck
           job: integrations/node_exporter
       relabel_configs:
       - source_labels: ['__journal__systemd_unit']
@@ -95,6 +96,10 @@ scrape_configs:
     labels:
       job: varlogs
       __path__: /var/log/*log
+  
+  pipeline_stages:
+  - static_labels:
+      hostname: "geck"
 
 - job_name: containers
   static_configs:
@@ -106,6 +111,8 @@ scrape_configs:
 
   # --log-opt tag="{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"
   pipeline_stages:
+  - static_labels:
+      hostname: "geck"
 
   - json:
       expressions:

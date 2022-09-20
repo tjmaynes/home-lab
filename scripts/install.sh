@@ -72,12 +72,12 @@ function install_required_programs() {
 function setup_sysctl() {
   IPV4_CONFIG="net.ipv4.ip_forward=1"
   if ! cat /etc/sysctl.conf | grep "$IPV4_CONFIG"; then
-    echo "$IPV4_CONFIG" >> /etc/sysctl.conf
+    echo "$IPV4_CONFIG" | sudo tee -a /etc/sysctl.conf
   fi
 
   IPV6_CONFIG="net.ipv6.conf.all.forwarding=1"
   if ! cat /etc/sysctl.conf | grep "$IPV6_CONFIG"; then
-    echo "$IPV6_CONFIG" >> /etc/sysctl.conf
+    echo "$IPV6_CONFIG" | sudo tee -a /etc/sysctl.conf
   fi
 }
 
