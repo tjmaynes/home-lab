@@ -44,13 +44,11 @@ make backup
 | [nginx-proxy-manager](https://nginxproxymanager.com/)                                 | reverse-proxy server               | docker-compose | ✅ |
 | [homer](https://github.com/bastienwirtz/homer)                                        | start-page                         | docker-compose | ✅ |
 | [jellyfin](https://jellyfin.org/)                                                     | media server                       | docker-compose | ✅ |
-| [navidrome](https://github.com/navidrome/navidrome)                                   | modern music server                | docker-compose | ✅ |
-| [bonob-agent](https://github.com/simojenki/bonob)                                     | modern music server                | docker-compose | ✅ |
 | [calibre-web](https://github.com/janeczku/calibre-web)                                | web-based ebook-reader             | docker-compose | ✅ |
-| [miniflux-web](https://miniflux.app/)                                                 | rss reader                         | docker-compose | ✅ |
 | [audiobookshelf](https://www.audiobookshelf.org/)                                     | podcast & audiobooks server        | docker-compose | ✅ |
-| [gogs](https://gogs.io/)                                                              | git server                         | docker-compose | ✅ |
 | [podgrab](https://github.com/akhilrex/podgrab)                                        | podcast downloader                 | docker-compose | ✅ |
+| [miniflux-web](https://miniflux.app/)                                                 | rss reader                         | docker-compose | ✅ |
+| [gogs](https://gogs.io/)                                                              | git server                         | docker-compose | ✅ |
 | [bitwarden](https://bitwarden.com/)                                                   | password manager                   | docker-compose | ✅ |
 | [home-assistant](https://www.home-assistant.io/)                                      | home automation server             | docker-compose | ✅ |
 | [node-red](https://nodered.org/)                                                      | programmable automation interface  | docker-compose | ✅ |

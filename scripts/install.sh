@@ -17,7 +17,7 @@ After=network.target
 
 [Service]
 WorkingDirectory=/home/$NONROOT_USER/workspace/tjmaynes/geck
-ExecStart=sudo make start
+ExecStart=sudo make start && sudo make restart
 
 [Install]
 WantedBy=default.target
