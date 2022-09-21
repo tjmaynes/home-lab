@@ -208,7 +208,7 @@ services:
       - ${BITWARDEN_BASE_DIRECTORY}/data:/data/
     environment:
       WEBSOCKET_ENABLED: "true"
-      SIGNUPS_ALLOWED: "true"
+      SIGNUPS_ALLOWED: "false"
 
   home-assistant-web:
     image: ghcr.io/home-assistant/home-assistant:2022.9
