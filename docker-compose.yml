@@ -122,7 +122,6 @@ services:
       - PUID=${PUID}
       - PGID=${PGID}
       - TZ=${TIMEZONE}
-      - PROXY_DOMAIN=code.${SERVICE_DOMAIN}
       - DEFAULT_WORKSPACE=/config/workspace/tjmaynes
     volumes:
       - ${CODE_SERVER_BASE_DIRECTORY}/config:/config
