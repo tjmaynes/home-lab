@@ -125,6 +125,7 @@ services:
       - PASSWORD=${CODE_SERVER_PASSWORD}
       - SUDO_PASSWORD=${CODE_SERVER_SUDO_PASSWORD}
       - DEFAULT_WORKSPACE=/config/workspace/tjmaynes
+      - ENABLE_POST_INSTALL=true
     volumes:
       - ${CODE_SERVER_BASE_DIRECTORY}/config:/config
 
