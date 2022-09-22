@@ -112,6 +112,21 @@ services:
     volumes:
       - ${MINIFLUX_DB_BASE_DIRECTORY}:/var/lib/postgresql/data
 
+  code-server:
+    image: lscr.io/linuxserver/code-server:4.7.0
+    container_name: code-server
+    restart: unless-stopped
+    ports:
+      - 18443:8443
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+      - PROXY_DOMAIN=code.${SERVICE_DOMAIN}
+      - DEFAULT_WORKSPACE=/config/workspace/tjmaynes
+    volumes:
+      - ${CODE_SERVER_BASE_DIRECTORY}/config:/config
+
   gogs-web:
     image: gogs/gogs:0.12
     container_name: gogs-web

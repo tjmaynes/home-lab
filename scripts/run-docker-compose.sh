@@ -73,6 +73,13 @@ function setup_miniflux_web() {
   ensure_directory_exists "$MINIFLUX_DB_BASE_DIRECTORY"
 }
 
+function setup_code_server() {
+  add_step "Setting up code-server"
+
+  throw_if_env_var_not_present "CODE_SERVER_BASE_DIRECTORY" "$CODE_SERVER_BASE_DIRECTORY"
+  ensure_directory_exists "$CODE_SERVER_BASE_DIRECTORY/config/workspace/tjmaynes"
+}
+
 function setup_gogs() {
   add_step "Setting up gogs"
 
@@ -176,6 +183,7 @@ function main() {
   setup_calibre_web
   setup_miniflux_web
   setup_audiobookshelf
+  setup_code_server
   setup_gogs
   setup_podgrab
   setup_bitwarden
