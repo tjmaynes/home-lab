@@ -76,6 +76,9 @@ function setup_miniflux_web() {
 function setup_code_server() {
   add_step "Setting up code-server"
 
+  throw_if_env_var_not_present "CODE_SERVER_PASSWORD" "$CODE_SERVER_PASSWORD"
+  throw_if_env_var_not_present "CODE_SERVER_SUDO_PASSWORD" "$CODE_SERVER_SUDO_PASSWORD"
+
   throw_if_env_var_not_present "CODE_SERVER_BASE_DIRECTORY" "$CODE_SERVER_BASE_DIRECTORY"
   ensure_directory_exists "$CODE_SERVER_BASE_DIRECTORY/config/workspace/tjmaynes"
 }
@@ -168,6 +171,18 @@ function setup_nfs_media_mount() {
   throw_if_directory_not_present "PODCASTS_DIRECTORY" "$PODCASTS_DIRECTORY"
 }
 
+function turn_off_wifi() {
+  ensure_program_installed "rfkill"
+
+  rfkill block wifi
+}
+
+function turn_off_bluetooth() {
+  ensure_program_installed "rfkill"
+
+  rfkill block bluetooth
+}
+
 function main() {
   source ./scripts/common.sh
 
@@ -202,6 +217,9 @@ function main() {
   else
     docker compose restart
   fi
+
+  turn_off_wifi
+  turn_off_bluetooth
 }
 
 main

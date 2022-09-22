@@ -122,6 +122,8 @@ services:
       - PUID=${PUID}
       - PGID=${PGID}
       - TZ=${TIMEZONE}
+      - PASSWORD=${CODE_SERVER_PASSWORD}
+      - SUDO_PASSWORD=${CODE_SERVER_SUDO_PASSWORD}
       - DEFAULT_WORKSPACE=/config/workspace/tjmaynes
     volumes:
       - ${CODE_SERVER_BASE_DIRECTORY}/config:/config

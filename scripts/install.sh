@@ -115,16 +115,8 @@ function setup_sysctl() {
   fi
 }
 
-function turn_off_wifi() {
-  ensure_program_installed "rfkill"
-
-  rfkill block wifi
-}
-
-function turn_off_bluetooth() {
-  ensure_program_installed "rfkill"
-
-  rfkill block bluetooth
+function turn_off_eee_mode() {
+  ethtool --set-eee eth0 eee off
 }
 
 function main() {
@@ -145,8 +137,7 @@ function main() {
   throw_if_program_not_present "raspi-config"
   raspi-config nonint do_boot_wait 0
 
-  turn_off_wifi
-  turn_off_bluetooth
+  turn_off_eee_mode
 
   reboot
 }
