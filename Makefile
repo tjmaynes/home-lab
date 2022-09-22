@@ -1,17 +1,17 @@
 install:
-	./scripts/runner.sh "$@"
+	./scripts/$@.sh
 
 start:
-	./scripts/runner.sh "$@"
+	./scripts/$@.sh
 
 restart:
-	./scripts/runner.sh "$@"
+	./scripts/$@.sh
 
 stop:
-	./scripts/runner.sh "$@"
+	./scripts/$@.sh
 
 backup:
-	./scripts/runner.sh "$@"
+	./scripts/$@.sh
 
 debug.service:
 	journalctl -u start-geck.service -b
