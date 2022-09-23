@@ -115,10 +115,6 @@ function setup_sysctl() {
   fi
 }
 
-function turn_off_eee_mode() {
-  ethtool --set-eee eth0 eee off
-}
-
 function main() {
   source ./scripts/common.sh
 
@@ -136,8 +132,6 @@ function main() {
 
   throw_if_program_not_present "raspi-config"
   raspi-config nonint do_boot_wait 0
-
-  turn_off_eee_mode
 
   reboot
 }

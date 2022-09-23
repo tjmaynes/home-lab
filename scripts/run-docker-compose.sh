@@ -183,6 +183,10 @@ function turn_off_bluetooth() {
   rfkill block bluetooth
 }
 
+function turn_off_eee_mode() {
+  ethtool --set-eee eth0 eee off
+}
+
 function main() {
   source ./scripts/common.sh
 
@@ -220,6 +224,7 @@ function main() {
 
   turn_off_wifi
   turn_off_bluetooth
+  turn_off_eee_mode
 }
 
 main
