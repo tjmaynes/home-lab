@@ -237,14 +237,18 @@ services:
     container_name: grafana-agent
     restart: unless-stopped
     user: ${PUID}:${PGID}
+    network_mode: host
     hostname: geck
-    networks:
-      - default
-    ports:
-      - 12345:12345
     volumes:
-      - ${GRAFANA_AGENT_BASE_DIRECTORY}/data:/etc/agent/data
+      - /:/host/root:ro
+      - /sys:/host/sys:ro
+      - /proc:/host/proc:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ${GRAFANA_AGENT_BASE_DIRECTORY}:/etc/agent
       - ${GRAFANA_AGENT_BASE_DIRECTORY}/agent.yaml:/etc/agent/agent.yaml
+    command: --config.file=/etc/agent/agent.yaml
+    cap_add:
+      - SYS_TIME
 
   promtail-agent:
     image: grafana/promtail:main
@@ -256,6 +260,7 @@ services:
     volumes:
       - /var/log:/var/log
       - /var/lib/docker/:/var/lib/docker:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
       - ${PROMTAIL_AGENT_BASE_DIRECTORY}/config.yaml:/etc/promtail/config.yaml
     command: -config.file=/etc/promtail/config.yaml
 
