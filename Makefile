@@ -10,6 +10,9 @@ restart:
 stop:
 	./scripts/$@.sh
 
+macvlan:
+	./scripts/$@.sh
+
 backup:
 	./scripts/$@.sh
 

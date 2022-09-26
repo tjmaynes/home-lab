@@ -38,7 +38,6 @@ metrics:
 integrations:
   agent:
     enabled: true
-    instance: ${NONROOT_USER}
 
   node_exporter:
     enabled: true
@@ -47,8 +46,9 @@ integrations:
     procfs_path: /host/proc
     relabel_configs:
     - replacement: hostname
+      source_labels: ['__address__']
       target_label: instance
-    - replacement: integrations/${NONROOT_USER}/docker
+    - replacement: integrations/docker
       target_label: job
 
 logs:
@@ -61,7 +61,7 @@ logs:
       journal:
         max_age: 24h
         labels:
-          instance: ${NONROOT_USER}
+          instance: hostname
           job: integrations/node_exporter
       relabel_configs:
       - source_labels: ['__journal__systemd_unit']
@@ -79,22 +79,22 @@ logs:
     target_config:
       sync_period: 10s 
     scrape_configs:
-    - job_name: integrations/${NONROOT_USER}/docker
+    - job_name: integrations/docker
       docker_sd_configs:
         - host: unix:///var/run/docker.sock
           refresh_interval: 5s
       relabel_configs:
         - source_labels: ['__meta_docker_container_name']
-          regex: '/(.*)\.[0-9]\..*'
+          regex: '/(.*).[0-9]\..*'
           target_label: 'name'
         - source_labels: ['__meta_docker_container_name']
-          regex: '/(.*)\.[0-9a-z]*\..*'
+          regex: '/(.*).[0-9a-z]*\..*'
           target_label: 'name'
         - source_labels: ['__meta_docker_container_name']
-          regex: '/.*\.([0-9]{1,2})\..*'
+          regex: '/.*.([0-9]{1,2})\..*'
           target_label: 'replica'
         - action: replace
-          replacement: integrations/${NONROOT_USER}/docker
+          replacement: integrations/docker
           source_labels:
             - __meta_docker_container_id
           target_label: job 
@@ -138,35 +138,28 @@ scrape_configs:
       job: varlogs
       __path__: /var/log/*log
 
-  pipeline_stages:
-  - static_labels:
-      hostname: ${NONROOT_USER}
-
-- job_name: ${NONROOT_USER}/containers
+- job_name: containers
   docker_sd_configs:
     - host: unix:///var/run/docker.sock
       refresh_interval: 5s
   relabel_configs:
     - source_labels: ['__meta_docker_container_name']
-      regex: '/(.*)\.[0-9]\..*'
+      regex: '/(.*).[0-9]\..*'
       target_label: 'name'
     - source_labels: ['__meta_docker_container_name']
-      regex: '/(.*)\.[0-9a-z]*\..*'
+      regex: '/(.*).[0-9a-z]*\..*'
       target_label: 'name'
     - source_labels: ['__meta_docker_container_name']
-      regex: '/.*\.([0-9]{1,2})\..*'
+      regex: '/.*.([0-9]{1,2})\..*'
       target_label: 'replica'
-    - action: replace
-      replacement: integrations/${NONROOT_USER}/docker
-      source_labels:
-        - __meta_docker_container_id
+    - source_labels: ['__meta_docker_container_id']
+      action: replace
+      replacement: integrations/docker
       target_label: job 
-    - source_labels:
-        - __meta_docker_container_name
+    - source_labels: ['__meta_docker_container_name']
       regex: '/(.*)'
       target_label: container
-    - source_labels:
-        - __meta_docker_container_log_stream
+    - source_labels: ['__meta_docker_container_log_stream']
       target_label: stream
 
   # --log-opt tag="{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"

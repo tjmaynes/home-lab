@@ -43,6 +43,8 @@ make backup
 | [cloudfared-tunnel](https://github.com/cloudflare/cloudflared)                        | cloudflare tunnel client           | docker-compose | ✅ |
 | [nginx-proxy-manager](https://nginxproxymanager.com/)                                 | reverse-proxy server               | docker-compose | ✅ |
 | [homer](https://github.com/bastienwirtz/homer)                                        | start-page                         | docker-compose | ✅ |
+| [pi-hole](https://pi-hole.net/)                                                       | dns server                         | docker-compose | ✅ |
+| [cloudfared-agent](https://github.com/cloudflare/cloudflared)                         | cloudflare dns client              | docker-compose | ✅ |
 | [jellyfin](https://jellyfin.org/)                                                     | media server                       | docker-compose | ✅ |
 | [calibre-web](https://github.com/janeczku/calibre-web)                                | web-based ebook-reader             | docker-compose | ✅ |
 | [audiobookshelf](https://www.audiobookshelf.org/)                                     | podcast & audiobooks server        | docker-compose | ✅ |
@@ -52,6 +54,5 @@ make backup
 | [bitwarden](https://bitwarden.com/)                                                   | password manager                   | docker-compose | ✅ |
 | [home-assistant](https://www.home-assistant.io/)                                      | home automation server             | docker-compose | ✅ |
 | [node-red](https://nodered.org/)                                                      | programmable automation interface  | docker-compose | ✅ |
-| [portainer](https://docs.portainer.io/v/ce-2.9/start/install)                         | monitoring docker containers       | docker-compose | ✅ |
 | [grafana-agent](https://github.com/grafana/agent)                                     | monitoring agent for grafana cloud | docker-compose | ✅ |
 | [promtail-agent](https://grafana.com/docs/loki/latest/clients/promtail/installation/) | logging agent for grafana cloud    | docker-compose | ✅ |

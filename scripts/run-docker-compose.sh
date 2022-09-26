@@ -29,6 +29,36 @@ function setup_nginx_proxy() {
   ensure_directory_exists "$NGNIX_PROXY_MANAGER_BASE_DIRECTORY/letsencrypt"
 }
 
+function setup_homer() {
+  add_step "Setting up homer"
+
+  throw_if_env_var_not_present "SERVICE_DOMAIN" "$SERVICE_DOMAIN"
+
+  throw_if_env_var_not_present "HOMER_BASE_DIRECTORY" "$HOMER_BASE_DIRECTORY"
+
+  ensure_directory_exists "$HOMER_BASE_DIRECTORY/www/assets"
+
+  sed \
+    -e "s/%protocol-type%/https/g" \
+    -e "s/%service-domain%/${SERVICE_DOMAIN}/g" \
+    data/homer.template.yml > "$HOMER_BASE_DIRECTORY/www/assets/config.yml"
+
+  cp -f static/homer-logo.png "$HOMER_BASE_DIRECTORY/www/assets/logo.png"
+}
+
+function setup_pihole() {
+  add_step "Setting up pihole"
+
+  throw_if_file_not_present "/etc/timezone"
+
+  throw_if_env_var_not_present "PIHOLE_IP" "$PIHOLE_IP"
+  throw_if_env_var_not_present "PIHOLE_PASSWORD" "$PIHOLE_PASSWORD"
+
+  throw_if_env_var_not_present "PIHOLE_BASE_DIRECTORY" "$PIHOLE_BASE_DIRECTORY"
+  ensure_directory_exists "$PIHOLE_BASE_DIRECTORY/pihole"
+  ensure_directory_exists "$PIHOLE_BASE_DIRECTORY/dnsmasq.d"
+}
+
 function setup_jellyfin() {
   add_step "Setting up jellyfin"
 
@@ -38,18 +68,6 @@ function setup_jellyfin() {
   throw_if_env_var_not_present "JELLYFIN_BASE_DIRECTORY" "$JELLYFIN_BASE_DIRECTORY"
   ensure_directory_exists "$JELLYFIN_BASE_DIRECTORY/config"
   ensure_directory_exists "$JELLYFIN_BASE_DIRECTORY/plugins"
-}
-
-function setup_navidrome() {
-  add_step "Setting up navidrome"
-
-  throw_if_env_var_not_present "MUSIC_DIRECTORY" "$MUSIC_DIRECTORY"
-
-  throw_if_env_var_not_present "NAVIDROME_BASE_DIRECTORY" "$NAVIDROME_BASE_DIRECTORY"
-  ensure_directory_exists "$NAVIDROME_BASE_DIRECTORY/data"
-
-  throw_if_env_var_not_present "BONOB_SECRET_KEY" "$BONOB_SECRET_KEY"
-  throw_if_env_var_not_present "BONOB_SEED_HOST" "$BONOB_SEED_HOST"
 }
 
 function setup_calibre_web() {
@@ -69,45 +87,21 @@ function setup_miniflux_web() {
   throw_if_env_var_not_present "MINIFLUX_ADMIN_PASSWORD" "$MINIFLUX_ADMIN_PASSWORD"
 
   throw_if_env_var_not_present "MINIFLUX_DB_BASE_DIRECTORY" "$MINIFLUX_DB_BASE_DIRECTORY"
-
   ensure_directory_exists "$MINIFLUX_DB_BASE_DIRECTORY"
-}
-
-function setup_code_server() {
-  add_step "Setting up code-server"
-
-  throw_if_env_var_not_present "CODE_SERVER_PASSWORD" "$CODE_SERVER_PASSWORD"
-  throw_if_env_var_not_present "CODE_SERVER_SUDO_PASSWORD" "$CODE_SERVER_SUDO_PASSWORD"
-
-  throw_if_env_var_not_present "CODE_SERVER_BASE_DIRECTORY" "$CODE_SERVER_BASE_DIRECTORY"
-  ensure_directory_exists "$CODE_SERVER_BASE_DIRECTORY/config/workspace/tjmaynes"
 }
 
 function setup_gogs() {
   add_step "Setting up gogs"
+
+  throw_if_env_var_not_present "GOGS_USER" "$GOGS_USER"
+  throw_if_env_var_not_present "GOGS_DB" "$GOGS_DB"
+  throw_if_env_var_not_present "GOGS_DB_PASSWORD" "$GOGS_DB_PASSWORD"
 
   throw_if_env_var_not_present "GOGS_BASE_DIRECTORY" "$GOGS_BASE_DIRECTORY"
   ensure_directory_exists "$GOGS_BASE_DIRECTORY/data"
 
   throw_if_env_var_not_present "GOGS_DB_BASE_DIRECTORY" "$GOGS_DB_BASE_DIRECTORY"
   ensure_directory_exists "$GOGS_DB_BASE_DIRECTORY"
-}
-
-function setup_homer() {
-  add_step "Setting up homer"
-
-  throw_if_env_var_not_present "SERVICE_DOMAIN" "$SERVICE_DOMAIN"
-
-  throw_if_env_var_not_present "HOMER_BASE_DIRECTORY" "$HOMER_BASE_DIRECTORY"
-
-  ensure_directory_exists "$HOMER_BASE_DIRECTORY/www/assets"
-
-  sed \
-    -e "s/%protocol-type%/https/g" \
-    -e "s/%service-domain%/${SERVICE_DOMAIN}/g" \
-    data/homer.template.yml > "$HOMER_BASE_DIRECTORY/www/assets/config.yml"
-
-  cp -f static/homer-logo.png "$HOMER_BASE_DIRECTORY/www/assets/logo.png"
 }
 
 function setup_audiobookshelf() {
@@ -161,6 +155,8 @@ function setup_nfs_media_mount() {
   throw_if_env_var_not_present "NAS_MEDIA_DIRECTORY" "$NAS_MEDIA_DIRECTORY"
   throw_if_env_var_not_present "MEDIA_BASE_DIRECTORY" "$MEDIA_BASE_DIRECTORY"
 
+  ensure_directory_exists "$MEDIA_BASE_DIRECTORY"
+
   setup_nas_mount "$NAS_MEDIA_DIRECTORY" "$MEDIA_BASE_DIRECTORY"
 
   throw_if_directory_not_present "VIDEOS_DIRECTORY" "$VIDEOS_DIRECTORY"
@@ -187,6 +183,18 @@ function turn_off_eee_mode() {
   ethtool --set-eee eth0 eee off
 }
 
+function ensure_macvlan_network_setup() {
+  if ! docker network ls | grep "macvlan_network"; then
+    docker network create -d macvlan \
+      -o parent=eth0 \
+      --subnet 192.168.4.0/22 \
+      --gateway 192.168.4.1 \
+      --ip-range 192.168.4.200/32 \
+      --aux-address 'host=192.168.4.210' \
+      macvlan_network
+  fi
+}
+
 function main() {
   source ./scripts/common.sh
 
@@ -197,12 +205,11 @@ function main() {
   setup_cloudflare_tunnel
   setup_nginx_proxy
   setup_homer
+  setup_pihole
   setup_jellyfin
-  setup_navidrome
   setup_calibre_web
   setup_miniflux_web
   setup_audiobookshelf
-  setup_code_server
   setup_gogs
   setup_podgrab
   setup_bitwarden
@@ -210,6 +217,8 @@ function main() {
   setup_nodered
 
   ./scripts/setup-monitoring.sh
+
+  ensure_macvlan_network_setup
 
   if [[ -z "$RUN_TYPE" ]]; then
     echo "Please pass an argument for 'RUN_TYPE'."
@@ -221,6 +230,9 @@ function main() {
   else
     docker compose restart
   fi
+
+  throw_if_env_var_not_present "PIHOLE_PASSWORD" "$PIHOLE_PASSWORD"
+  docker exec pihole-server pihole -a -p $PIHOLE_PASSWORD
 
   turn_off_wifi
   turn_off_bluetooth

@@ -8,16 +8,33 @@ function check_requirements() {
   throw_if_env_var_not_present "NONROOT_USER" "$NONROOT_USER"
 }
 
+function setup_macvlan_service() {
+  if [[ ! -f "/etc/systemd/system/macvlan.service" ]]; then
+    sudo tee -a /etc/systemd/system/macvlan.service <<EOF
+[Unit]
+Description=Setup Macvlan Network
+After=network.target
+[Service]
+WorkingDirectory=/home/$NONROOT_USER/workspace/tjmaynes/zeus
+ExecStart=sudo make macvlan
+[Install]
+WantedBy=default.target
+EOF
+  fi
+
+  sudo systemctl enable macvlan
+}
+
 function setup_start_geck_service() {
   if [[ ! -f "/etc/systemd/system/start-geck.service" ]]; then
     sudo tee -a /etc/systemd/system/start-geck.service <<EOF
 [Unit]
-Description=Start geck
+Description=Start GECK
 After=network.target
 
 [Service]
 WorkingDirectory=/home/$NONROOT_USER/workspace/tjmaynes/geck
-ExecStart=sudo make start && sudo make restart
+ExecStart=sudo make start && sleep 10 && sudo make restart
 
 [Install]
 WantedBy=default.target
@@ -33,13 +50,13 @@ function setup_cronjobs() {
   BACKUP_CRONTAB="0 0-6/2 * * *  cd ~/workspace/tjmaynes/geck && sudo make backup"
   if ! crontab -l | grep "$BACKUP_CRONTAB"; then
     echo -e "Backups are not setup. Copy command and paste via 'crontab -e': $BACKUP_CRONTAB"
-    exit 1
+    # exit 1
   fi
 
   CRON_LINE="#cron.*"
-  if ! cat /etc/rsyslog.conf | grep "$CRON_LINE"; then
+  if cat /etc/rsyslog.conf | grep "$CRON_LINE"; then
     echo -e "Cron logging is not configured. Uncomment 'cron' line in /etc/rsyslog.conf"
-    exit 1
+    # exit 1
   fi
 }
 
@@ -124,6 +141,7 @@ function main() {
 
   install_required_programs
 
+  setup_macvlan_service
   setup_start_geck_service
 
   setup_sysctl

@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   cloudflared-tunnel:
-    image: cloudflare/cloudflared:2022.9.0-arm64
+    image: cloudflare/cloudflared:2022.9.1-arm64
     container_name: cloudflared-tunnel
     restart: unless-stopped
     command: tunnel run
@@ -40,6 +40,60 @@ services:
     environment:
       - INIT_ASSETS=0
 
+  pihole-server:
+    image: pihole/pihole:2022.09.4
+    container_name: pihole-server
+    restart: unless-stopped
+    networks:
+      macvlan_network:
+        ipv4_address: 192.168.4.200
+    dns:
+      - 1.1.1.1
+      - 1.0.0.1
+    ports:
+      - target: 53
+        published: 53
+        protocol: tcp
+      - target: 53
+        published: 53
+        protocol: udp
+      - target: 67
+        published: 67
+        protocol: udp
+      - target: 80
+        published: 80
+        protocol: tcp
+      - target: 443
+        published: 443
+        protocol: tcp
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${PIHOLE_BASE_DIRECTORY}/pihole/:/etc/pihole/
+      - ${PIHOLE_BASE_DIRECTORY}/dnsmasq.d/:/etc/dnsmasq.d/
+    environment:
+      TZ: ${TIMEZONE}
+      WEBPASSWORD: ${PIHOLE_PASSWORD}
+      DNSMASQ_LISTENING: all
+      FTLCONF_LOCAL_IPV4: ${PIHOLE_IP}
+      PIHOLE_DNS_: "192.168.4.201#5053;no"
+    depends_on:
+      - cloudflared-agent
+    cap_add:
+      - NET_ADMIN
+
+  cloudflared-agent:
+    image: cloudflare/cloudflared:2022.9.1-arm64
+    container_name: cloudflared-agent
+    restart: unless-stopped
+    command: proxy-dns
+    networks:
+      macvlan_network:
+        ipv4_address: 192.168.4.201
+    environment:
+      TUNNEL_DNS_UPSTREAM: "https://1.1.1.1/dns-query,https://1.0.0.1/dns-query,https://9.9.9.9/dns-query"
+      TUNNEL_DNS_PORT: 5053
+      TUNNEL_DNS_ADDRESS: "0.0.0.0"
+
   jellyfin-server:
     image: linuxserver/jellyfin:10.8.4
     container_name: jellyfin-server
@@ -52,7 +106,7 @@ services:
       - TZ=${TIMEZONE}
       - PUID=${PUID}
       - PGID=${PGID}
-      - JELLYFIN_PublishedServerUrl=${HOST_IP}
+      - JELLYFIN_PublishedServerUrl=https://media.${SERVICE_DOMAIN}
 
   calibre-web:
     image: lscr.io/linuxserver/calibre-web:0.6.19
@@ -69,7 +123,7 @@ services:
       - DOCKER_MODS=linuxserver/mods:universal-calibre
     volumes:
       - ${CALIBRE_WEB_BASE_DIRECTORY}/config:/config
-      - ${BOOKS_DIRECTORY}:/books:ro
+      - ${BOOKS_DIRECTORY}:/books
 
   audiobookshelf-web:
     image: ghcr.io/advplyr/audiobookshelf:2.1.5
@@ -90,6 +144,8 @@ services:
   miniflux-web:
     image: miniflux/miniflux:2.0.38
     container_name: miniflux-web
+    networks:
+      - default
     ports:
       - 18050:8080
     environment:
@@ -100,10 +156,12 @@ services:
       - ADMIN_PASSWORD=${MINIFLUX_ADMIN_PASSWORD}
     depends_on:
       - miniflux-db
-  
+
   miniflux-db:
     image: postgres:14
     container_name: miniflux-db
+    networks:
+      - default
     ports:
       - 15434:5432
     environment:
@@ -111,23 +169,11 @@ services:
       - POSTGRES_PASSWORD=${MINIFLUX_DB_PASSWORD}
     volumes:
       - ${MINIFLUX_DB_BASE_DIRECTORY}:/var/lib/postgresql/data
-
-  code-server:
-    image: lscr.io/linuxserver/code-server:4.7.0
-    container_name: code-server
-    restart: unless-stopped
-    ports:
-      - 18443:8443
-    environment:
-      - PUID=${PUID}
-      - PGID=${PGID}
-      - TZ=${TIMEZONE}
-      - PASSWORD=${CODE_SERVER_PASSWORD}
-      - SUDO_PASSWORD=${CODE_SERVER_SUDO_PASSWORD}
-      - DEFAULT_WORKSPACE=/config/workspace/tjmaynes
-      - ENABLE_POST_INSTALL=true
-    volumes:
-      - ${CODE_SERVER_BASE_DIRECTORY}/config:/config
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${MINIFLUX_DB_USERNAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   gogs-web:
     image: gogs/gogs:0.12
@@ -142,28 +188,6 @@ services:
       - RUN_CROND=true
     volumes:
       - ${GOGS_BASE_DIRECTORY}/data:/data
-    depends_on:
-      - gogs-db
-
-  gogs-db:
-    image: postgres:14
-    container_name: gogs-db
-    restart: always
-    networks:
-      - default
-    ports:
-      - 15433:5432
-    environment:
-      - POSTGRES_USER=${GOGS_USER}
-      - POSTGRES_PASSWORD=${GOGS_DB_PASSWORD}
-      - POSTGRES_DB=${GOGS_DB}
-    volumes:
-      - ${GOGS_DB_BASE_DIRECTORY}:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${GOGS_USER}"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
 
   podgrab-web:
     image: akhilrex/podgrab:1.0.0
@@ -217,21 +241,6 @@ services:
     volumes:
       - ${NODERED_BASE_DIRECTORY}/data:/data
 
-  portainer-server:
-    image: portainer/portainer-ce:2.15.0-alpine
-    container_name: portainer-server
-    restart: always
-    networks:
-      - default
-    ports:
-      - 19001:9000
-    security_opt:
-      - no-new-privileges:true
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /var/lib/docker/volumes:/var/lib/docker/volumes
-
   grafana-agent:
     image: grafana/agent:main
     container_name: grafana-agent
@@ -267,3 +276,6 @@ services:
 networks:
   default:
     driver: bridge
+
+  macvlan_network:
+    external: true
