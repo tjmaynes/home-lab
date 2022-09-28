@@ -10,9 +10,6 @@ restart:
 stop:
 	./scripts/$@.sh
 
-macvlan:
-	./scripts/$@.sh
-
 backup:
 	./scripts/$@.sh
 
@@ -21,3 +18,9 @@ debug.service:
 
 debug.macvlan:
 	journalctl -u macvlan.service -b
+
+debug.grafana-agent:
+	journalctl -b -u grafana-agent.service
+
+debug.promtail-agent:
+	journalctl -b -u promtail-agent.service

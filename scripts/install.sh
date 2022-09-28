@@ -8,25 +8,6 @@ function check_requirements() {
   throw_if_env_var_not_present "NONROOT_USER" "$NONROOT_USER"
 }
 
-function setup_macvlan_service() {
-  if [[ ! -f "/etc/systemd/system/macvlan.service" ]]; then
-    sudo tee -a /etc/systemd/system/macvlan.service <<EOF
-[Unit]
-Description=Setup Macvlan Network
-After=network.target
-
-[Service]
-WorkingDirectory=/home/$NONROOT_USER/workspace/tjmaynes/geck
-ExecStart=sudo make macvlan
-
-[Install]
-WantedBy=default.target
-EOF
-  fi
-
-  sudo systemctl enable macvlan
-}
-
 function setup_start_geck_service() {
   if [[ ! -f "/etc/systemd/system/start-geck.service" ]]; then
     sudo tee -a /etc/systemd/system/start-geck.service <<EOF
@@ -143,8 +124,8 @@ function main() {
 
   install_required_programs
 
-  setup_macvlan_service
   setup_start_geck_service
+  ./scripts/setup-monitoring.sh
 
   setup_sysctl
   setup_cronjobs

@@ -216,8 +216,6 @@ function main() {
   setup_home_assistant
   setup_nodered
 
-  ./scripts/setup-monitoring.sh
-
   ensure_macvlan_network_setup
 
   if [[ -z "$RUN_TYPE" ]]; then

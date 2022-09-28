@@ -44,6 +44,7 @@ services:
     image: pihole/pihole:2022.09.4
     container_name: pihole-server
     restart: unless-stopped
+    hostname: geck
     networks:
       macvlan_network:
         ipv4_address: 192.168.4.200
@@ -240,38 +241,6 @@ services:
       - default
     volumes:
       - ${NODERED_BASE_DIRECTORY}/data:/data
-
-  grafana-agent:
-    image: grafana/agent:main
-    container_name: grafana-agent
-    restart: unless-stopped
-    user: ${PUID}:${PGID}
-    network_mode: host
-    hostname: geck
-    volumes:
-      - /:/host/root:ro
-      - /sys:/host/sys:ro
-      - /proc:/host/proc:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ${GRAFANA_AGENT_BASE_DIRECTORY}:/etc/agent
-      - ${GRAFANA_AGENT_BASE_DIRECTORY}/agent.yaml:/etc/agent/agent.yaml
-    command: --config.file=/etc/agent/agent.yaml
-    cap_add:
-      - SYS_TIME
-
-  promtail-agent:
-    image: grafana/promtail:main
-    container_name: promtail-agent
-    user: ${PUID}:${PGID}
-    hostname: geck
-    networks:
-      - default
-    volumes:
-      - /var/log:/var/log
-      - /var/lib/docker/:/var/lib/docker:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ${PROMTAIL_AGENT_BASE_DIRECTORY}/config.yaml:/etc/promtail/config.yaml
-    command: -config.file=/etc/promtail/config.yaml
 
 networks:
   default:

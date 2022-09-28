@@ -54,5 +54,5 @@ make backup
 | [bitwarden](https://bitwarden.com/)                                                   | password manager                   | docker-compose | ✅ |
 | [home-assistant](https://www.home-assistant.io/)                                      | home automation server             | docker-compose | ✅ |
 | [node-red](https://nodered.org/)                                                      | programmable automation interface  | docker-compose | ✅ |
-| [grafana-agent](https://github.com/grafana/agent)                                     | monitoring agent for grafana cloud | docker-compose | ✅ |
-| [promtail-agent](https://grafana.com/docs/loki/latest/clients/promtail/installation/) | logging agent for grafana cloud    | docker-compose | ✅ |
+| [grafana-agent](https://github.com/grafana/agent)                                     | monitoring agent for grafana cloud | systemd        | ✅ |
+| [promtail-agent](https://grafana.com/docs/loki/latest/clients/promtail/installation/) | logging agent for grafana cloud    | systemd        | ✅ |

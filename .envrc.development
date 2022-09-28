@@ -41,6 +41,10 @@ export NODERED_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/nodered-web
 export GRAFANA_AGENT_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/grafana-agent
 export PROMTAIL_AGENT_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/promtail-agent
 
+# Monitoring
+export GRAFANA_AGENT_VERSION=0.27.1
+export PROMTAIL_AGENT_VERSION=2.6.1
+
 # Replace-me
 export HOST_IP=some-ip-address
 export PIHOLE_IP=some-ip-address

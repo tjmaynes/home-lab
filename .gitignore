@@ -9,3 +9,7 @@
 
 # Generated
 *.log
+
+# Downloaded
+*.tar.gz
+*.zip
