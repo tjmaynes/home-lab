@@ -1,5 +1,3 @@
-
-
 #!/usr/bin/env bash
 
 set -e
@@ -11,6 +9,8 @@ function main() {
   fi
 
   if ! ip link show macvlan0; then
+    echo "Adding macvlan0 interface..."
+
     ip link add macvlan0 link eth0 type macvlan mode bridge
     ip addr add 192.168.4.210/32 dev macvlan0
     ip link set macvlan0 up

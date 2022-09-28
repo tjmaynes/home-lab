@@ -14,9 +14,11 @@ function setup_macvlan_service() {
 [Unit]
 Description=Setup Macvlan Network
 After=network.target
+
 [Service]
-WorkingDirectory=/home/$NONROOT_USER/workspace/tjmaynes/zeus
+WorkingDirectory=/home/$NONROOT_USER/workspace/tjmaynes/geck
 ExecStart=sudo make macvlan
+
 [Install]
 WantedBy=default.target
 EOF
@@ -34,7 +36,7 @@ After=network.target
 
 [Service]
 WorkingDirectory=/home/$NONROOT_USER/workspace/tjmaynes/geck
-ExecStart=sudo make start && sleep 10 && sudo make restart
+ExecStart=sudo make restart
 
 [Install]
 WantedBy=default.target
