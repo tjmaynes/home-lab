@@ -51,7 +51,6 @@ make backup
 | [podgrab](https://github.com/akhilrex/podgrab)                                        | podcast downloader                 | docker-compose | ✅ |
 | [miniflux-web](https://miniflux.app/)                                                 | rss reader                         | docker-compose | ✅ |
 | [gogs](https://gogs.io/)                                                              | git server                         | docker-compose | ✅ |
-| [bitwarden](https://bitwarden.com/)                                                   | password manager                   | docker-compose | ✅ |
 | [home-assistant](https://www.home-assistant.io/)                                      | home automation server             | docker-compose | ✅ |
 | [node-red](https://nodered.org/)                                                      | programmable automation interface  | docker-compose | ✅ |
 | [grafana-agent](https://github.com/grafana/agent)                                     | monitoring agent for grafana cloud | systemd        | ✅ |

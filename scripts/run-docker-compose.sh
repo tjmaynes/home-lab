@@ -121,14 +121,6 @@ function setup_podgrab() {
   ensure_directory_exists "$PODGRAB_BASE_DIRECTORY/config"
 }
 
-function setup_bitwarden() {
-  add_step "Setting up bitwarden"
-
-  throw_if_env_var_not_present "BITWARDEN_BASE_DIRECTORY" "$BITWARDEN_BASE_DIRECTORY"
-
-  ensure_directory_exists "$BITWARDEN_BASE_DIRECTORY/data"
-}
-
 function setup_home_assistant() {
   add_step "Setting up home assistant"
 
@@ -212,7 +204,6 @@ function main() {
   setup_audiobookshelf
   setup_gogs
   setup_podgrab
-  setup_bitwarden
   setup_home_assistant
   setup_nodered
 

@@ -74,15 +74,6 @@ services:
         keywords: "self-hosted home automation, Node-RED"
         url: "%protocol-type%://connector.%service-domain%"
         target: "_blank"
-  - name: "Productivity"
-    icon: "fas fa-tasks"
-    items:
-      - name: "Bitwarden"
-        icon: "fas fa-key"
-        subtitle: "Password manager"
-        tag: "app"
-        url: "%protocol-type%://bitwarden.%service-domain%"
-        target: "_blank"
   - name: "Development"
     icon: "fas fa-terminal"
     items:
