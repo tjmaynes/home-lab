@@ -26,34 +26,38 @@ metrics:
           password: ${GRAFANA_API_KEY}
 
 integrations:
-  agent:
-    enabled: true
-
   node_exporter:
     enabled: true
     relabel_configs:
     - replacement: hostname
+      source_labels:
+      - __address__
       target_label: instance
-    - replacement: integrations/docker
-      target_label: job
-    
+
     rootfs_path: /
     sysfs_path: /sys
     procfs_path: /proc
 
 logs:
-  positions_directory: /tmp/positions
-  configs:
-  - name: linux-scraping
-    positions:
-      filename: /tmp/positions.yaml
+  positions_directory: /tmp/grafana-positions
+  configs: 
+  - name: integrations
     scrape_configs:
-    - job_name: integrations/agent
+    - job_name: integrations/node_exporter_direct_scrape
+      static_configs:
+      - targets:
+          - localhost
+        labels:
+          instance: hostname
+          __path__: /var/log/{syslog,messages,*.log}
+          job: integrations/node_exporter
+
+    - job_name: integrations/node_exporter_journal_scrape
       journal:
         max_age: 24h
         labels:
           instance: hostname
-          job: integrations/agent
+          job: integrations/node_exporter
       relabel_configs:
       - source_labels: ['__journal__systemd_unit']
         target_label: 'unit'
@@ -61,10 +65,8 @@ logs:
         target_label: 'boot_id'
       - source_labels: ['__journal__transport']
         target_label: 'transport'
-      - source_labels: ['__journal_priority_keyword']
-        target_label: 'level'
 
-  - name: docker-scraping
+  - name: scrape-docker
     target_config:
       sync_period: 10s
     scrape_configs:
@@ -115,7 +117,7 @@ Description=Run grafana-agent
 After=network.target
 
 [Service]
-ExecStart=/opt/tools/grafana-agent -config.file ${GRAFANA_AGENT_BASE_DIRECTORY}/agent.yaml
+ExecStart=sudo /opt/tools/grafana-agent -config.file ${GRAFANA_AGENT_BASE_DIRECTORY}/agent.yaml
 Restart=always
 TimeoutStopSec=3
 
@@ -148,13 +150,59 @@ clients:
   - url: ${LOKI_URI}
 
 scrape_configs:
-- job_name: system
+- job_name: system-logs
   static_configs:
   - targets:
       - localhost
     labels:
       job: varlogs
       __path__: /var/log/*log
+
+- job_name: scrape-containers
+  docker_sd_configs:
+    - host: unix:///var/run/docker.sock
+      refresh_interval: 5s
+  relabel_configs:
+    - source_labels: ['__meta_docker_container_name']
+      regex: '/(.*)\.[0-9]\..*'
+      target_label: 'name'
+    - source_labels: ['__meta_docker_container_name']
+      regex: '/(.*)\.[0-9a-z]*\..*'
+      target_label: 'name'
+    - source_labels: ['__meta_docker_container_name']
+      regex: '/.*\.([0-9]{1,2})\..*'
+      target_label: 'replica'
+    - action: replace
+      replacement: integrations/docker
+      source_labels:
+        - __meta_docker_container_id
+      target_label: job 
+    - source_labels:
+        - __meta_docker_container_name
+      regex: '/(.*)'
+      target_label: container
+    - source_labels:
+        - __meta_docker_container_log_stream
+      target_label: stream
+
+  # --log-opt tag="{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"
+  pipeline_stages:
+  - json:
+      expressions:
+        stream: stream
+        attrs: attrs
+        tag: attrs.tag
+  - regex:
+      expression: (?P<image_name>(?:[^|]*[^|])).(?P<container_name>(?:[^|]*[^|])).(?P<image_id>(?:[^|]*[^|])).(?P<container_id>(?:[^|]*[^|]))
+      source: "tag"
+
+  - labels:
+      tag:
+      stream:
+      image_name:
+      container_name:
+      image_id:
+      container_id:
 EOF
   fi
 
@@ -179,7 +227,7 @@ Description=Run promtail-agent
 After=network.target
 
 [Service]
-ExecStart=/opt/tools/promtail -config.file ${PROMTAIL_AGENT_BASE_DIRECTORY}/config.yaml
+ExecStart=sudo /opt/tools/promtail -config.file ${PROMTAIL_AGENT_BASE_DIRECTORY}/config.yaml
 Restart=always
 TimeoutStopSec=3
 

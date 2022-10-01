@@ -16,6 +16,8 @@ services:
     image: jc21/nginx-proxy-manager:2.9.18
     container_name: nginx-proxy
     restart: unless-stopped
+    networks:
+      - default
     ports:
       - 80:80
       - 443:443

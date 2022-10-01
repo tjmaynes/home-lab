@@ -16,9 +16,6 @@ backup:
 debug.service:
 	journalctl -u start-geck.service -b
 
-debug.macvlan:
-	journalctl -u macvlan.service -b
-
 debug.grafana-agent:
 	journalctl -b -u grafana-agent.service
 
