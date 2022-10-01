@@ -41,9 +41,9 @@ function setup_homer() {
   sed \
     -e "s/%protocol-type%/https/g" \
     -e "s/%service-domain%/${SERVICE_DOMAIN}/g" \
-    data/homer.template.yml > "$HOMER_BASE_DIRECTORY/www/assets/config.yml"
+    static/templates/homer.template.yml > "$HOMER_BASE_DIRECTORY/www/assets/config.yml"
 
-  cp -f static/homer-logo.png "$HOMER_BASE_DIRECTORY/www/assets/logo.png"
+  cp -f static/images/logo.webp "$HOMER_BASE_DIRECTORY/www/assets/logo.webp"
 }
 
 function setup_pihole() {

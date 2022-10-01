@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="./docs/vault-boy.webp" width="150">
+    <img src="./static/images/vault-boy.webp" width="150">
 </p>
 
 # [G.E.C.K.](https://fallout.fandom.com/wiki/geck)
