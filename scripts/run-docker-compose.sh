@@ -15,11 +15,23 @@ function check_requirements() {
 }
 
 function setup_cloudflare_tunnel() {
+  add_step "Setting up cloudflare-tunnel"
+
   throw_if_env_var_not_present "CLOUDFLARE_BASE_DIRECTORY" "$CLOUDFLARE_BASE_DIRECTORY"
 
-  ensure_directory_exists "$CLOUDFLARE_BASE_DIRECTORY/etc/cloudflared"
+  ensure_directory_exists "$CLOUDFLARE_BASE_DIRECTORY/.cloudflared"
 
-  throw_if_env_var_not_present "CLOUDFLARE_TUNNEL_TOKEN" "$CLOUDFLARE_TUNNEL_TOKEN"
+  throw_if_env_var_not_present "CLOUDFLARE_TUNNEL_UUID" "$CLOUDFLARE_TUNNEL_UUID"
+
+  sed \
+    -e "s/%cloudflare-tunnel-uuid%/${CLOUDFLARE_TUNNEL_UUID}/g" \
+    -e "s/%hostname%/${NONROOT_USER}/g" \
+    -e "s/%service-domain%/${SERVICE_DOMAIN}/g" \
+    static/templates/cloudflare.template.yml > "$CLOUDFLARE_BASE_DIRECTORY/config.yaml"
+
+  if ! docker network ls | grep "cloudflare_network"; then
+    docker network create cloudflare_network
+  fi
 }
 
 function setup_nginx_proxy() {
@@ -27,6 +39,10 @@ function setup_nginx_proxy() {
 
   ensure_directory_exists "$NGNIX_PROXY_MANAGER_BASE_DIRECTORY/data"
   ensure_directory_exists "$NGNIX_PROXY_MANAGER_BASE_DIRECTORY/letsencrypt"
+
+  if ! docker network ls | grep "proxy_network"; then
+    docker network create proxy_network
+  fi
 }
 
 function setup_homer() {
@@ -57,6 +73,16 @@ function setup_pihole() {
   throw_if_env_var_not_present "PIHOLE_BASE_DIRECTORY" "$PIHOLE_BASE_DIRECTORY"
   ensure_directory_exists "$PIHOLE_BASE_DIRECTORY/pihole"
   ensure_directory_exists "$PIHOLE_BASE_DIRECTORY/dnsmasq.d"
+
+  if ! docker network ls | grep "pihole_network"; then
+    docker network create -d macvlan \
+      -o parent=eth0 \
+      --subnet 192.168.4.0/22 \
+      --gateway 192.168.4.1 \
+      --ip-range 192.168.4.200/32 \
+      --aux-address 'host=192.168.4.210' \
+      pihole_network
+  fi
 }
 
 function setup_jellyfin() {
@@ -175,19 +201,26 @@ function turn_off_eee_mode() {
   ethtool --set-eee eth0 eee off
 }
 
-function ensure_macvlan_network_setup() {
-  if ! docker network ls | grep "macvlan_network"; then
-    docker network create -d macvlan \
-      -o parent=eth0 \
-      --subnet 192.168.4.0/22 \
-      --gateway 192.168.4.1 \
-      --ip-range 192.168.4.200/32 \
-      --aux-address 'host=192.168.4.210' \
-      macvlan_network
-  fi
+function post_run() {
+  turn_off_wifi
+  turn_off_bluetooth
+  turn_off_eee_mode
+
+  throw_if_env_var_not_present "PIHOLE_PASSWORD" "$PIHOLE_PASSWORD"
+  docker exec pihole-server pihole -a -p $PIHOLE_PASSWORD
+
+  SUBDOMAINS=(home listen read media rss ha connector git podgrab proxy)
+  for subdomain in "${SUBDOMAINS[@]}"; do
+    docker exec cloudflared-tunnel cloudflared tunnel route dns geck "${subdomain}.${SERVICE_DOMAIN}" || true
+  done
 }
 
 function main() {
+  if [[ -z "$RUN_TYPE" ]]; then
+    echo "Please pass an argument for 'RUN_TYPE'."
+    exit 1
+  fi
+
   source ./scripts/common.sh
 
   check_requirements
@@ -207,25 +240,13 @@ function main() {
   setup_home_assistant
   setup_nodered
 
-  ensure_macvlan_network_setup
-
-  if [[ -z "$RUN_TYPE" ]]; then
-    echo "Please pass an argument for 'RUN_TYPE'."
-    exit 1
-  fi
-
   if [[ "$RUN_TYPE" = "start" ]]; then
     docker compose up -d --remove-orphans
   else
     docker compose restart
   fi
 
-  throw_if_env_var_not_present "PIHOLE_PASSWORD" "$PIHOLE_PASSWORD"
-  docker exec pihole-server pihole -a -p $PIHOLE_PASSWORD
-
-  turn_off_wifi
-  turn_off_bluetooth
-  turn_off_eee_mode
+  post_run
 }
 
 main

@@ -48,6 +48,7 @@ make backup
 | [jellyfin](https://jellyfin.org/)                                                     | media server                       | docker-compose | ✅ |
 | [calibre-web](https://github.com/janeczku/calibre-web)                                | web-based ebook-reader             | docker-compose | ✅ |
 | [audiobookshelf](https://www.audiobookshelf.org/)                                     | podcast & audiobooks server        | docker-compose | ✅ |
+| [lychee-server](https://lychee.electerious.com/)                                      | photo manager                      | docker-compose | ✅ |
 | [podgrab](https://github.com/akhilrex/podgrab)                                        | podcast downloader                 | docker-compose | ✅ |
 | [miniflux-web](https://miniflux.app/)                                                 | rss reader                         | docker-compose | ✅ |
 | [gogs](https://gogs.io/)                                                              | git server                         | docker-compose | ✅ |

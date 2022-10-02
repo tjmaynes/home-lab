@@ -44,6 +44,7 @@ export GRAFANA_AGENT_VERSION=0.27.1
 export PROMTAIL_AGENT_VERSION=2.6.1
 
 # Replace-me
+export SERVICE_EMAIL=some-email
 export HOST_IP=some-ip-address
 export PIHOLE_IP=some-ip-address
 export HOST_ROUTER_IP=some-ip-address
@@ -60,4 +61,4 @@ export GRAFANA_USERNAME=some-username
 export GRAFANA_API_KEY=some-password
 export LOKI_USERNAME=some-password
 export LOKI_URI=some-uri
-export CLOUDFLARE_TUNNEL_TOKEN=some-token
+export CLOUDFLARE_TUNNEL_UUID=some-uuid

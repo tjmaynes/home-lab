@@ -1,0 +1,13 @@
+tunnel: "%cloudflare-tunnel-uuid%"
+credentials-file: /root/.cloudflared/%cloudflare-tunnel-uuid%.json
+
+originRequest:
+  originServerName: "*.%service-domain%"
+  noTLSVerify: true
+
+ingress:
+  - hostname: "*.%service-domain%"
+    service: "http://nginx-proxy:80"
+  - hostname: "*.%service-domain%"
+    service: "https://nginx-proxy:443"
+  - service: http_status:404
