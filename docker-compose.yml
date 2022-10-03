@@ -49,8 +49,6 @@ services:
     restart: always
     networks:
       - proxy_network
-    ports:
-      - 18081:8080
     volumes:
       - ${HOMER_BASE_DIRECTORY}/www/assets:/www/assets
     environment:
@@ -146,8 +144,6 @@ services:
     container_name: audiobookshelf-web
     networks:
       - proxy_network
-    ports:
-      - 13378:80
     environment:
       - AUDIOBOOKSHELF_UID=${PUID}
       - AUDIOBOOKSHELF_GID=${PGID}
@@ -176,8 +172,6 @@ services:
     container_name: miniflux-db
     networks:
       - proxy_network
-    ports:
-      - 15434:5432
     environment:
       - POSTGRES_USER=${MINIFLUX_DB_USERNAME}
       - POSTGRES_PASSWORD=${MINIFLUX_DB_PASSWORD}
@@ -195,9 +189,6 @@ services:
     restart: always
     networks:
       - proxy_network
-    ports:
-      - 13000:3000
-      - 12222:22
     environment:
       - RUN_CROND=true
     volumes:
@@ -226,13 +217,22 @@ services:
     environment:
       - TZ=${TIMEZONE}
 
-  node-red:
+  nodered-web:
     image: nodered/node-red:2.2.3-12
-    container_name: node-red
+    container_name: nodered-web
     restart: unless-stopped
-    environment:
-      - TZ=${TIMEZONE}
     networks:
       - proxy_network
     volumes:
       - ${NODERED_BASE_DIRECTORY}/data:/data
+    environment:
+      - TZ=${TIMEZONE}
+
+  nanomq-server:
+    image: emqx/nanomq:0.12-slim
+    container_name: nanomq-server
+    restart: unless-stopped
+    networks:
+      - proxy_network
+    environment:
+      - NANOMQ_BROKER_URL="nmq-tcp://0.0.0.0:1883"

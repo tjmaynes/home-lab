@@ -29,7 +29,7 @@ function setup_cloudflare_tunnel() {
     -e "s/%service-domain%/${SERVICE_DOMAIN}/g" \
     static/templates/cloudflare.template.yml > "$CLOUDFLARE_BASE_DIRECTORY/config.yaml"
 
-  if ! docker network ls | grep "cloudflare_network"; then
+  if ! docker network ls | grep "cloudflare_network" &> /dev/null; then
     docker network create cloudflare_network
   fi
 }
@@ -40,7 +40,7 @@ function setup_nginx_proxy() {
   ensure_directory_exists "$NGNIX_PROXY_MANAGER_BASE_DIRECTORY/data"
   ensure_directory_exists "$NGNIX_PROXY_MANAGER_BASE_DIRECTORY/letsencrypt"
 
-  if ! docker network ls | grep "proxy_network"; then
+  if ! docker network ls | grep "proxy_network" &> /dev/null; then
     docker network create proxy_network
   fi
 }
@@ -74,7 +74,7 @@ function setup_pihole() {
   ensure_directory_exists "$PIHOLE_BASE_DIRECTORY/pihole"
   ensure_directory_exists "$PIHOLE_BASE_DIRECTORY/dnsmasq.d"
 
-  if ! docker network ls | grep "pihole_network"; then
+  if ! docker network ls | grep "pihole_network" &> /dev/null; then
     docker network create -d macvlan \
       -o parent=eth0 \
       --subnet 192.168.4.0/22 \
@@ -161,8 +161,6 @@ function setup_nodered() {
   throw_if_env_var_not_present "NODERED_BASE_DIRECTORY" "$NODERED_BASE_DIRECTORY"
 
   ensure_directory_exists "$NODERED_BASE_DIRECTORY/data"
-
-  chmod 777 "$NODERED_BASE_DIRECTORY/data"
 }
 
 function setup_nfs_media_mount() {
@@ -201,18 +199,38 @@ function turn_off_eee_mode() {
   ethtool --set-eee eth0 eee off
 }
 
+function reset_pihole_password() {
+  throw_if_env_var_not_present "PIHOLE_PASSWORD" "$PIHOLE_PASSWORD"
+  
+  echo "Setting pihole-server password..."
+  docker exec pihole-server pihole -a -p "$PIHOLE_PASSWORD"
+}
+
+function setup_cloudflare_dns_entries() {
+  SUBDOMAINS=(home listen read media rss ha connector git podgrab proxy admin)
+  for subdomain in "${SUBDOMAINS[@]}"; do
+    docker exec cloudflared-tunnel cloudflared tunnel route dns geck "${subdomain}.${SERVICE_DOMAIN}" || true
+
+    ./scripts/test-proxy.sh "$subdomain"
+  done
+}
+
+function add_plugins_for_home_automation() {
+  if ! docker exec nodered-web npm list node-red-node-twilio &> /dev/null; then
+    docker exec nodered-web npm install node-red-node-twilio
+  fi
+}
+
 function post_run() {
   turn_off_wifi
   turn_off_bluetooth
   turn_off_eee_mode
 
-  throw_if_env_var_not_present "PIHOLE_PASSWORD" "$PIHOLE_PASSWORD"
-  docker exec pihole-server pihole -a -p $PIHOLE_PASSWORD
+  reset_pihole_password
 
-  SUBDOMAINS=(home listen read media rss ha connector git podgrab proxy)
-  for subdomain in "${SUBDOMAINS[@]}"; do
-    docker exec cloudflared-tunnel cloudflared tunnel route dns geck "${subdomain}.${SERVICE_DOMAIN}" || true
-  done
+  setup_cloudflare_dns_entries
+
+  add_plugins_for_home_automation
 }
 
 function main() {
