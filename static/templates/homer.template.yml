@@ -96,7 +96,7 @@ services:
         icon: "fas fa-dashboard"
         subtitle: "Monitoring interface for servers"
         tag: "app"
-        url: "https://bewoogie.grafana.net/"
+        url: "https://bewoogie.grafana.net/d/0yyfXt74z/bewoogie-dashboard"
         target: "_blank"
       - name: "Nginx Proxy Manager"
         icon: "fas fa-shower"
