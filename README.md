@@ -45,7 +45,7 @@ make backup
 | [homer](https://github.com/bastienwirtz/homer)                                        | start-page                         | docker-compose | ✅ |
 | [pi-hole](https://pi-hole.net/)                                                       | dns server                         | docker-compose | ✅ |
 | [cloudfared-agent](https://github.com/cloudflare/cloudflared)                         | cloudflare dns client              | docker-compose | ✅ |
-| [jellyfin](https://jellyfin.org/)                                                     | media server                       | docker-compose | ✅ |
+| [plex-server](https://hub.docker.com/r/linuxserver/plex)                               | media server                       | docker-compose | ✅ |
 | [calibre-web](https://github.com/janeczku/calibre-web)                                | web-based ebook-reader             | docker-compose | ✅ |
 | [audiobookshelf](https://www.audiobookshelf.org/)                                     | podcast & audiobooks server        | docker-compose | ✅ |
 | [podgrab](https://github.com/akhilrex/podgrab)                                        | podcast downloader                 | docker-compose | ✅ |

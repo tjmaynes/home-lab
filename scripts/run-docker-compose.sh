@@ -67,7 +67,6 @@ function setup_pihole() {
 
   throw_if_file_not_present "/etc/timezone"
 
-  throw_if_env_var_not_present "PIHOLE_IP" "$PIHOLE_IP"
   throw_if_env_var_not_present "PIHOLE_PASSWORD" "$PIHOLE_PASSWORD"
 
   throw_if_env_var_not_present "PIHOLE_BASE_DIRECTORY" "$PIHOLE_BASE_DIRECTORY"
@@ -85,15 +84,15 @@ function setup_pihole() {
   fi
 }
 
-function setup_jellyfin() {
-  add_step "Setting up jellyfin"
+function setup_plex_server() {
+  add_step "Setting up plex-server"
 
   throw_if_env_var_not_present "MEDIA_BASE_DIRECTORY" "$MEDIA_BASE_DIRECTORY"
-  throw_if_env_var_not_present "HOST_IP" "$HOST_IP"
+  throw_if_env_var_not_present "PLEX_CLAIM_TOKEN" "$PLEX_CLAIM_TOKEN"
 
-  throw_if_env_var_not_present "JELLYFIN_BASE_DIRECTORY" "$JELLYFIN_BASE_DIRECTORY"
-  ensure_directory_exists "$JELLYFIN_BASE_DIRECTORY/config"
-  ensure_directory_exists "$JELLYFIN_BASE_DIRECTORY/plugins"
+  throw_if_env_var_not_present "PLEX_BASE_DIRECTORY" "$PLEX_BASE_DIRECTORY"
+  ensure_directory_exists "$PLEX_BASE_DIRECTORY/config"
+  ensure_directory_exists "$PLEX_BASE_DIRECTORY/transcode"
 }
 
 function setup_calibre_web() {
@@ -207,11 +206,11 @@ function reset_pihole_password() {
 }
 
 function setup_cloudflare_dns_entries() {
-  SUBDOMAINS=(home listen read media rss ha connector git podgrab proxy admin)
+  SUBDOMAINS=(home listen read media rss ha connector git podgrab proxy admin queue)
   for subdomain in "${SUBDOMAINS[@]}"; do
     docker exec cloudflared-tunnel cloudflared tunnel route dns geck "${subdomain}.${SERVICE_DOMAIN}" || true
 
-    ./scripts/test-proxy.sh "$subdomain"
+    ./scripts/test-proxy.sh "$subdomain" || true
   done
 }
 
@@ -249,7 +248,7 @@ function main() {
   setup_nginx_proxy
   setup_homer
   setup_pihole
-  setup_jellyfin
+  setup_plex_server
   setup_calibre_web
   setup_miniflux_web
   setup_audiobookshelf

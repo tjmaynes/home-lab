@@ -23,11 +23,11 @@ services:
   - name: "Media"
     icon: "fas fa-play"
     items:
-      - name: "Jellyfin"
+      - name: "Plex"
         icon: "fas fa-tv"
         subtitle: "Media server for movies, music, etc"
         tag: "app"
-        keywords: "self-hosted media server, jellyfin"
+        keywords: "self-hosted media server, plex"
         url: "%protocol-type%://media.%service-domain%"
         target: "_blank"
       - name: "Calibre-Web"

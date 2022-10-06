@@ -89,7 +89,7 @@ services:
       TZ: ${TIMEZONE}
       WEBPASSWORD: ${PIHOLE_PASSWORD}
       DNSMASQ_LISTENING: all
-      FTLCONF_LOCAL_IPV4: ${PIHOLE_IP}
+      FTLCONF_LOCAL_IPV4: 192.168.4.200
       PIHOLE_DNS_: "192.168.4.201#5053;no"
     depends_on:
       - cloudflared-agent
@@ -109,20 +109,23 @@ services:
       TUNNEL_DNS_PORT: 5053
       TUNNEL_DNS_ADDRESS: "0.0.0.0"
 
-  jellyfin-server:
-    image: linuxserver/jellyfin:10.8.4
-    container_name: jellyfin-server
+  plex-server:
+    image: linuxserver/plex:1.29.0
+    container_name: plex-server
     restart: unless-stopped
     networks:
       - proxy_network
+    ports:
+      - 32400:32400
     volumes:
-      - ${JELLYFIN_BASE_DIRECTORY}/config:/config
-      - ${MEDIA_BASE_DIRECTORY}:/media
+      - ${PLEX_BASE_DIRECTORY}/config:/config
+      - ${PLEX_BASE_DIRECTORY}/transcode:/transcode
+      - ${MEDIA_BASE_DIRECTORY}:/data
     environment:
-      - TZ=${TIMEZONE}
       - PUID=${PUID}
       - PGID=${PGID}
-      - JELLYFIN_PublishedServerUrl=https://media.${SERVICE_DOMAIN}
+      - TZ=${TIMEZONE}
+      - CLAIM_TOKEN=${PLEX_CLAIM_TOKEN}
 
   calibre-web:
     image: lscr.io/linuxserver/calibre-web:0.6.19
