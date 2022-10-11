@@ -206,12 +206,14 @@ function reset_pihole_password() {
 }
 
 function setup_cloudflare_dns_entries() {
-  SUBDOMAINS=(home listen read media rss ha connector git podgrab proxy admin queue)
+  SUBDOMAINS=(home listen read media rss ha connector gogs podgrab proxy admin queue)
   for subdomain in "${SUBDOMAINS[@]}"; do
     docker exec cloudflared-tunnel cloudflared tunnel route dns geck "${subdomain}.${SERVICE_DOMAIN}" || true
 
     ./scripts/test-proxy.sh "$subdomain" || true
   done
+
+  docker exec cloudflared-tunnel cloudflared tunnel ingress validate
 }
 
 function add_plugins_for_home_automation() {
