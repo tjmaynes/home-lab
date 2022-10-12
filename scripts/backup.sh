@@ -24,7 +24,7 @@ function main() {
 
   rsync -avuz --delete \
     --log-file=$BACKUP_LOGS_DIRECTORY/$TODAY-backup.log \
-    --exclude "/docker/jellyfin-server/config/cache/" \
+    --exclude "/docker/plex-server/config/Library/Application Support/" \
     --exclude "/docker/plex-server/config/cache/" \
     --exclude "/docker/nginx-proxy-manager-server/data/logs/" \
     --exclude "/docker/pihole-server/pihole/macvendor.db" \

@@ -142,8 +142,21 @@ function setup_podgrab() {
   add_step "Setting up podgrab"
 
   throw_if_env_var_not_present "PODGRAB_BASE_DIRECTORY" "$PODGRAB_BASE_DIRECTORY"
-
   ensure_directory_exists "$PODGRAB_BASE_DIRECTORY/config"
+}
+
+function setup_youtube_downloader() {
+  add_step "Setting up youtube-downloader"
+
+  throw_if_env_var_not_present "YOUTUBEDL_BASE_DIRECTORY" "$YOUTUBEDL_BASE_DIRECTORY"
+  ensure_directory_exists "$YOUTUBEDL_BASE_DIRECTORY/appdata"
+  ensure_directory_exists "$YOUTUBEDL_BASE_DIRECTORY/subscriptions"
+  ensure_directory_exists "$YOUTUBEDL_BASE_DIRECTORY/users"
+
+  throw_if_directory_not_present "YOUTUBE_DIRECTORY" "$YOUTUBE_DIRECTORY"
+
+  throw_if_env_var_not_present "YOUTUBEDL_DB_BASE_DIRECTORY" "$YOUTUBEDL_DB_BASE_DIRECTORY"
+  ensure_directory_exists "$YOUTUBEDL_DB_BASE_DIRECTORY/db"
 }
 
 function setup_home_assistant() {
@@ -180,6 +193,7 @@ function setup_nfs_media_mount() {
   throw_if_directory_not_present "BOOKS_DIRECTORY" "$BOOKS_DIRECTORY"
   throw_if_directory_not_present "AUDIOBOOKS_DIRECTORY" "$AUDIOBOOKS_DIRECTORY"
   throw_if_directory_not_present "PODCASTS_DIRECTORY" "$PODCASTS_DIRECTORY"
+  throw_if_directory_not_present "YOUTUBE_DIRECTORY" "$YOUTUBE_DIRECTORY"
 }
 
 function turn_off_wifi() {
@@ -206,7 +220,7 @@ function reset_pihole_password() {
 }
 
 function setup_cloudflare_dns_entries() {
-  SUBDOMAINS=(home listen read media rss ha connector gogs podgrab proxy admin queue)
+  SUBDOMAINS=(home listen read media rss ha connector gogs podgrab proxy admin queue ytdl git)
   for subdomain in "${SUBDOMAINS[@]}"; do
     docker exec cloudflared-tunnel cloudflared tunnel route dns geck "${subdomain}.${SERVICE_DOMAIN}" || true
 
@@ -256,6 +270,7 @@ function main() {
   setup_audiobookshelf
   setup_gogs
   setup_podgrab
+  setup_youtube_downloader
   setup_home_assistant
   setup_nodered
 

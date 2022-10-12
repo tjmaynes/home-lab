@@ -194,6 +194,7 @@ services:
       - proxy_network
     environment:
       - RUN_CROND=true
+      - DOMAIN=${SERVICE_DOMAIN}
     volumes:
       - ${GOGS_BASE_DIRECTORY}/data:/data
 
@@ -208,6 +209,38 @@ services:
     volumes:
       - ${PODGRAB_BASE_DIRECTORY}/config:/config
       - ${PODCASTS_DIRECTORY}:/assets
+
+  youtube-downloader-web:
+    image: tzahi12345/youtubedl-material:sha-9c0a77c
+    container_name: youtube-downloader-web
+    restart: always
+    networks:
+      - proxy_network #port: 17442
+    volumes:
+      - ${YOUTUBE_DIRECTORY}/video:/app/video
+      - ${YOUTUBE_DIRECTORY}/audio:/app/audio
+      - ${YOUTUBEDL_BASE_DIRECTORY}/appdata:/app/appdata
+      - ${YOUTUBEDL_BASE_DIRECTORY}/subscriptions:/app/subscriptions
+      - ${YOUTUBEDL_BASE_DIRECTORY}/users:/app/users
+    environment:
+      UID: ${PUID}
+      GID: ${PGID}
+      ytdl_mongodb_connection_string: "mongodb://youtube-downloader-db:27017"
+      ytdl_use_local_db: "false"
+      write_ytdl_config: "true"
+    depends_on:
+      - youtube-downloader-db
+
+  youtube-downloader-db:
+    image: mongo:4.4.9
+    container_name: youtube-downloader-db
+    restart: always
+    logging:
+      driver: "none"
+    networks:
+      - proxy_network #port: 27017
+    volumes:
+      - ${YOUTUBEDL_DB_BASE_DIRECTORY}/db/:/data/db
 
   home-assistant-web:
     image: ghcr.io/home-assistant/home-assistant:2022.9

@@ -66,6 +66,12 @@ services:
         tag: "app"
         url: "%protocol-type%://podgrab.%service-domain%"
         target: "_blank"
+      - name: "YouTube Downloader"
+        icon: "fas fa-cloud-download"
+        subtitle: "Download video and sound"
+        tag: "app"
+        url: "%protocol-type%://ytdl.%service-domain%"
+        target: "_blank"
   - name: "Automation"
     icon: "fas fa-magic"
     items:

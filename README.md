@@ -45,10 +45,11 @@ make backup
 | [homer](https://github.com/bastienwirtz/homer)                                        | start-page                         | docker-compose | ✅ |
 | [pi-hole](https://pi-hole.net/)                                                       | dns server                         | docker-compose | ✅ |
 | [cloudfared-agent](https://github.com/cloudflare/cloudflared)                         | cloudflare dns client              | docker-compose | ✅ |
-| [plex-server](https://hub.docker.com/r/linuxserver/plex)                               | media server                       | docker-compose | ✅ |
+| [plex-server](https://hub.docker.com/r/linuxserver/plex)                              | media server                       | docker-compose | ✅ |
 | [calibre-web](https://github.com/janeczku/calibre-web)                                | web-based ebook-reader             | docker-compose | ✅ |
 | [audiobookshelf](https://www.audiobookshelf.org/)                                     | podcast & audiobooks server        | docker-compose | ✅ |
 | [podgrab](https://github.com/akhilrex/podgrab)                                        | podcast downloader                 | docker-compose | ✅ |
+| [youtubedl-material](https://github.com/Tzahi12345/YoutubeDL-Material)                | youtube video downloader           | docker-compose | ✅ |
 | [miniflux-web](https://miniflux.app/)                                                 | rss reader                         | docker-compose | ✅ |
 | [gogs](https://gogs.io/)                                                              | git server                         | docker-compose | ✅ |
 | [home-assistant](https://www.home-assistant.io/)                                      | home automation server             | docker-compose | ✅ |
