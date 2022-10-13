@@ -149,14 +149,11 @@ function setup_youtube_downloader() {
   add_step "Setting up youtube-downloader"
 
   throw_if_env_var_not_present "YOUTUBEDL_BASE_DIRECTORY" "$YOUTUBEDL_BASE_DIRECTORY"
+  ensure_directory_exists "$YOUTUBEDL_BASE_DIRECTORY/video"
+  ensure_directory_exists "$YOUTUBEDL_BASE_DIRECTORY/audio"
   ensure_directory_exists "$YOUTUBEDL_BASE_DIRECTORY/appdata"
   ensure_directory_exists "$YOUTUBEDL_BASE_DIRECTORY/subscriptions"
   ensure_directory_exists "$YOUTUBEDL_BASE_DIRECTORY/users"
-
-  throw_if_directory_not_present "YOUTUBE_DIRECTORY" "$YOUTUBE_DIRECTORY"
-
-  throw_if_env_var_not_present "YOUTUBEDL_DB_BASE_DIRECTORY" "$YOUTUBEDL_DB_BASE_DIRECTORY"
-  ensure_directory_exists "$YOUTUBEDL_DB_BASE_DIRECTORY/db"
 }
 
 function setup_home_assistant() {
@@ -193,7 +190,6 @@ function setup_nfs_media_mount() {
   throw_if_directory_not_present "BOOKS_DIRECTORY" "$BOOKS_DIRECTORY"
   throw_if_directory_not_present "AUDIOBOOKS_DIRECTORY" "$AUDIOBOOKS_DIRECTORY"
   throw_if_directory_not_present "PODCASTS_DIRECTORY" "$PODCASTS_DIRECTORY"
-  throw_if_directory_not_present "YOUTUBE_DIRECTORY" "$YOUTUBE_DIRECTORY"
 }
 
 function turn_off_wifi() {

@@ -217,15 +217,13 @@ services:
     networks:
       - proxy_network #port: 17442
     volumes:
-      - ${YOUTUBE_DIRECTORY}/video:/app/video
-      - ${YOUTUBE_DIRECTORY}/audio:/app/audio
+      - ${YOUTUBEDL_BASE_DIRECTORY}/video:/app/video
+      - ${YOUTUBEDL_BASE_DIRECTORY}/audio:/app/audio
       - ${YOUTUBEDL_BASE_DIRECTORY}/appdata:/app/appdata
       - ${YOUTUBEDL_BASE_DIRECTORY}/subscriptions:/app/subscriptions
       - ${YOUTUBEDL_BASE_DIRECTORY}/users:/app/users
     environment:
-      UID: ${PUID}
-      GID: ${PGID}
-      # ytdl_mongodb_connection_string: "mongodb://youtube-downloader-db:27017"
+      ytdl_mongodb_connection_string: "mongodb://youtube-downloader-db:27017"
       ytdl_use_local_db: "true"
       write_ytdl_config: "true"
     depends_on:
@@ -234,9 +232,8 @@ services:
   youtube-downloader-db:
     image: mongo:4.4.9
     container_name: youtube-downloader-db
-    restart: always
-    logging:
-      driver: "none"
+    restart: unless-stopped
+    command: --quiet
     networks:
       - proxy_network #port: 27017
     volumes:
