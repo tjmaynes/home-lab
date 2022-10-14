@@ -148,7 +148,8 @@ function setup_podgrab() {
 function setup_youtube_downloader() {
   add_step "Setting up youtube-downloader"
 
-  throw_if_directory_not_present "YOUTUBE_DIRECTORY" "$YOUTUBE_DIRECTORY"
+  throw_if_directory_not_present "DOWNLOADS_DIRECTORY" "$DOWNLOADS_DIRECTORY"
+  mkdir -p "$DOWNLOADS_DIRECTORY/youtube"
 }
 
 function setup_home_assistant() {
@@ -185,6 +186,7 @@ function setup_nfs_media_mount() {
   throw_if_directory_not_present "BOOKS_DIRECTORY" "$BOOKS_DIRECTORY"
   throw_if_directory_not_present "AUDIOBOOKS_DIRECTORY" "$AUDIOBOOKS_DIRECTORY"
   throw_if_directory_not_present "PODCASTS_DIRECTORY" "$PODCASTS_DIRECTORY"
+  throw_if_directory_not_present "DOWNLOADS_DIRECTORY" "$DOWNLOADS_DIRECTORY"
 }
 
 function turn_off_wifi() {

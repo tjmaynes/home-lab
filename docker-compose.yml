@@ -217,7 +217,7 @@ services:
     networks:
       - proxy_network #port: 8081
     volumes:
-      - ${YOUTUBE_DIRECTORY}:/downloads
+      - ${DOWNLOADS_DIRECTORY}/youtube:/downloads
     environment:
       UID: ${PUID}
       GID: ${PGID}
