@@ -132,6 +132,10 @@ function main() {
   throw_if_program_not_present "raspi-config"
   raspi-config nonint do_boot_wait 0
 
+  git config --global alias.co checkout
+  git config --global alias.st status
+  git config --global alias.gl "log --oneline --graph"
+
   reboot
 }
 
