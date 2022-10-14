@@ -148,12 +148,7 @@ function setup_podgrab() {
 function setup_youtube_downloader() {
   add_step "Setting up youtube-downloader"
 
-  throw_if_env_var_not_present "YOUTUBEDL_BASE_DIRECTORY" "$YOUTUBEDL_BASE_DIRECTORY"
-  ensure_directory_exists "$YOUTUBEDL_BASE_DIRECTORY/video"
-  ensure_directory_exists "$YOUTUBEDL_BASE_DIRECTORY/audio"
-  ensure_directory_exists "$YOUTUBEDL_BASE_DIRECTORY/appdata"
-  ensure_directory_exists "$YOUTUBEDL_BASE_DIRECTORY/subscriptions"
-  ensure_directory_exists "$YOUTUBEDL_BASE_DIRECTORY/users"
+  throw_if_directory_not_present "YOUTUBE_DIRECTORY" "$YOUTUBE_DIRECTORY"
 }
 
 function setup_home_assistant() {

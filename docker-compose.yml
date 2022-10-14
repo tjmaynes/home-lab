@@ -211,33 +211,16 @@ services:
       - ${PODCASTS_DIRECTORY}:/assets
 
   youtube-downloader-web:
-    image: tzahi12345/youtubedl-material:sha-9c0a77c
+    image: alexta69/metube:2022-10-05
     container_name: youtube-downloader-web
-    restart: always
-    networks:
-      - proxy_network #port: 17442
-    volumes:
-      - ${YOUTUBEDL_BASE_DIRECTORY}/video:/app/video
-      - ${YOUTUBEDL_BASE_DIRECTORY}/audio:/app/audio
-      - ${YOUTUBEDL_BASE_DIRECTORY}/appdata:/app/appdata
-      - ${YOUTUBEDL_BASE_DIRECTORY}/subscriptions:/app/subscriptions
-      - ${YOUTUBEDL_BASE_DIRECTORY}/users:/app/users
-    environment:
-      ytdl_mongodb_connection_string: "mongodb://youtube-downloader-db:27017"
-      ytdl_use_local_db: "true"
-      write_ytdl_config: "true"
-    depends_on:
-      - youtube-downloader-db
-
-  youtube-downloader-db:
-    image: mongo:4.4.9
-    container_name: youtube-downloader-db
     restart: unless-stopped
-    command: --quiet
     networks:
-      - proxy_network #port: 27017
+      - proxy_network #port: 8081
     volumes:
-      - ${YOUTUBEDL_DB_BASE_DIRECTORY}/db/:/data/db
+      - ${YOUTUBE_DIRECTORY}:/downloads
+    environment:
+      UID: ${PUID}
+      GID: ${PGID}
 
   home-assistant-web:
     image: ghcr.io/home-assistant/home-assistant:2022.9
