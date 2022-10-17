@@ -103,6 +103,27 @@ function setup_calibre_web() {
   ensure_directory_exists "$CALIBRE_WEB_BASE_DIRECTORY/config"
 }
 
+function setup_pigallary_web() {
+  add_step "Setting up pi-gallery"
+
+  throw_if_directory_not_present "PHOTOS_DIRECTORY" "$PHOTOS_DIRECTORY"
+
+  throw_if_env_var_not_present "PIGALLERY_BASE_DIRECTORY" "$PIGALLERY_BASE_DIRECTORY"
+
+  ensure_directory_exists "$PIGALLERY_BASE_DIRECTORY/config"
+  ensure_directory_exists "$PIGALLERY_BASE_DIRECTORY/db"
+  ensure_directory_exists "$PIGALLERY_BASE_DIRECTORY/tmp"
+}
+
+function setup_audiobookshelf() {
+  add_step "Setting up audiobookshelf"
+
+  throw_if_env_var_not_present "AUDIOBOOKSHELF_BASE_DIRECTORY" "$AUDIOBOOKSHELF_BASE_DIRECTORY"
+
+  ensure_directory_exists "$AUDIOBOOKSHELF_BASE_DIRECTORY/config"
+  ensure_directory_exists "$AUDIOBOOKSHELF_BASE_DIRECTORY/metadata"
+}
+
 function setup_miniflux_web() {
   add_step "Setting up miniflux-web"
 
@@ -127,15 +148,6 @@ function setup_gogs() {
 
   throw_if_env_var_not_present "GOGS_DB_BASE_DIRECTORY" "$GOGS_DB_BASE_DIRECTORY"
   ensure_directory_exists "$GOGS_DB_BASE_DIRECTORY"
-}
-
-function setup_audiobookshelf() {
-  add_step "Setting up audiobookshelf"
-
-  throw_if_env_var_not_present "AUDIOBOOKSHELF_BASE_DIRECTORY" "$AUDIOBOOKSHELF_BASE_DIRECTORY"
-
-  ensure_directory_exists "$AUDIOBOOKSHELF_BASE_DIRECTORY/config"
-  ensure_directory_exists "$AUDIOBOOKSHELF_BASE_DIRECTORY/metadata"
 }
 
 function setup_podgrab() {
@@ -213,7 +225,7 @@ function reset_pihole_password() {
 }
 
 function setup_cloudflare_dns_entries() {
-  SUBDOMAINS=(home listen read media rss ha connector gogs podgrab proxy admin queue ytdl git)
+  SUBDOMAINS=(home listen read media rss ha connector gogs podgrab proxy admin queue ytdl git photo)
   for subdomain in "${SUBDOMAINS[@]}"; do
     docker exec cloudflared-tunnel cloudflared tunnel route dns geck "${subdomain}.${SERVICE_DOMAIN}" || true
 
@@ -259,6 +271,7 @@ function main() {
   setup_pihole
   setup_plex_server
   setup_calibre_web
+  setup_pigallary_web
   setup_miniflux_web
   setup_audiobookshelf
   setup_gogs

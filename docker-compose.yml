@@ -143,8 +143,9 @@ services:
       - ${BOOKS_DIRECTORY}:/books
 
   audiobookshelf-web:
-    image: ghcr.io/advplyr/audiobookshelf:2.1.5
+    image: ghcr.io/advplyr/audiobookshelf:2.2.1
     container_name: audiobookshelf-web
+    restart: unless-stopped
     networks:
       - proxy_network
     environment:
@@ -155,6 +156,20 @@ services:
       - ${PODCASTS_DIRECTORY}:/podcasts
       - ${AUDIOBOOKSHELF_BASE_DIRECTORY}/config:/config
       - ${AUDIOBOOKSHELF_BASE_DIRECTORY}/metadata:/metadata
+
+  pi-gallery-web:
+    image: bpatrik/pigallery2:1.9.3-alpine
+    container_name: pi-gallery-web
+    restart: always
+    networks:
+      - proxy_network
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ${PIGALLERY_BASE_DIRECTORY}/config:/app/data/config
+      - ${PIGALLERY_BASE_DIRECTORY}/db:/app/data/db
+      - ${PIGALLERY_BASE_DIRECTORY}/tmp:/app/data/tmp
+      - ${PHOTOS_DIRECTORY}:/app/data/images:ro
 
   miniflux-web:
     image: miniflux/miniflux:2.0.38
