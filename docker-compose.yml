@@ -113,8 +113,7 @@ services:
     image: linuxserver/plex:1.29.0
     container_name: plex-server
     restart: unless-stopped
-    networks:
-      - proxy_network
+    network_mode: host
     ports:
       - 32400:32400
     volumes:
