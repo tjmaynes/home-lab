@@ -55,7 +55,7 @@ services:
       - INIT_ASSETS=0
 
   pihole-server:
-    image: pihole/pihole:2022.09.4
+    image: pihole/pihole:2022.10
     container_name: pihole-server
     restart: unless-stopped
     hostname: geck
