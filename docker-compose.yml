@@ -170,6 +170,21 @@ services:
       - ${PIGALLERY_BASE_DIRECTORY}/tmp:/app/data/tmp
       - ${PHOTOS_DIRECTORY}:/app/data/images:ro
 
+  emulatorjs-web:
+    image: lscr.io/linuxserver/emulatorjs:1.7.2
+    container_name: emulatorjs-web
+    restart: unless-stopped
+    networks:
+      - proxy_network
+    volumes:
+      - ${EMULATORJS_BASE_DIRECTORY}/config:/config
+      - ${EMULATORJS_BASE_DIRECTORY}/data:/data
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+      # - SUBFOLDER=/ #optional
+
   miniflux-web:
     image: miniflux/miniflux:2.0.38
     container_name: miniflux-web

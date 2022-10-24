@@ -124,6 +124,15 @@ function setup_audiobookshelf() {
   ensure_directory_exists "$AUDIOBOOKSHELF_BASE_DIRECTORY/metadata"
 }
 
+function setup_emulatorjs() {
+  add_step "Setting up emulatorjs"
+
+  throw_if_env_var_not_present "EMULATORJS_BASE_DIRECTORY" "$EMULATORJS_BASE_DIRECTORY"
+
+  ensure_directory_exists "$EMULATORJS_BASE_DIRECTORY/config"
+  ensure_directory_exists "$EMULATORJS_BASE_DIRECTORY/data"
+}
+
 function setup_miniflux_web() {
   add_step "Setting up miniflux-web"
 
@@ -225,7 +234,7 @@ function reset_pihole_password() {
 }
 
 function setup_cloudflare_dns_entries() {
-  SUBDOMAINS=(home listen read media rss ha connector gogs podgrab proxy admin queue ytdl git photo)
+  SUBDOMAINS=(home listen read media rss ha connector gogs podgrab proxy admin queue ytdl git photo gaming)
   for subdomain in "${SUBDOMAINS[@]}"; do
     docker exec cloudflared-tunnel cloudflared tunnel route dns geck "${subdomain}.${SERVICE_DOMAIN}" || true
 
@@ -272,6 +281,7 @@ function main() {
   setup_plex_server
   setup_calibre_web
   setup_pigallary_web
+  setup_emulatorjs
   setup_miniflux_web
   setup_audiobookshelf
   setup_gogs

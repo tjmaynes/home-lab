@@ -23,13 +23,14 @@ function main() {
   TODAY=$(date +"%Y%m%d")
 
   rsync -avuz --delete \
-    --log-file=$BACKUP_LOGS_DIRECTORY/$TODAY-backup.log \
+    --log-file="$BACKUP_LOGS_DIRECTORY/$TODAY-backup.log" \
     --exclude "/docker/plex-server/config/Library/Application Support/" \
     --exclude "/docker/plex-server/config/cache/" \
     --exclude "/docker/pigallery-web/tmp/" \
     --exclude "/docker/nginx-proxy-manager-server/data/logs/" \
     --exclude "/docker/pihole-server/pihole/macvendor.db" \
     --exclude "/docker/nodered-web/data/node_modules/" \
+    --exclude "/docker/emulatorjs-web/data/.ipfs/blocks/" \
     "$DOCKER_BASE_DIRECTORY" \
     "$BACKUP_BASE_DIRECTORY"
 }
