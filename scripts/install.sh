@@ -97,6 +97,10 @@ function install_required_programs() {
   ensure_program_installed "vim"
   ensure_program_installed "htop"
 
+  if [[ -z "$(command -v nslookup)" ]]; then
+    ensure_program_installed "dnsutils"
+  fi
+
   install_docker
   install_argon_one_case
 }
