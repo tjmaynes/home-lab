@@ -131,6 +131,9 @@ function setup_emulatorjs() {
 
   ensure_directory_exists "$EMULATORJS_BASE_DIRECTORY/config"
   ensure_directory_exists "$EMULATORJS_BASE_DIRECTORY/data"
+
+  add_step "Updating UDP receive buffer size to 2.5mb"
+  sysctl -w net.core.rmem_max=2500000 &> /dev/null
 }
 
 function setup_miniflux_web() {
