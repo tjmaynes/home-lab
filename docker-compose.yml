@@ -110,7 +110,7 @@ services:
       TUNNEL_DNS_ADDRESS: "0.0.0.0"
 
   plex-server:
-    image: linuxserver/plex:1.29.0
+    image: linuxserver/plex:1.29.1
     container_name: plex-server
     restart: unless-stopped
     network_mode: host
@@ -209,11 +209,6 @@ services:
       - POSTGRES_PASSWORD=${MINIFLUX_DB_PASSWORD}
     volumes:
       - ${MINIFLUX_DB_BASE_DIRECTORY}:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${MINIFLUX_DB_USERNAME}"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
 
   gogs-web:
     image: gogs/gogs:0.12
