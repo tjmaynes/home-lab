@@ -68,6 +68,12 @@ services:
   - name: "Productivity"
     icon: "fas fa-tasks"
     items:
+      - name: "Notes"
+        icon: "fas fa-pencil"
+        subtitle: "Notetaking app"
+        tag: "app"
+        url: "%protocol-type%://notes.%service-domain%"
+        target: "_blank"
       - name: "Gogs"
         icon: "fas fa-code-fork"
         subtitle: "Git server for mirroring my external git services"

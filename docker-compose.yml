@@ -210,6 +210,33 @@ services:
     volumes:
       - ${MINIFLUX_DB_BASE_DIRECTORY}:/var/lib/postgresql/data
 
+  codimd-db:
+    image: postgres:11.6-alpine
+    container_name: codimd-db
+    restart: always
+    networks:
+      - proxy_network
+    volumes:
+      - ${CODIMD_DB_BASE_DIRECTORY}/data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=${CODIMD_DB_USERNAME}
+      - POSTGRES_PASSWORD=${CODIMD_DB_PASSWORD}
+      - POSTGRES_DB=codimd
+
+  codimd-web:
+    image: hackmdio/hackmd:2.4.2
+    container_name: codimd-web
+    restart: always
+    networks:
+      - proxy_network
+    volumes:
+      - ${CODIMD_BASE_DIRECTORY}/uploads:/home/hackmd/app/public/uploads
+    environment:
+      - CMD_DB_URL=${CODIMD_DB_URL}
+      - CMD_USECDN=false
+    depends_on:
+      - codimd-db
+
   gogs-web:
     image: gogs/gogs:0.12
     container_name: gogs-web

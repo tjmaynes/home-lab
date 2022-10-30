@@ -148,6 +148,21 @@ function setup_miniflux_web() {
   ensure_directory_exists "$MINIFLUX_DB_BASE_DIRECTORY"
 }
 
+function setup_codimd() {
+  add_step "Setting up codimd"
+
+  throw_if_env_var_not_present "CODIMD_DB_URL" "$CODIMD_DB_URL"
+
+  throw_if_env_var_not_present "CODIMD_BASE_DIRECTORY" "$CODIMD_BASE_DIRECTORY"
+  ensure_directory_exists "$CODIMD_BASE_DIRECTORY/uploads"
+
+  throw_if_env_var_not_present "CODIMD_DB_BASE_DIRECTORY" "$CODIMD_DB_BASE_DIRECTORY"
+  ensure_directory_exists "$CODIMD_DB_BASE_DIRECTORY/data"
+
+  throw_if_env_var_not_present "CODIMD_DB_USERNAME" "$CODIMD_DB_USERNAME"
+  throw_if_env_var_not_present "CODIMD_DB_PASSWORD" "$CODIMD_DB_PASSWORD"
+}
+
 function setup_gogs() {
   add_step "Setting up gogs"
 
@@ -237,7 +252,7 @@ function reset_pihole_password() {
 }
 
 function setup_cloudflare_dns_entries() {
-  SUBDOMAINS=(home listen read media rss ha connector gogs podgrab proxy admin queue ytdl git photo gaming)
+  SUBDOMAINS=(home listen read media rss ha connector gogs podgrab proxy admin queue ytdl git photo gaming notes)
   for subdomain in "${SUBDOMAINS[@]}"; do
     docker exec cloudflared-tunnel cloudflared tunnel route dns geck "${subdomain}.${SERVICE_DOMAIN}" || true
 
@@ -287,6 +302,7 @@ function main() {
   setup_emulatorjs
   setup_miniflux_web
   setup_audiobookshelf
+  setup_codimd
   setup_gogs
   setup_podgrab
   setup_youtube_downloader
