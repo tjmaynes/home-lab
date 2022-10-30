@@ -48,7 +48,7 @@ make backup
 | [plex-server](https://hub.docker.com/r/linuxserver/plex)                              | media server                       | docker-compose | ✅ |
 | [calibre-web](https://github.com/janeczku/calibre-web)                                | web-based ebook-reader             | docker-compose | ✅ |
 | [pigallary-web](https://bpatrik.github.io/pigallery2/)                                | photo gallery                      | docker-compose | ✅ |
-| [emulatorjs-web](https://hub.docker.com/r/linuxserver/emulatorjs)                     | online gaming console              | docker-compose | ✅ |
+| [emulatorjs-web](https://github.com/linuxserver/emulatorjs)                           | online gaming console              | docker-compose | ✅ |
 | [audiobookshelf](https://www.audiobookshelf.org/)                                     | podcast & audiobooks server        | docker-compose | ✅ |
 | [podgrab](https://github.com/akhilrex/podgrab)                                        | podcast downloader                 | docker-compose | ✅ |
 | [metube](https://github.com/alexta69/metube)                                          | youtube video downloader           | docker-compose | ✅ |
