@@ -33,6 +33,8 @@ function main() {
     --exclude "/docker/emulatorjs-web/data/.ipfs/blocks/" \
     "$DOCKER_BASE_DIRECTORY" \
     "$BACKUP_BASE_DIRECTORY"
+
+  cp .envrc.production "$BACKUP_BASE_DIRECTORY/docker"
 }
 
 main
