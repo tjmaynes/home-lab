@@ -183,15 +183,8 @@ function setup_codimd() {
 function setup_gogs() {
   add_step "Setting up gogs"
 
-  throw_if_env_var_not_present "GOGS_USER" "$GOGS_USER"
-  throw_if_env_var_not_present "GOGS_DB" "$GOGS_DB"
-  throw_if_env_var_not_present "GOGS_DB_PASSWORD" "$GOGS_DB_PASSWORD"
-
   throw_if_env_var_not_present "GOGS_BASE_DIRECTORY" "$GOGS_BASE_DIRECTORY"
   ensure_directory_exists "$GOGS_BASE_DIRECTORY/data"
-
-  throw_if_env_var_not_present "GOGS_DB_BASE_DIRECTORY" "$GOGS_DB_BASE_DIRECTORY"
-  ensure_directory_exists "$GOGS_DB_BASE_DIRECTORY"
 }
 
 function setup_podgrab() {

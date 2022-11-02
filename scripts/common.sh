@@ -27,8 +27,8 @@ function setup_nas_mount() {
         exit 1
     fi
 
-    sudo mount -t cifs //$NAS_IP/$1 $2 \
-      -o username=$NONROOT_USER,password=$NAS_MOUNT_PASSWORD || true
+    sudo mount -t cifs "//$NAS_IP/$1" "$2" \
+      -o "username=$NONROOT_USER,password=$NAS_MOUNT_PASSWORD" || true
 
     delay=$((delay+5))
   done
