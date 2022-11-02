@@ -62,6 +62,23 @@ function setup_homer() {
   cp -f static/images/logo.webp "$HOMER_BASE_DIRECTORY/www/assets/logo.webp"
 }
 
+function setup_homer_local() {
+  add_step "Setting up homer-local"
+
+  throw_if_env_var_not_present "LOCAL_SERVICE_DOMAIN" "$LOCAL_SERVICE_DOMAIN"
+
+  throw_if_env_var_not_present "HOMER_LOCAL_BASE_DIRECTORY" "$HOMER_LOCAL_BASE_DIRECTORY"
+
+  ensure_directory_exists "$HOMER_LOCAL_BASE_DIRECTORY/www/assets"
+
+  sed \
+    -e "s/%protocol-type%/https/g" \
+    -e "s/%service-domain%/${LOCAL_SERVICE_DOMAIN}/g" \
+    static/templates/homer.template.yml > "$HOMER_LOCAL_BASE_DIRECTORY/www/assets/config.yml"
+
+  cp -f static/images/logo.webp "$HOMER_LOCAL_BASE_DIRECTORY/www/assets/logo.webp"
+}
+
 function setup_pihole() {
   add_step "Setting up pihole"
 
@@ -295,6 +312,7 @@ function main() {
   setup_cloudflare_tunnel
   setup_nginx_proxy
   setup_homer
+  setup_homer_local
   setup_pihole
   setup_plex_server
   setup_calibre_web
