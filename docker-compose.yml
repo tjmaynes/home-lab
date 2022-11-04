@@ -56,7 +56,7 @@ services:
 
   homer-local-web:
     image: b4bz/homer:v22.08.1
-    container_name: homer-web
+    container_name: homer-local-web
     restart: always
     networks:
       - proxy_network
