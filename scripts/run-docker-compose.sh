@@ -92,11 +92,11 @@ function setup_pihole() {
 
   if ! docker network ls | grep "pihole_network" &> /dev/null; then
     docker network create -d macvlan \
-      -o parent=eth0 \
-      --subnet 192.168.4.0/22 \
-      --gateway 192.168.4.1 \
-      --ip-range 192.168.4.200/32 \
-      --aux-address 'host=192.168.4.210' \
+      -o parent=${PIHOLE_INTERFACE_NAME} \
+      --subnet 192.168.5.0/22 \
+      --gateway 192.168.5.1 \
+      --ip-range 192.168.5.200/32 \
+      --aux-address 'host=192.168.5.210' \
       pihole_network
   fi
 }
@@ -201,14 +201,6 @@ function setup_youtube_downloader() {
   mkdir -p "$DOWNLOADS_DIRECTORY/youtube"
 }
 
-function setup_home_assistant() {
-  add_step "Setting up home assistant"
-
-  throw_if_env_var_not_present "HOME_ASSISTANT_BASE_DIRECTORY" "$HOME_ASSISTANT_BASE_DIRECTORY"
-
-  ensure_directory_exists "$HOME_ASSISTANT_BASE_DIRECTORY/config"
-}
-
 function setup_nodered() {
   add_step "Setting up nodered"
 
@@ -239,19 +231,15 @@ function setup_nfs_media_mount() {
 }
 
 function turn_off_wifi() {
-  ensure_program_installed "rfkill"
+  throw_if_program_not_present "rfkill"
 
   rfkill block wifi
 }
 
 function turn_off_bluetooth() {
-  ensure_program_installed "rfkill"
+  throw_if_program_not_present "rfkill"
 
   rfkill block bluetooth
-}
-
-function turn_off_eee_mode() {
-  ethtool --set-eee eth0 eee off
 }
 
 function reset_pihole_password() {
@@ -262,7 +250,7 @@ function reset_pihole_password() {
 }
 
 function setup_cloudflare_dns_entries() {
-  SUBDOMAINS=(home listen read media rss ha connector gogs podgrab proxy admin queue ytdl git photo gaming notes)
+  SUBDOMAINS=(home listen read media rss connector gogs podgrab proxy admin queue ytdl git photo gaming notes)
   for subdomain in "${SUBDOMAINS[@]}"; do
     docker exec cloudflared-tunnel cloudflared tunnel route dns geck "${subdomain}.${SERVICE_DOMAIN}" || true
 
@@ -281,7 +269,6 @@ function add_plugins_for_home_automation() {
 function post_run() {
   turn_off_wifi
   turn_off_bluetooth
-  turn_off_eee_mode
 
   reset_pihole_password
 
@@ -317,7 +304,6 @@ function main() {
   setup_gogs
   setup_podgrab
   setup_youtube_downloader
-  setup_home_assistant
   setup_nodered
 
   if [[ "$RUN_TYPE" = "start" ]]; then

@@ -83,26 +83,19 @@ function install_docker() {
   usermod -aG docker "$NONROOT_USER"
 }
 
-function install_argon_one_case() {
-  if [[ -z "$(command -v argonone-config)" ]]; then
-    ./scripts/setup-argon1-fan.sh
-  fi
-}
-
 function install_required_programs() {
-  ensure_program_installed "usermod"
-  ensure_program_installed "curl"
-  ensure_program_installed "lsof"
-  ensure_program_installed "ffmpeg"
-  ensure_program_installed "vim"
-  ensure_program_installed "htop"
+  apt-get update && apt-get upgrade -y
+  
+  DEB_PACKAGES=(cron usermod curl lsof ffmpeg vim htop ethtool rfkill rsync)
+  for package in "${DEB_PACKAGES[@]}"; do
+    ensure_program_installed "$package"
+  done
 
   if [[ -z "$(command -v nslookup)" ]]; then
     ensure_program_installed "dnsutils"
   fi
 
   install_docker
-  install_argon_one_case
 }
 
 function setup_sysctl() {
@@ -122,8 +115,6 @@ function main() {
 
   check_requirements
 
-  apt-get update && apt-get upgrade -y
-
   install_required_programs
 
   setup_start_geck_service
@@ -132,9 +123,6 @@ function main() {
   setup_sysctl
   setup_cronjobs
   setup_static_ip
-
-  throw_if_program_not_present "raspi-config"
-  raspi-config nonint do_boot_wait 0
 
   git config --global alias.co checkout
   git config --global alias.st status

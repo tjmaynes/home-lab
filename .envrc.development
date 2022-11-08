@@ -3,6 +3,7 @@ export TIMEZONE=America/Chicago
 export NONROOT_USER=geck
 export SERVICE_DOMAIN=lan
 export BASE_DIRECTORY=/home/${NONROOT_USER}
+export CPU_ARCH=amd64
 
 # NAS
 export NAS_IP=192.168.4.76
@@ -39,19 +40,19 @@ export CODIMD_DB_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/codimd-db
 export GOGS_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/gogs-web
 export AUDIOBOOKSHELF_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/audiobookshelf-web
 export PODGRAB_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/podgrab-web
-export HOME_ASSISTANT_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/home-assistant-web
 export NODERED_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/nodered-web
 export GRAFANA_AGENT_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/grafana-agent
 export PROMTAIL_AGENT_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/promtail-agent
 
 # Monitoring
-export GRAFANA_AGENT_VERSION=0.27.1
+export GRAFANA_AGENT_VERSION=0.29.0
 export PROMTAIL_AGENT_VERSION=2.6.1
 
 # Replace-me
 export SERVICE_EMAIL=some-email
 export HOST_IP=some-ip-address
 export PIHOLE_PASSWORD=some-password
+export PIHOLE_INTERFACE_NAME=eth0
 export HOST_ROUTER_IP=some-ip-address
 export NAS_MOUNT_PASSWORD=some-password
 export MINIFLUX_DB_USERNAME=miniflux

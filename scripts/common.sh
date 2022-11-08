@@ -103,7 +103,7 @@ function force_symlink_between_files() {
 }
 
 function ensure_program_installed() {
-  if [[ ! -z "$1" ]] && [[ -z "$(command -v $1)" ]]; then
+  if [[ -n "$1" ]] && [[ -z "$(command -v $1)" ]]; then
     apt-get install "$1" -y
   fi
 }

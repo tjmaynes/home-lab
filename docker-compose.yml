@@ -12,7 +12,7 @@ networks:
 
 services:
   cloudflared-tunnel:
-    image: cloudflare/cloudflared:2022.9.1-arm64
+    image: cloudflare/cloudflared:2022.10.3
     container_name: cloudflared-tunnel
     user: ${PUID}:${PGID}
     restart: unless-stopped
@@ -72,7 +72,7 @@ services:
     hostname: geck
     networks:
       pihole_network:
-        ipv4_address: 192.168.4.200
+        ipv4_address: 192.168.5.200
     dns:
       - 1.1.1.1
       - 1.0.0.1
@@ -100,21 +100,21 @@ services:
       TZ: ${TIMEZONE}
       WEBPASSWORD: ${PIHOLE_PASSWORD}
       DNSMASQ_LISTENING: all
-      FTLCONF_LOCAL_IPV4: 192.168.4.200
-      PIHOLE_DNS_: "192.168.4.201#5053;no"
+      FTLCONF_LOCAL_IPV4: 192.168.5.200
+      PIHOLE_DNS_: "192.168.5.201#5053;no"
     depends_on:
       - cloudflared-agent
     cap_add:
       - NET_ADMIN
 
   cloudflared-agent:
-    image: cloudflare/cloudflared:2022.9.1-arm64
+    image: cloudflare/cloudflared:2022.10.3
     container_name: cloudflared-agent
     restart: unless-stopped
     command: proxy-dns
     networks:
       pihole_network:
-        ipv4_address: 192.168.4.201
+        ipv4_address: 192.168.5.201
     environment:
       TUNNEL_DNS_UPSTREAM: "https://1.1.1.1/dns-query,https://1.0.0.1/dns-query,https://9.9.9.9/dns-query"
       TUNNEL_DNS_PORT: 5053
@@ -283,17 +283,6 @@ services:
     environment:
       UID: ${PUID}
       GID: ${PGID}
-
-  home-assistant-web:
-    image: ghcr.io/home-assistant/home-assistant:2022.9
-    container_name: home-assistant-web
-    restart: always
-    networks:
-      - proxy_network
-    volumes:
-      - ${HOME_ASSISTANT_BASE_DIRECTORY}/config:/config
-    environment:
-      - TZ=${TIMEZONE}
 
   nodered-web:
     image: nodered/node-red:2.2.3-12

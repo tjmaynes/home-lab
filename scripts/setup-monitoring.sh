@@ -101,13 +101,15 @@ EOF
   mkdir -p "/opt/tools"
 
   if [[ ! -f "/opt/tools/grafana-agent" ]]; then
-    curl -O -L "https://github.com/grafana/agent/releases/download/v$GRAFANA_AGENT_VERSION/agent-linux-arm64.zip"
+    curl -O -L "https://github.com/grafana/agent/releases/download/v$GRAFANA_AGENT_VERSION/agent-linux-${CPU_ARCH}.zip"
 
-    unzip "agent-linux-arm64.zip"
+    unzip "agent-linux-${CPU_ARCH}.zip"
 
-    chmod a+x "agent-linux-arm64"
+    chmod a+x "agent-linux-${CPU_ARCH}"
 
-    mv "agent-linux-arm64" "/opt/tools/grafana-agent"
+    mv "agent-linux-${CPU_ARCH}" "/opt/tools/grafana-agent"
+
+    rm -rf "agent-linux-${CPU_ARCH}.zip"
   fi
 
   if [[ ! -f "/etc/systemd/system/grafana-agent.service" ]]; then
@@ -211,13 +213,15 @@ EOF
   mkdir -p "/opt/tools"
 
   if [[ ! -f "/opt/tools/promtail" ]]; then
-    curl -O -L "https://github.com/grafana/loki/releases/download/v$PROMTAIL_AGENT_VERSION/promtail-linux-arm64.zip"
+    curl -O -L "https://github.com/grafana/loki/releases/download/v$PROMTAIL_AGENT_VERSION/promtail-linux-${CPU_ARCH}.zip"
 
-    unzip "promtail-linux-arm64.zip"
+    unzip "promtail-linux-${CPU_ARCH}.zip"
 
-    chmod a+x "promtail-linux-arm64"
+    chmod a+x "promtail-linux-${CPU_ARCH}"
 
-    mv "promtail-linux-arm64" "/opt/tools/promtail"
+    mv "promtail-linux-${CPU_ARCH}" "/opt/tools/promtail"
+
+    rm -rf "promtail-linux-${CPU_ARCH}.zip"
   fi
 
   if [[ ! -f "/etc/systemd/system/promtail-agent.service" ]]; then
@@ -241,6 +245,8 @@ EOF
 
 function main() {
   source ./scripts/common.sh
+
+  throw_if_env_var_not_present "CPU_ARCH" "$CPU_ARCH"
 
   setup_grafana_agent
   setup_promtail_agent
