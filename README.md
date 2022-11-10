@@ -53,6 +53,7 @@ make backup
 | [podgrab](https://github.com/akhilrex/podgrab)                                        | podcast downloader                 | docker-compose | ✅ |
 | [metube](https://github.com/alexta69/metube)                                          | youtube video downloader           | docker-compose | ✅ |
 | [miniflux-web](https://miniflux.app/)                                                 | rss reader                         | docker-compose | ✅ |
+| [code-server](https://github.com/coder/code-server)                                   | remote coding platform             | docker-compose | ✅ |
 | [codimd](https://hackmd.io/c/codimd-documentation)                                    | notetaking tool                    | docker-compoes | ✅ |
 | [gogs](https://gogs.io/)                                                              | git server                         | docker-compose | ✅ |
 | [node-red](https://nodered.org/)                                                      | programmable automation interface  | docker-compose | ✅ |

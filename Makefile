@@ -1,16 +1,21 @@
 install:
+	chmod +x ./scripts/$@.sh
 	./scripts/$@.sh
 
 start:
+	chmod +x ./scripts/$@.sh
 	./scripts/$@.sh
 
 restart:
+	chmod +x ./scripts/$@.sh
 	./scripts/$@.sh
 
 stop:
+	chmod +x ./scripts/$@.sh
 	./scripts/$@.sh
 
 backup:
+	chmod +x ./scripts/$@.sh
 	./scripts/$@.sh
 
 debug.service:

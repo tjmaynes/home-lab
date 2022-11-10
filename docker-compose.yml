@@ -54,17 +54,6 @@ services:
     environment:
       - INIT_ASSETS=0
 
-  homer-local-web:
-    image: b4bz/homer:v22.08.1
-    container_name: homer-local-web
-    restart: always
-    networks:
-      - proxy_network
-    volumes:
-      - ${HOMER_LOCAL_BASE_DIRECTORY}/www/assets:/www/assets
-    environment:
-      - INIT_ASSETS=0
-
   pihole-server:
     image: pihole/pihole:2022.10
     container_name: pihole-server
@@ -220,6 +209,22 @@ services:
       - POSTGRES_PASSWORD=${MINIFLUX_DB_PASSWORD}
     volumes:
       - ${MINIFLUX_DB_BASE_DIRECTORY}:/var/lib/postgresql/data
+
+  code-server:
+    image: lscr.io/linuxserver/code-server:4.8.3
+    container_name: code-server
+    restart: unless-stopped
+    networks:
+      - proxy_network # 8443
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+      - PASSWORD=${CODE_SERVER_PASSWORD}
+      - SUDO_PASSWORD=${CODE_SERVER_SUDO_PASSWORD}
+      - DEFAULT_WORKSPACE=/config/workspace/tjmaynes
+    volumes:
+      - ${CODE_SERVER_BASE_DIRECTORY}/config:/config
 
   codimd-db:
     image: postgres:11.6-alpine

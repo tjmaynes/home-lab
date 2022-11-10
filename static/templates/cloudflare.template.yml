@@ -10,6 +10,6 @@ ingress:
     service: "http://nginx-proxy:80"
   - hostname: "*.%service-domain%"
     service: "https://nginx-proxy:443"
-  - hostname: "git.%service-domain%"
-    service: "ssh://gogs-web:22"
+  - hostname: "ssh.%service-domain%"
+    service: "ssh://localhost:22"
   - service: http_status:404
