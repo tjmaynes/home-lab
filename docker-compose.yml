@@ -261,7 +261,7 @@ services:
       - proxy_network
     environment:
       - RUN_CROND=true
-      - DOMAIN=${SERVICE_DOMAIN}
+      - DOMAIN=git.${SERVICE_DOMAIN}
     volumes:
       - ${GOGS_BASE_DIRECTORY}/data:/data
 

@@ -78,7 +78,7 @@ services:
         icon: "fas fa-code"
         subtitle: "Code remotely"
         tag: "app"
-        url: "%protocol-type%://code.%service-domain%"
+        url: "%protocol-type%://coding.%service-domain%"
         target: "_blank"
       - name: "Gogs"
         icon: "fas fa-code-fork"

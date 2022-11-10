@@ -243,7 +243,7 @@ function reset_pihole_password() {
 }
 
 function setup_cloudflare_dns_entries() {
-  SUBDOMAINS=(home listen read media rss connector gogs podgrab proxy admin queue ytdl git photo gaming notes coding)
+  SUBDOMAINS=(home listen read media rss connector git podgrab proxy admin queue ytdl git photo gaming notes coding)
   for subdomain in "${SUBDOMAINS[@]}"; do
     docker exec cloudflared-tunnel cloudflared tunnel route dns geck "${subdomain}.${SERVICE_DOMAIN}" || true
 
