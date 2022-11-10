@@ -6,10 +6,10 @@ originRequest:
   noTLSVerify: true
 
 ingress:
+  - hostname: "ssh.%service-domain%"
+    service: "ssh://localhost:22"
   - hostname: "*.%service-domain%"
     service: "http://nginx-proxy:80"
   - hostname: "*.%service-domain%"
     service: "https://nginx-proxy:443"
-  - hostname: "ssh.%service-domain%"
-    service: "ssh://localhost:22"
   - service: http_status:404

@@ -41,38 +41,16 @@ function setup_cronjobs() {
   fi
 }
 
-function setup_static_ip() {
-  throw_if_env_var_not_present "HOST_IP" "$HOST_IP"
+function setup_ip_forwarding() {
+  IPV4_CONFIG="net.ipv4.ip_forward=1"
+  if ! cat /etc/sysctl.conf | grep "$IPV4_CONFIG"; then
+    echo "$IPV4_CONFIG" | sudo tee -a /etc/sysctl.conf
+  fi
 
   IPV6_CONFIG="net.ipv6.conf.all.forwarding=1"
   if ! cat /etc/sysctl.conf | grep "$IPV6_CONFIG"; then
     echo "$IPV6_CONFIG" | sudo tee -a /etc/sysctl.conf
   fi
-
-  if [[ -f "/etc/dhcpcd.conf" ]]; then
-    rm -f "/etc/dhcpcd.conf"
-  fi
-
-  tee -a "/etc/dhcpcd.conf" <<EOF
-hostname
-
-clientid
-
-persistant
-
-option rapid_commit
-option domain_name_servers, domain_name, domain_search, host_name
-option classless_static_routes
-option interface_mtu
-
-require dhcp_server_identifier
-
-slaac private
-
-interface eth0
-static ip_address=${HOST_IP}/24
-static routers=${HOST_ROUTER_IP}
-EOF
 }
 
 function install_docker() {
@@ -86,7 +64,7 @@ function install_docker() {
 function install_required_programs() {
   apt-get update && apt-get upgrade -y
   
-  DEB_PACKAGES=(cron usermod curl lsof ffmpeg vim htop ethtool rfkill rsync ufw openssh-server)
+  DEB_PACKAGES=(cron usermod curl lsof ffmpeg vim htop ethtool rfkill rsync  openssh-server)
   for package in "${DEB_PACKAGES[@]}"; do
     ensure_program_installed "$package"
   done
@@ -95,22 +73,16 @@ function install_required_programs() {
     ensure_program_installed "dnsutils"
   fi
 
+  if [[ -z "$(command -v ifconfig)" ]]; then
+    ensure_program_installed "net-tools"
+  fi
+
   install_docker
 }
 
-function setup_sysctl() {
-  IPV4_CONFIG="net.ipv4.ip_forward=1"
-  if ! cat /etc/sysctl.conf | grep "$IPV4_CONFIG"; then
-    echo "$IPV4_CONFIG" | sudo tee -a /etc/sysctl.conf
-  fi
-
-  IPV6_CONFIG="net.ipv6.conf.all.forwarding=1"
-  if ! cat /etc/sysctl.conf | grep "$IPV6_CONFIG"; then
-    echo "$IPV6_CONFIG" | sudo tee -a /etc/sysctl.conf
-  fi
-}
-
 function setup_firewall() {
+  ensure_program_installed "ufw"
+
   ufw default allow outgoing
   ufw default deny incoming
 
@@ -134,9 +106,8 @@ function main() {
   setup_start_geck_service
   ./scripts/setup-monitoring.sh
 
-  setup_sysctl
   setup_cronjobs
-  setup_static_ip
+  setup_ip_forwarding
   setup_firewall
 
   git config --global alias.co checkout

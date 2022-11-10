@@ -6,7 +6,7 @@ export BASE_DIRECTORY=/home/${NONROOT_USER}
 export CPU_ARCH=amd64
 
 # NAS
-export NAS_IP=192.168.4.76
+export NAS_IP=192.168.4.77
 export NAS_MEDIA_DIRECTORY=dionysus
 export NAS_BACKUP_DIRECTORY=${NONROOT_USER}
 
@@ -53,7 +53,7 @@ export PROMTAIL_AGENT_VERSION=2.6.1
 export SERVICE_EMAIL=some-email
 export HOST_IP=some-ip-address
 export PIHOLE_PASSWORD=some-password
-export PIHOLE_INTERFACE_NAME=eth0
+export HOST_INTERFACE_NAME=eth0
 export HOST_ROUTER_IP=some-ip-address
 export NAS_MOUNT_PASSWORD=some-password
 export MINIFLUX_DB_USERNAME=miniflux

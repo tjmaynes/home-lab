@@ -27,6 +27,6 @@ debug.grafana-agent:
 debug.promtail-agent:
 	journalctl -b -u promtail-agent.service
 
-local-pipe:
+local_plex_pipe:
 	chmod +x ./scripts/local-pipe.sh
 	./scripts/local-pipe.sh

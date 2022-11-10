@@ -68,6 +68,7 @@ function setup_pihole() {
   throw_if_file_not_present "/etc/timezone"
 
   throw_if_env_var_not_present "PIHOLE_PASSWORD" "$PIHOLE_PASSWORD"
+  throw_if_env_var_not_present "HOST_INTERFACE_NAME" "$HOST_INTERFACE_NAME"
 
   throw_if_env_var_not_present "PIHOLE_BASE_DIRECTORY" "$PIHOLE_BASE_DIRECTORY"
   ensure_directory_exists "$PIHOLE_BASE_DIRECTORY/pihole"
@@ -75,7 +76,7 @@ function setup_pihole() {
 
   if ! docker network ls | grep "pihole_network" &> /dev/null; then
     docker network create -d macvlan \
-      -o parent=${PIHOLE_INTERFACE_NAME} \
+      -o parent=${HOST_INTERFACE_NAME} \
       --subnet 192.168.5.0/22 \
       --gateway 192.168.5.1 \
       --ip-range 192.168.5.200/32 \
@@ -243,7 +244,7 @@ function reset_pihole_password() {
 }
 
 function setup_cloudflare_dns_entries() {
-  SUBDOMAINS=(home listen read media rss connector git podgrab proxy admin queue ytdl git photo gaming notes coding)
+  SUBDOMAINS=(home listen read media rss connector git podgrab proxy admin queue ytdl git photo gaming notes coding ssh)
   for subdomain in "${SUBDOMAINS[@]}"; do
     docker exec cloudflared-tunnel cloudflared tunnel route dns geck "${subdomain}.${SERVICE_DOMAIN}" || true
 
