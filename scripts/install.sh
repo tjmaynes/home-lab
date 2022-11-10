@@ -86,7 +86,7 @@ function install_docker() {
 function install_required_programs() {
   apt-get update && apt-get upgrade -y
   
-  DEB_PACKAGES=(cron usermod curl lsof ffmpeg vim htop ethtool rfkill rsync)
+  DEB_PACKAGES=(cron usermod curl lsof ffmpeg vim htop ethtool rfkill rsync ufw openssh-server)
   for package in "${DEB_PACKAGES[@]}"; do
     ensure_program_installed "$package"
   done
@@ -110,6 +110,20 @@ function setup_sysctl() {
   fi
 }
 
+function setup_firewall() {
+  ufw default allow outgoing
+  ufw default deny incoming
+
+  OPEN_PORTS=(22/tcp 80/tcp 443/tcp)
+  for port in "${OPEN_PORTS[@]}"; do
+    ufw allow "$port"
+  done
+
+  ufw enable
+
+  ufw status
+}
+
 function main() {
   source ./scripts/common.sh
 
@@ -123,6 +137,7 @@ function main() {
   setup_sysctl
   setup_cronjobs
   setup_static_ip
+  setup_firewall
 
   git config --global alias.co checkout
   git config --global alias.st status
