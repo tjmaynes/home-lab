@@ -10,6 +10,9 @@ networks:
   pihole_network:
     external: true
 
+  monitoring_network:
+    external: true
+
 services:
   cloudflared-tunnel:
     image: cloudflare/cloudflared:2022.10.3
@@ -319,3 +322,12 @@ services:
       - proxy_network
     environment:
       - NANOMQ_BROKER_URL="nmq-tcp://0.0.0.0:1883"
+
+  prometheus-server:
+    image: prom/prometheus:v2.40.1
+    container_name: prometheus-server
+    restart: unless-stopped
+    networks:
+      - monitoring_network #9090
+    volumes:
+      - ${PROMETHEUS_BASE_DIRECTORY}/prometheus.yml:/etc/prometheus/prometheus.yml:ro

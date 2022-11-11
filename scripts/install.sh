@@ -104,8 +104,6 @@ function main() {
   install_required_programs
 
   setup_start_geck_service
-  ./scripts/setup-monitoring.sh
-
   setup_cronjobs
   setup_ip_forwarding
   setup_firewall
