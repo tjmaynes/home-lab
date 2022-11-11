@@ -64,7 +64,7 @@ function install_docker() {
 function install_required_programs() {
   apt-get update && apt-get upgrade -y
   
-  DEB_PACKAGES=(cron usermod curl lsof ffmpeg vim htop ethtool rfkill rsync  openssh-server)
+  DEB_PACKAGES=(cron usermod curl lsof ffmpeg vim htop ethtool rfkill rsync openssh-server)
   for package in "${DEB_PACKAGES[@]}"; do
     ensure_program_installed "$package"
   done

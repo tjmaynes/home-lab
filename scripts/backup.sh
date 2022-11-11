@@ -31,6 +31,15 @@ function main() {
     --exclude "/docker/pihole-server/pihole/macvendor.db" \
     --exclude "/docker/nodered-web/data/node_modules/" \
     --exclude "/docker/emulatorjs-web/data/.ipfs/blocks/" \
+    --exclude "/docker/code-server/config/.asdf/" \
+    --exclude "/docker/code-server/config/.vim/" \
+    --exclude "/docker/code-server/config/.npm-packages/" \
+    --exclude "/docker/code-server/config/.zprezto/" \
+    --exclude "/docker/code-server/config/.gnupg/" \
+    --exclude "/docker/code-server/config/.cache/" \
+    --exclude "/docker/code-server/config/.cache/CachedExtensions/" \
+    --exclude "/docker/code-server/config/.cache/CachedExtensionVSIXs/" \
+    --exclude "/docker/code-server/config/.cache/CachedExtensions/" \
     "$DOCKER_BASE_DIRECTORY" \
     "$BACKUP_BASE_DIRECTORY"
 
