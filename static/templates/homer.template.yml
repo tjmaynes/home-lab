@@ -89,6 +89,13 @@ services:
   - name: "Automation"
     icon: "fas fa-magic"
     items:
+      - name: "Home Assistant"
+        icon: "fas fa-home"
+        subtitle: "Home automation and life support system"
+        tag: "app"
+        keywords: "self-hosted home automation, home assistant"
+        url: "%protocol-type%://ha.%service-domain%"
+        target: "_blank"
       - name: "Node-RED"
         icon: "fas fa-cogs"
         subtitle: "A programming tool for wiring together hardware devices, APIs and online services"

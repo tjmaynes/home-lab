@@ -289,6 +289,17 @@ services:
       UID: ${PUID}
       GID: ${PGID}
 
+  home-assistant-web:
+    image: ghcr.io/home-assistant/home-assistant:2022.11.2
+    container_name: home-assistant-web
+    restart: always
+    networks:
+      - proxy_network
+    volumes:
+      - ${HOME_ASSISTANT_BASE_DIRECTORY}/config:/config
+    environment:
+      - TZ=${TIMEZONE}
+
   nodered-web:
     image: nodered/node-red:2.2.3-12
     container_name: nodered-web

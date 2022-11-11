@@ -56,6 +56,7 @@ make backup
 | [code-server](https://github.com/coder/code-server)                                   | remote coding platform             | docker-compose | ✅ |
 | [codimd](https://hackmd.io/c/codimd-documentation)                                    | notetaking tool                    | docker-compoes | ✅ |
 | [gogs](https://gogs.io/)                                                              | git server                         | docker-compose | ✅ |
+| [home-assistant](https://www.home-assistant.io/)                                      | home automation server             | docker-compose | ✅ |
 | [node-red](https://nodered.org/)                                                      | programmable automation interface  | docker-compose | ✅ |
 | [nanomq-server](https://github.com/emqx/nanomq)                                       | pub/sub for IoT (MQTT broker)      | docker-compose | ✅ |
 | [grafana-agent](https://github.com/grafana/agent)                                     | monitoring agent for grafana cloud | systemd        | ✅ |

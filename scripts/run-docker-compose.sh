@@ -195,6 +195,14 @@ function setup_youtube_downloader() {
   mkdir -p "$DOWNLOADS_DIRECTORY/youtube"
 }
 
+function setup_home_assistant() {
+  add_step "Setting up home assistant"
+
+  throw_if_env_var_not_present "HOME_ASSISTANT_BASE_DIRECTORY" "$HOME_ASSISTANT_BASE_DIRECTORY"
+
+  ensure_directory_exists "$HOME_ASSISTANT_BASE_DIRECTORY/config"
+}
+
 function setup_nodered() {
   add_step "Setting up nodered"
 
@@ -244,7 +252,7 @@ function reset_pihole_password() {
 }
 
 function setup_cloudflare_dns_entries() {
-  SUBDOMAINS=(home listen read media rss connector git podgrab proxy admin queue ytdl git photo gaming notes coding ssh)
+  SUBDOMAINS=(home listen read media rss connector git podgrab proxy admin queue ytdl git photo gaming notes coding ssh ha)
   for subdomain in "${SUBDOMAINS[@]}"; do
     docker exec cloudflared-tunnel cloudflared tunnel route dns geck "${subdomain}.${SERVICE_DOMAIN}" || true
 
@@ -298,6 +306,7 @@ function main() {
   setup_gogs
   setup_podgrab
   setup_youtube_downloader
+  setup_home_assistant
   setup_nodered
 
   if [[ "$RUN_TYPE" = "start" ]]; then
