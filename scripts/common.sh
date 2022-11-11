@@ -36,10 +36,11 @@ function setup_nas_mount() {
 
 function ensure_directory_exists() {
   TARGET_DIRECTORY=$1
+  ALLOWED_USER=${2:-$NONROOT_USER}
 
   if [[ ! -d "$TARGET_DIRECTORY" ]]; then
     echo "Creating $TARGET_DIRECTORY directory..."
-    sudo -u "$NONROOT_USER" mkdir -p "$TARGET_DIRECTORY"
+    sudo -u "$ALLOWED_USER" mkdir -p "$TARGET_DIRECTORY"
   fi
 }
 

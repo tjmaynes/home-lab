@@ -10,7 +10,7 @@ ingress:
   - hostname: "ssh.%service-domain%"
     service: "ssh://localhost:22"
   - hostname: "*.%service-domain%"
-    service: "http://nginx-proxy:80"
+    service: "http://localhost:80"
   - hostname: "*.%service-domain%"
-    service: "https://nginx-proxy:443"
+    service: "https://localhost:443"
   - service: http_status:404

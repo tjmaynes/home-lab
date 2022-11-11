@@ -60,5 +60,6 @@ make backup
 | [node-red](https://nodered.org/)                                                      | programmable automation interface  | docker-compose | ✅ |
 | [nanomq-server](https://github.com/emqx/nanomq)                                       | pub/sub for IoT (MQTT broker)      | docker-compose | ✅ |
 | [prometheus](https://prometheus.io/)                                                  | timeseriesdb for monitoring server | docker-compose | ✅ |
+| [grafana](https://github.com/grafana/grafana)                                         | monitoring dashboard               | docker-compose | ✅ |
 | [grafana-agent](https://github.com/grafana/agent)                                     | monitoring agent for grafana cloud | systemd        | ✅ |
 | [promtail-agent](https://grafana.com/docs/loki/latest/clients/promtail/installation/) | logging agent for grafana cloud    | systemd        | ✅ |

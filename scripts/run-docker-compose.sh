@@ -28,10 +28,6 @@ function setup_cloudflare_tunnel() {
     -e "s/%hostname%/${NONROOT_USER}/g" \
     -e "s/%service-domain%/${SERVICE_DOMAIN}/g" \
     static/templates/cloudflare.template.yml > "$CLOUDFLARE_BASE_DIRECTORY/config.yaml"
-
-  if ! docker network ls | grep "cloudflare_network" &> /dev/null; then
-    docker network create cloudflare_network
-  fi
 }
 
 function setup_nginx_proxy() {
@@ -452,11 +448,18 @@ EOF
   sudo systemctl enable promtail-agent
 }
 
+function setup_grafana() {
+  add_step "Setting up grafana"
+
+  throw_if_env_var_not_present "GRAFANA_BASE_DIRECTORY" "$GRAFANA_BASE_DIRECTORY"
+  ensure_directory_exists "$GRAFANA_BASE_DIRECTORY"
+}
+
 function setup_prometheus() {
   add_step "Setting up prometheus"
 
   throw_if_env_var_not_present "PROMETHEUS_BASE_DIRECTORY" "$PROMETHEUS_BASE_DIRECTORY"
-  ensure_directory_exists "$PROMETHEUS_BASE_DIRECTORY"
+  ensure_directory_exists "$PROMETHEUS_BASE_DIRECTORY" "104"
 
   touch "$PROMETHEUS_BASE_DIRECTORY/prometheus.yml"
 }
@@ -464,6 +467,7 @@ function setup_prometheus() {
 function setup_monitoring() {
   throw_if_env_var_not_present "CPU_ARCH" "$CPU_ARCH"
 
+  setup_grafana
   setup_grafana_agent
   setup_promtail_agent
   setup_prometheus
@@ -514,7 +518,7 @@ function reset_pihole_password() {
 }
 
 function setup_cloudflare_dns_entries() {
-  SUBDOMAINS=(home listen read media rss connector git podgrab proxy admin queue ytdl git photo gaming notes coding ssh ha)
+  SUBDOMAINS=(home listen read media rss connector git podgrab proxy admin queue ytdl git photo gaming notes coding ssh ha monitoring)
   for subdomain in "${SUBDOMAINS[@]}"; do
     docker exec cloudflared-tunnel cloudflared tunnel route dns geck "${subdomain}.${SERVICE_DOMAIN}" || true
 

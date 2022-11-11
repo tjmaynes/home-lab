@@ -4,9 +4,6 @@ networks:
   proxy_network:
     external: true
 
-  cloudflare_network:
-    external: true
-
   pihole_network:
     external: true
 
@@ -20,8 +17,7 @@ services:
     user: ${PUID}:${PGID}
     restart: unless-stopped
     command: tunnel --no-autoupdate run geck
-    networks:
-      - cloudflare_network
+    network_mode: host
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
@@ -34,7 +30,6 @@ services:
     restart: unless-stopped
     networks:
       - proxy_network
-      - cloudflare_network
     ports:
       - 80:80
       - 443:443
@@ -186,7 +181,6 @@ services:
       - PUID=${PUID}
       - PGID=${PGID}
       - TZ=${TIMEZONE}
-      # - SUBFOLDER=/ #optional
 
   miniflux-web:
     image: miniflux/miniflux:2.0.38
@@ -331,3 +325,14 @@ services:
       - monitoring_network #9090
     volumes:
       - ${PROMETHEUS_BASE_DIRECTORY}/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+
+  grafana-web:
+    image: grafana/grafana-oss:8.5.15
+    container_name: grafana-web
+    restart: unless-stopped
+    user: '104'
+    networks:
+      - proxy_network
+      - monitoring_network
+    volumes:
+      - ${GRAFANA_BASE_DIRECTORY}:/var/lib/grafana
