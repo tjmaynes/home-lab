@@ -40,6 +40,18 @@ function main() {
     --exclude "/docker/code-server/config/.cache/CachedExtensions/" \
     --exclude "/docker/code-server/config/.cache/CachedExtensionVSIXs/" \
     --exclude "/docker/code-server/config/.cache/CachedExtensions/" \
+    --exclude "/docker/code-server/config/.alacritty.yml" \
+    --exclude "/docker/code-server/config/.bash-fns.sh" \
+    --exclude "/docker/code-server/config/.emacs" \
+    --exclude "/docker/code-server/config/.npmrc" \
+    --exclude "/docker/code-server/config/.offlineimap.py" \
+    --exclude "/docker/code-server/config/.offlineimaprc" \
+    --exclude "/docker/code-server/config/.signature" \
+    --exclude "/docker/code-server/config/.tmux.conf" \
+    --exclude "/docker/code-server/config/.tool-versions" \
+    --exclude "/docker/code-server/config/.vimrc" \
+    --exclude "/docker/code-server/config/.zpreztorc" \
+    --exclude "/docker/code-server/config/.zshrc" \
     "$DOCKER_BASE_DIRECTORY" \
     "$BACKUP_BASE_DIRECTORY"
 
