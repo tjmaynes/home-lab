@@ -16,7 +16,7 @@ defaults:
 links:
   - name: "Source Code"
     icon: "fab fa-github"
-    url: "https://github.com/tjmaynes/geck"
+    url: "%protocol-type%://git.%service-domain%/tjmaynes/geck"
     target: "_blank"
 
 services:
@@ -108,9 +108,15 @@ services:
     items:
       - name: "Admin Portal"
         icon: "fas fa-lock"
-        subtitle: "Admin interface for geck home server"
+        subtitle: "Admin interface for home server"
         tag: "app"
         url: "%protocol-type%://admin.%service-domain%"
+        target: "_blank"
+      - name: "SSH Portal"
+        icon: "fas fa-cubes"
+        subtitle: "SSH interface for home server"
+        tag: "app"
+        url: "%protocol-type%://ssh.%service-domain%"
         target: "_blank"
       - name: "Monitoring"
         icon: "fas fa-dashboard"
