@@ -86,7 +86,7 @@ function setup_firewall() {
   ufw default allow outgoing
   ufw default deny incoming
 
-  OPEN_PORTS=(22/tcp 80/tcp 443/tcp)
+  OPEN_PORTS=(22/tcp 80/tcp 443/tcp 32400/tcp)
   for port in "${OPEN_PORTS[@]}"; do
     ufw allow "$port"
   done
