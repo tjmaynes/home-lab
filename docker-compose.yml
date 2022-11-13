@@ -327,12 +327,13 @@ services:
       - ${PROMETHEUS_BASE_DIRECTORY}/prometheus.yml:/etc/prometheus/prometheus.yml:ro
 
   grafana-web:
-    image: grafana/grafana-oss:8.5.15
+    image: grafana/grafana-oss:9.2.4
     container_name: grafana-web
-    restart: unless-stopped
-    user: '104'
+    user: ${PUID}:${PGID}
     networks:
-      - proxy_network
+      - proxy_network #3000
       - monitoring_network
+    restart: unless-stopped
     volumes:
-      - ${GRAFANA_BASE_DIRECTORY}:/var/lib/grafana
+      - ${GRAFANA_BASE_DIRECTORY}/var/lib/grafana:/var/lib/grafana
+      - ${GRAFANA_BASE_DIRECTORY}/provisioning/datasources:/etc/grafana/provisioning/datasources

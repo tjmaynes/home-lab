@@ -452,7 +452,9 @@ function setup_grafana() {
   add_step "Setting up grafana"
 
   throw_if_env_var_not_present "GRAFANA_BASE_DIRECTORY" "$GRAFANA_BASE_DIRECTORY"
-  ensure_directory_exists "$GRAFANA_BASE_DIRECTORY"
+
+  ensure_directory_exists "$GRAFANA_BASE_DIRECTORY/var/lib/grafana"
+  ensure_directory_exists "$GRAFANA_BASE_DIRECTORY/provisioning/datasources"
 }
 
 function setup_prometheus() {
