@@ -10,20 +10,6 @@ networks:
   monitoring_network:
     external: true
 
-services:
-  cloudflared-tunnel:
-    image: cloudflare/cloudflared:2022.10.3
-    container_name: cloudflared-tunnel
-    user: ${PUID}:${PGID}
-    restart: unless-stopped
-    command: tunnel --no-autoupdate run geck
-    network_mode: host
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    volumes:
-      - ${CLOUDFLARE_BASE_DIRECTORY}/config.yaml:/etc/cloudflared/config.yaml
-      - ${CLOUDFLARE_BASE_DIRECTORY}/.cloudflared:/root/.cloudflared
-
   nginx-server:
     image: jc21/nginx-proxy-manager:2.9.18
     container_name: nginx-proxy

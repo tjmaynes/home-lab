@@ -1,5 +1,5 @@
 tunnel: "%cloudflare-tunnel-uuid%"
-credentials-file: /root/.cloudflared/%cloudflare-tunnel-uuid%.json
+credentials-file: "%cloudflare-credentials-file%"
 loglevel: debug
 
 originRequest:

@@ -14,22 +14,6 @@ function check_requirements() {
   throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
 }
 
-function setup_cloudflare_tunnel() {
-  add_step "Setting up cloudflare-tunnel"
-
-  throw_if_env_var_not_present "CLOUDFLARE_BASE_DIRECTORY" "$CLOUDFLARE_BASE_DIRECTORY"
-
-  ensure_directory_exists "$CLOUDFLARE_BASE_DIRECTORY/.cloudflared"
-
-  throw_if_env_var_not_present "CLOUDFLARE_TUNNEL_UUID" "$CLOUDFLARE_TUNNEL_UUID"
-
-  sed \
-    -e "s/%cloudflare-tunnel-uuid%/${CLOUDFLARE_TUNNEL_UUID}/g" \
-    -e "s/%hostname%/${NONROOT_USER}/g" \
-    -e "s/%service-domain%/${SERVICE_DOMAIN}/g" \
-    static/templates/cloudflare.template.yml > "$CLOUDFLARE_BASE_DIRECTORY/config.yaml"
-}
-
 function setup_nginx_proxy() {
   throw_if_env_var_not_present "NGNIX_PROXY_MANAGER_BASE_DIRECTORY" "$NGNIX_PROXY_MANAGER_BASE_DIRECTORY"
 
@@ -559,7 +543,6 @@ function main() {
 
   setup_nfs_media_mount
 
-  setup_cloudflare_tunnel
   setup_nginx_proxy
   setup_homer
   setup_pihole

@@ -27,6 +27,51 @@ EOF
   sudo systemctl enable start-geck
 }
 
+function setup_cloudflared_service() {
+  if [[ ! -f "/opt/tools/cloudflared" ]]; then
+    CLOUDFLARED_VERSION=2022.10.3
+
+    curl -OL "https://github.com/cloudflare/cloudflared/releases/download/${CLOUDFLARED_VERSION}/cloudflared-linux-${CPU_ARCH}"
+
+    chmod a+x "cloudflared-linux-${CPU_ARCH}"
+
+    mv "cloudflared-linux-${CPU_ARCH}" "/opt/tools/cloudflared"
+  fi
+
+  throw_if_env_var_not_present "CLOUDFLARE_BASE_DIRECTORY" "$CLOUDFLARE_BASE_DIRECTORY"
+  ensure_directory_exists "$CLOUDFLARE_BASE_DIRECTORY/.cloudflared"
+  throw_if_env_var_not_present "CLOUDFLARE_TUNNEL_UUID" "$CLOUDFLARE_TUNNEL_UUID"
+
+  CLOUDFLARE_CREDENTIALS_FILE="$CLOUDFLARE_BASE_DIRECTORY/.cloudflared/$CLOUDFLARE_TUNNEL_UUID.json"
+  CLOUDFLARE_CREDENTIALS_FILE=$(echo "$CLOUDFLARE_CREDENTIALS_FILE" | sed 's/\//\\\//g')
+
+  sed \
+    -e "s/%cloudflare-credentials-file%/${CLOUDFLARE_CREDENTIALS_FILE}/g" \
+    -e "s/%cloudflare-tunnel-uuid%/${CLOUDFLARE_TUNNEL_UUID}/g" \
+    -e "s/%hostname%/${NONROOT_USER}/g" \
+    -e "s/%service-domain%/${SERVICE_DOMAIN}/g" \
+    static/templates/cloudflare.template.yml > "$CLOUDFLARE_BASE_DIRECTORY/config.yaml"
+
+  if [[ ! -f "/etc/systemd/system/start-cloudflare-tunnel.service" ]]; then
+    throw_if_env_var_not_present "CLOUDFLARE_BASE_DIRECTORY" "$CLOUDFLARE_BASE_DIRECTORY"
+
+    sudo tee -a /etc/systemd/system/start-cloudflare-tunnel.service <<EOF
+[Unit]
+Description=Start Cloudflare Tunnel
+After=network.target
+
+[Service]
+WorkingDirectory=/home/$NONROOT_USER/workspace/tjmaynes/geck
+ExecStart=/opt/tools/cloudflared tunnel --config $CLOUDFLARE_BASE_DIRECTORY/config.yaml --no-autoupdate run geck
+
+[Install]
+WantedBy=default.target
+EOF
+  fi
+
+  sudo systemctl enable start-cloudflare-tunnel
+}
+
 function setup_cronjobs() {
   throw_if_program_not_present "cron"
 
@@ -104,6 +149,8 @@ function main() {
   install_required_programs
 
   setup_start_geck_service
+  setup_cloudflared_service
+
   setup_cronjobs
   setup_ip_forwarding
   setup_firewall
