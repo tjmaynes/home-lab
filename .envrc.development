@@ -48,10 +48,6 @@ export GRAFANA_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/grafana-web
 export GRAFANA_AGENT_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/grafana-agent
 export PROMTAIL_AGENT_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/promtail-agent
 
-# Monitoring
-export GRAFANA_AGENT_VERSION=0.29.0
-export PROMTAIL_AGENT_VERSION=2.6.1
-
 # Replace-me
 export SERVICE_EMAIL=some-email
 export HOST_IP=some-ip-address

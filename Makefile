@@ -21,11 +21,8 @@ backup:
 debug.service:
 	journalctl -u start-geck.service -b
 
-debug.grafana-agent:
-	journalctl -b -u grafana-agent.service
-
-debug.promtail-agent:
-	journalctl -b -u promtail-agent.service
+debug.cloudflare-tunnel:
+	journalctl -b -u start-cloudflare-tunnel.service
 
 local_plex_pipe:
 	chmod +x ./scripts/local-pipe.sh

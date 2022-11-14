@@ -10,6 +10,7 @@ networks:
   monitoring_network:
     external: true
 
+services:
   nginx-server:
     image: jc21/nginx-proxy-manager:2.9.18
     container_name: nginx-proxy
@@ -311,6 +312,37 @@ networks:
       - monitoring_network #9090
     volumes:
       - ${PROMETHEUS_BASE_DIRECTORY}/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+
+  grafana-agent:
+    image: grafana/agent:v0.29.0
+    container_name: grafana-agent
+    restart: unless-stopped
+    user: ${PUID}:${PGID}
+    networks:
+      - monitoring_network
+    volumes:
+      - /:/host/root:ro
+      - /sys:/host/sys:ro
+      - /proc:/host/proc:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ${GRAFANA_AGENT_BASE_DIRECTORY}:/etc/agent
+      - ${GRAFANA_AGENT_BASE_DIRECTORY}/agent.yaml:/etc/agent/agent.yaml
+    command: --config.file=/etc/agent/agent.yaml
+    cap_add:
+      - SYS_TIME
+
+  promtail-agent:
+    image: grafana/promtail:2.7.0
+    container_name: promtail-agent
+    user: ${PUID}:${PGID}
+    networks:
+      - monitoring_network
+    volumes:
+      - /var/log:/var/log
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ${PROMTAIL_AGENT_BASE_DIRECTORY}/config.yaml:/etc/promtail/config.yaml
+    command: -config.file=/etc/promtail/config.yaml
 
   grafana-web:
     image: grafana/grafana-oss:9.2.4

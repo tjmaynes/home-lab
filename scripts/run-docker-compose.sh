@@ -203,7 +203,7 @@ function setup_grafana_agent() {
   throw_if_env_var_not_present "LOKI_URI" "$LOKI_URI"
 
   if [[ ! -f "${GRAFANA_AGENT_BASE_DIRECTORY}/agent.yaml" ]]; then
-    sudo tee -a "${GRAFANA_AGENT_BASE_DIRECTORY}/agent.yaml" <<EOF
+    tee -a "${GRAFANA_AGENT_BASE_DIRECTORY}/agent.yaml" <<EOF
 metrics:
   wal_directory: /tmp/grafana-agent/wal
   global:
@@ -284,40 +284,6 @@ logs:
           target_label: stream
 EOF
   fi
-
-  throw_if_env_var_not_present "GRAFANA_AGENT_VERSION" "$GRAFANA_AGENT_VERSION"
-
-  mkdir -p "/opt/tools"
-
-  if [[ ! -f "/opt/tools/grafana-agent" ]]; then
-    curl -O -L "https://github.com/grafana/agent/releases/download/v$GRAFANA_AGENT_VERSION/agent-linux-${CPU_ARCH}.zip"
-
-    unzip "agent-linux-${CPU_ARCH}.zip"
-
-    chmod a+x "agent-linux-${CPU_ARCH}"
-
-    mv "agent-linux-${CPU_ARCH}" "/opt/tools/grafana-agent"
-
-    rm -rf "agent-linux-${CPU_ARCH}.zip"
-  fi
-
-  if [[ ! -f "/etc/systemd/system/grafana-agent.service" ]]; then
-    sudo tee -a /etc/systemd/system/grafana-agent.service <<EOF
-[Unit]
-Description=Run grafana-agent
-After=network.target
-
-[Service]
-ExecStart=sudo /opt/tools/grafana-agent -config.file ${GRAFANA_AGENT_BASE_DIRECTORY}/agent.yaml
-Restart=always
-TimeoutStopSec=3
-
-[Install]
-WantedBy=multi-user.target
-EOF
-  fi
-
-  sudo systemctl enable grafana-agent
 }
 
 function setup_promtail_agent() {
@@ -329,7 +295,7 @@ function setup_promtail_agent() {
   ensure_directory_exists "$PROMTAIL_AGENT_BASE_DIRECTORY"
 
   if [[ ! -f "${PROMTAIL_AGENT_BASE_DIRECTORY}/config.yaml" ]]; then
-    sudo tee -a "${PROMTAIL_AGENT_BASE_DIRECTORY}/config.yaml" <<EOF
+    tee -a "${PROMTAIL_AGENT_BASE_DIRECTORY}/config.yaml" <<EOF
 server:
   http_listen_port: 9080
   grpc_listen_port: 0
@@ -396,40 +362,6 @@ scrape_configs:
       container_id:
 EOF
   fi
-
-  throw_if_env_var_not_present "PROMTAIL_AGENT_VERSION" "$PROMTAIL_AGENT_VERSION"
-
-  mkdir -p "/opt/tools"
-
-  if [[ ! -f "/opt/tools/promtail" ]]; then
-    curl -O -L "https://github.com/grafana/loki/releases/download/v$PROMTAIL_AGENT_VERSION/promtail-linux-${CPU_ARCH}.zip"
-
-    unzip "promtail-linux-${CPU_ARCH}.zip"
-
-    chmod a+x "promtail-linux-${CPU_ARCH}"
-
-    mv "promtail-linux-${CPU_ARCH}" "/opt/tools/promtail"
-
-    rm -rf "promtail-linux-${CPU_ARCH}.zip"
-  fi
-
-  if [[ ! -f "/etc/systemd/system/promtail-agent.service" ]]; then
-    sudo tee -a /etc/systemd/system/promtail-agent.service <<EOF
-[Unit]
-Description=Run promtail-agent
-After=network.target
-
-[Service]
-ExecStart=sudo /opt/tools/promtail -config.file ${PROMTAIL_AGENT_BASE_DIRECTORY}/config.yaml
-Restart=always
-TimeoutStopSec=3
-
-[Install]
-WantedBy=multi-user.target
-EOF
-  fi
-
-  sudo systemctl enable promtail-agent
 }
 
 function setup_grafana() {
@@ -451,8 +383,6 @@ function setup_prometheus() {
 }
 
 function setup_monitoring() {
-  throw_if_env_var_not_present "CPU_ARCH" "$CPU_ARCH"
-
   setup_grafana
   setup_grafana_agent
   setup_promtail_agent
@@ -504,14 +434,16 @@ function reset_pihole_password() {
 }
 
 function setup_cloudflare_dns_entries() {
+  cloudflared="/opt/tools/cloudflared --config $CLOUDFLARE_BASE_DIRECTORY/config.yaml --origincert $CLOUDFLARE_BASE_DIRECTORY/.cloudflared/cert.pem tunnel"
+
   SUBDOMAINS=(home listen read media rss connector git podgrab proxy admin queue ytdl git photo gaming notes coding ssh ha monitoring)
   for subdomain in "${SUBDOMAINS[@]}"; do
-    docker exec cloudflared-tunnel cloudflared tunnel route dns geck "${subdomain}.${SERVICE_DOMAIN}" || true
+    $cloudflared route dns geck "${subdomain}.${SERVICE_DOMAIN}" || true
 
     ./scripts/test-proxy.sh "$subdomain" || true
   done
 
-  docker exec cloudflared-tunnel cloudflared tunnel ingress validate
+  $cloudflared ingress validate
 }
 
 function add_plugins_for_home_automation() {

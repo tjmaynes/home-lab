@@ -1,6 +1,5 @@
 tunnel: "%cloudflare-tunnel-uuid%"
 credentials-file: "%cloudflare-credentials-file%"
-loglevel: debug
 
 originRequest:
   originServerName: "*.%service-domain%"

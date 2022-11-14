@@ -28,6 +28,8 @@ EOF
 }
 
 function setup_cloudflared_service() {
+  throw_if_env_var_not_present "CPU_ARCH" "$CPU_ARCH"
+
   if [[ ! -f "/opt/tools/cloudflared" ]]; then
     CLOUDFLARED_VERSION=2022.10.3
 
@@ -46,8 +48,8 @@ function setup_cloudflared_service() {
   CLOUDFLARE_CREDENTIALS_FILE=$(echo "$CLOUDFLARE_CREDENTIALS_FILE" | sed 's/\//\\\//g')
 
   sed \
-    -e "s/%cloudflare-credentials-file%/${CLOUDFLARE_CREDENTIALS_FILE}/g" \
     -e "s/%cloudflare-tunnel-uuid%/${CLOUDFLARE_TUNNEL_UUID}/g" \
+    -e "s/%cloudflare-credentials-file%/${CLOUDFLARE_CREDENTIALS_FILE}/g" \
     -e "s/%hostname%/${NONROOT_USER}/g" \
     -e "s/%service-domain%/${SERVICE_DOMAIN}/g" \
     static/templates/cloudflare.template.yml > "$CLOUDFLARE_BASE_DIRECTORY/config.yaml"
