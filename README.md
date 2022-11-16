@@ -40,11 +40,11 @@ make backup
 
 | Program                                                                               | Usage                              | Tools          | Status |
 | :------------------------------------------------------------------------------------ | :--------------------------------: | :------------: | :----: |
-| [cloudfared-tunnel](https://github.com/cloudflare/cloudflared)                        | cloudflare tunnel client           | docker-compose | ✅ |
+| [cloudfared-tunnel](https://github.com/cloudflare/cloudflared)                        | cloudflare tunnel client           | systemd        | ✅ |
 | [nginx-proxy-manager](https://nginxproxymanager.com/)                                 | reverse-proxy server               | docker-compose | ✅ |
 | [homer](https://github.com/bastienwirtz/homer)                                        | start-page                         | docker-compose | ✅ |
 | [pi-hole](https://pi-hole.net/)                                                       | dns server                         | docker-compose | ✅ |
-| [cloudfared-agent](https://github.com/cloudflare/cloudflared)                         | cloudflare dns client              | docker-compose | ✅ |
+| [cloudfared-agent](https://github.com/cloudflare/cloudflared)                         | cloudflare dns client for pihole   | docker-compose | ✅ |
 | [plex-server](https://hub.docker.com/r/linuxserver/plex)                              | media server                       | docker-compose | ✅ |
 | [calibre-web](https://github.com/janeczku/calibre-web)                                | web-based ebook-reader             | docker-compose | ✅ |
 | [pigallary-web](https://bpatrik.github.io/pigallery2/)                                | photo gallery                      | docker-compose | ✅ |
@@ -61,5 +61,5 @@ make backup
 | [nanomq-server](https://github.com/emqx/nanomq)                                       | pub/sub for IoT (MQTT broker)      | docker-compose | ✅ |
 | [prometheus](https://prometheus.io/)                                                  | timeseriesdb for monitoring server | docker-compose | ✅ |
 | [grafana](https://github.com/grafana/grafana)                                         | monitoring dashboard               | docker-compose | ✅ |
-| [grafana-agent](https://github.com/grafana/agent)                                     | monitoring agent for grafana cloud | systemd        | ✅ |
-| [promtail-agent](https://grafana.com/docs/loki/latest/clients/promtail/installation/) | logging agent for grafana cloud    | systemd        | ✅ |
+| [grafana-agent](https://github.com/grafana/agent)                                     | monitoring agent for grafana.      | docker-compose | ✅ |
+| [promtail-agent](https://grafana.com/docs/loki/latest/clients/promtail/installation/) | logging agent for grafana          | docker-compose | ✅ |
