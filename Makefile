@@ -22,7 +22,7 @@ debug.service:
 	journalctl -u start-geck.service -b
 
 debug.cloudflare-tunnel:
-	journalctl -b -u start-cloudflare-tunnel.service
+	journalctl -u start-cloudflare-tunnel.service -b
 
 local_plex_pipe:
 	chmod +x ./scripts/local-pipe.sh
