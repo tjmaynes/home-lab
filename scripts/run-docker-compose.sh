@@ -436,7 +436,7 @@ function reset_pihole_password() {
 function setup_cloudflare_dns_entries() {
   cloudflared="/opt/tools/cloudflared --config $CLOUDFLARE_BASE_DIRECTORY/config.yaml --origincert $CLOUDFLARE_BASE_DIRECTORY/.cloudflared/cert.pem tunnel"
 
-  SUBDOMAINS=(home listen read media rss connector git podgrab proxy admin queue ytdl git photo gaming notes coding ssh ha monitoring)
+  SUBDOMAINS=(home listen read media rss connector git podgrab proxy admin queue ytdl git photo gaming notes coding ssh ha monitoring design)
   for subdomain in "${SUBDOMAINS[@]}"; do
     $cloudflared route dns geck "${subdomain}.${SERVICE_DOMAIN}" || true
 

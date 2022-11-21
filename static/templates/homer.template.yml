@@ -86,6 +86,12 @@ services:
         tag: "app"
         url: "%protocol-type%://gogs.%service-domain%"
         target: "_blank"
+      - name: "Drawio"
+        icon: "fas fa-object-ungroup"
+        subtitle: "Architecture diagramming app"
+        tag: "app"
+        url: "%protocol-type%://design.%service-domain%"
+        target: "_blank"
   - name: "Automation"
     icon: "fas fa-magic"
     items:

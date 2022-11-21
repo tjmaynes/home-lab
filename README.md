@@ -40,11 +40,11 @@ make backup
 
 | Program                                                                               | Usage                              | Tools          | Status |
 | :------------------------------------------------------------------------------------ | :--------------------------------: | :------------: | :----: |
-| [cloudfared-tunnel](https://github.com/cloudflare/cloudflared)                        | cloudflare tunnel client           | systemd        | ✅ |
+| [cloudfared-tunnel](https://github.com/cloudflare/cloudflared)                          | cloudflare tunnel client            | systemd        | ✅ |
 | [nginx-proxy-manager](https://nginxproxymanager.com/)                                 | reverse-proxy server               | docker-compose | ✅ |
 | [homer](https://github.com/bastienwirtz/homer)                                        | start-page                         | docker-compose | ✅ |
 | [pi-hole](https://pi-hole.net/)                                                       | dns server                         | docker-compose | ✅ |
-| [cloudfared-agent](https://github.com/cloudflare/cloudflared)                         | cloudflare dns client for pihole   | docker-compose | ✅ |
+| [cloudfared-agent](https://github.com/cloudflare/cloudflared)                           | cloudflare dns client for pihole    | docker-compose | ✅ |
 | [plex-server](https://hub.docker.com/r/linuxserver/plex)                              | media server                       | docker-compose | ✅ |
 | [calibre-web](https://github.com/janeczku/calibre-web)                                | web-based ebook-reader             | docker-compose | ✅ |
 | [pigallary-web](https://bpatrik.github.io/pigallery2/)                                | photo gallery                      | docker-compose | ✅ |
@@ -52,10 +52,11 @@ make backup
 | [audiobookshelf](https://www.audiobookshelf.org/)                                     | podcast & audiobooks server        | docker-compose | ✅ |
 | [podgrab](https://github.com/akhilrex/podgrab)                                        | podcast downloader                 | docker-compose | ✅ |
 | [metube](https://github.com/alexta69/metube)                                          | youtube video downloader           | docker-compose | ✅ |
-| [miniflux-web](https://miniflux.app/)                                                 | rss reader                         | docker-compose | ✅ |
+| [miniflux-web](https://miniflux.app/)                                                   | rss reader                         | docker-compose | ✅ |
 | [code-server](https://github.com/coder/code-server)                                   | remote coding platform             | docker-compose | ✅ |
 | [codimd](https://hackmd.io/c/codimd-documentation)                                    | notetaking tool                    | docker-compoes | ✅ |
 | [gogs](https://gogs.io/)                                                              | git server                         | docker-compose | ✅ |
+| [drawio](https://hub.docker.com/r/jgraph/drawio)                                      | architecture diagramming tool      | docker-compose | ✅ |
 | [home-assistant](https://www.home-assistant.io/)                                      | home automation server             | docker-compose | ✅ |
 | [node-red](https://nodered.org/)                                                      | programmable automation interface  | docker-compose | ✅ |
 | [nanomq-server](https://github.com/emqx/nanomq)                                       | pub/sub for IoT (MQTT broker)      | docker-compose | ✅ |

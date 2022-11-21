@@ -249,6 +249,16 @@ services:
     volumes:
       - ${GOGS_BASE_DIRECTORY}/data:/data
 
+  drawio-web:
+    image: jgraph/drawio:20.5.3
+    container_name: drawio-web
+    restart: unless-stopped
+    networks:
+      - proxy_network
+    environment:
+      - LETS_ENCRYPT_ENABLED=false
+      - PUBLIC_DNS=design.${SERVICE_DOMAIN}
+
   podgrab-web:
     image: akhilrex/podgrab:1.0.0
     container_name: podgrab-web
