@@ -84,7 +84,7 @@ services:
         icon: "fas fa-code-fork"
         subtitle: "Git server for mirroring my external git services"
         tag: "app"
-        url: "%protocol-type%://gogs.%service-domain%"
+        url: "%protocol-type%://git.%service-domain%"
         target: "_blank"
       - name: "Drawio"
         icon: "fas fa-object-ungroup"
