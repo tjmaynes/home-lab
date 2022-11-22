@@ -4,6 +4,7 @@ export NONROOT_USER=geck
 export SERVICE_DOMAIN=lan
 export BASE_DIRECTORY=/home/${NONROOT_USER}
 export CPU_ARCH=amd64
+export CLOUDFLARED_VERSION=2022.11.0
 
 # NAS
 export NAS_IP=192.168.4.77

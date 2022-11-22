@@ -29,10 +29,9 @@ EOF
 
 function setup_cloudflared_service() {
   throw_if_env_var_not_present "CPU_ARCH" "$CPU_ARCH"
+  throw_if_env_var_not_present "CLOUDFLARED_VERSION" "$CLOUDFLARED_VERSION"
 
   if [[ ! -f "/opt/tools/cloudflared" ]]; then
-    CLOUDFLARED_VERSION=2022.10.3
-
     curl -OL "https://github.com/cloudflare/cloudflared/releases/download/${CLOUDFLARED_VERSION}/cloudflared-linux-${CPU_ARCH}"
 
     chmod a+x "cloudflared-linux-${CPU_ARCH}"
@@ -64,7 +63,7 @@ After=network.target
 
 [Service]
 WorkingDirectory=/home/$NONROOT_USER/workspace/tjmaynes/geck
-ExecStart=/opt/tools/cloudflared tunnel --config $CLOUDFLARE_BASE_DIRECTORY/config.yaml --no-autoupdate run geck
+ExecStart=sudo sysctl -w net.core.rmem_max=2500000 && /opt/tools/cloudflared tunnel --config $CLOUDFLARE_BASE_DIRECTORY/config.yaml --no-autoupdate run geck
 
 [Install]
 WantedBy=default.target
