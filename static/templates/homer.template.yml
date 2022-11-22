@@ -1,6 +1,6 @@
-title: "G.E.C.K. Dashboard"
+title: "G.E.C.K Dashboard"
 subtitle: "Welcome and please be kind..."
-documentTitle: "G.E.C.K."
+documentTitle: "G.E.C.K"
 logo: "assets/logo.webp"
 
 header: true
@@ -50,13 +50,6 @@ services:
         tag: "app"
         keywords: "self-hosted photo gallery, pigallery"
         url: "%protocol-type%://photo.%service-domain%"
-        target: "_blank"
-      - name: "Game Console"
-        icon: "fas fa-gamepad"
-        subtitle: "Online game emulator"
-        tag: "app"
-        keywords: "self-hosted emulation machine, emulatorjs"
-        url: "%protocol-type%://gaming.%service-domain%"
         target: "_blank"
       - name: "RSS Reader"
         icon: "fas fa-rss"

@@ -30,7 +30,6 @@ function main() {
     --exclude "/docker/nginx-proxy/data/logs/" \
     --exclude "/docker/pihole-server/pihole/macvendor.db" \
     --exclude "/docker/nodered-web/data/node_modules/" \
-    --exclude "/docker/emulatorjs-web/data/.ipfs/blocks/" \
     --exclude "/docker/code-server/config/.asdf/" \
     --exclude "/docker/code-server/config/.vim/" \
     --exclude "/docker/code-server/config/.npm-packages/" \
