@@ -2,6 +2,10 @@ install:
 	chmod +x ./scripts/$@.sh
 	./scripts/$@.sh
 
+boot:
+	chmod +x ./scripts/$@.sh
+	./scripts/$@.sh
+
 start:
 	chmod +x ./scripts/$@.sh
 	./scripts/$@.sh
@@ -18,12 +22,9 @@ backup:
 	chmod +x ./scripts/$@.sh
 	./scripts/$@.sh
 
-debug.service:
-	journalctl -u start-geck.service -b
-
-debug.cloudflare-tunnel:
-	journalctl -u start-cloudflare-tunnel.service -b
+debug:
+	journalctl -u geck.service -b
 
 local_plex_pipe:
-	chmod +x ./scripts/local-pipe.sh
-	./scripts/local-pipe.sh
+	chmod +x ./scripts/local-plex-pipe.sh
+	./scripts/local-plex-pipe.sh

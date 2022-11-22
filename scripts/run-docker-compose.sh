@@ -14,7 +14,29 @@ function check_requirements() {
   throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
 }
 
+function setup_cloudflare_tunnel() {
+  add_step "Setting up cloudflare-tunnel"
+
+  throw_if_env_var_not_present "CLOUDFLARE_BASE_DIRECTORY" "$CLOUDFLARE_BASE_DIRECTORY"
+  ensure_directory_exists "$CLOUDFLARE_BASE_DIRECTORY/.cloudflared"
+  throw_if_env_var_not_present "CLOUDFLARE_TUNNEL_UUID" "$CLOUDFLARE_TUNNEL_UUID"
+
+  CLOUDFLARE_CREDENTIALS_FILE="$CLOUDFLARE_BASE_DIRECTORY/.cloudflared/$CLOUDFLARE_TUNNEL_UUID.json"
+  CLOUDFLARE_CREDENTIALS_FILE=$(echo "$CLOUDFLARE_CREDENTIALS_FILE" | sed 's/\//\\\//g')
+
+  sed \
+    -e "s/%cloudflare-tunnel-uuid%/${CLOUDFLARE_TUNNEL_UUID}/g" \
+    -e "s/%cloudflare-credentials-file%/${CLOUDFLARE_CREDENTIALS_FILE}/g" \
+    -e "s/%hostname%/${NONROOT_USER}/g" \
+    -e "s/%service-domain%/${SERVICE_DOMAIN}/g" \
+    static/templates/cloudflare.template.yml > "$CLOUDFLARE_BASE_DIRECTORY/config.yaml"
+
+  sysctl -w net.core.rmem_max=2500000 &> /dev/null
+}
+
 function setup_nginx_proxy() {
+  add_step "Setting up nginx-proxy"
+
   throw_if_env_var_not_present "NGNIX_PROXY_MANAGER_BASE_DIRECTORY" "$NGNIX_PROXY_MANAGER_BASE_DIRECTORY"
 
   ensure_directory_exists "$NGNIX_PROXY_MANAGER_BASE_DIRECTORY/data"
@@ -421,17 +443,23 @@ function reset_pihole_password() {
   docker exec pihole-server pihole -a -p "$PIHOLE_PASSWORD"
 }
 
-function setup_cloudflare_dns_entries() {
-  cloudflared="/opt/tools/cloudflared --config $CLOUDFLARE_BASE_DIRECTORY/config.yaml --origincert $CLOUDFLARE_BASE_DIRECTORY/.cloudflared/cert.pem tunnel"
+function run_cloudflare_tunnel() {
+  throw_if_directory_not_present "CLOUDFLARE_BASE_DIRECTORY" "$CLOUDFLARE_BASE_DIRECTORY"
 
+   $@
+}
+
+function setup_cloudflare_dns_entries() {
+  cloudflare_tunnel="/opt/tools/cloudflared --config $CLOUDFLARE_BASE_DIRECTORY/config.yaml --origincert $CLOUDFLARE_BASE_DIRECTORY/.cloudflared/cert.pem tunnel"
+  
   SUBDOMAINS=(home listen read media rss connector git podgrab proxy admin queue ytdl git photos notes coding ssh ha monitoring design)
   for subdomain in "${SUBDOMAINS[@]}"; do
-    $cloudflared route dns geck "${subdomain}.${SERVICE_DOMAIN}" || true
+    $cloudflare_tunnel route dns geck "${subdomain}.${SERVICE_DOMAIN}" || true
 
     ./scripts/test-proxy.sh "$subdomain" || true
   done
 
-  $cloudflared ingress validate
+  $cloudflare_tunnel ingress validate
 }
 
 function add_plugins_for_home_automation() {
@@ -463,6 +491,7 @@ function main() {
 
   setup_nfs_media_mount
 
+  setup_cloudflare_tunnel
   setup_nginx_proxy
   setup_homer
   setup_pihole
@@ -481,11 +510,25 @@ function main() {
 
   setup_monitoring
 
-  if [[ "$RUN_TYPE" = "start" ]]; then
-    docker compose up -d --remove-orphans
-  else
-    docker compose restart
-  fi
+  case "$RUN_TYPE" in
+    "start")
+      docker compose up -d --remove-orphans
+      ;;
+    "restart")
+      docker compose restart
+      ;;
+    "boot")
+      docker compose restart
+
+      /opt/tools/cloudflared \
+        --config "$CLOUDFLARE_BASE_DIRECTORY/config.yaml" \
+        tunnel --no-autoupdate run geck
+      ;;
+    *)
+      echo "Run type '$RUN_TYPE' is not valid, please use start, restart, or boot."
+      exit 1
+      ;;
+  esac
 
   post_run
 }

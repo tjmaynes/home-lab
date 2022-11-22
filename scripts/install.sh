@@ -8,69 +8,23 @@ function check_requirements() {
   throw_if_env_var_not_present "NONROOT_USER" "$NONROOT_USER"
 }
 
-function setup_start_geck_service() {
-  if [[ ! -f "/etc/systemd/system/start-geck.service" ]]; then
-    sudo tee -a /etc/systemd/system/start-geck.service <<EOF
+function setup_geck_service() {
+  if [[ ! -f "/etc/systemd/system/geck.service" ]]; then
+    sudo tee -a /etc/systemd/system/geck.service <<EOF
 [Unit]
-Description=Start GECK
+Description=GECK
 After=network.target
 
 [Service]
 WorkingDirectory=/home/$NONROOT_USER/workspace/tjmaynes/geck
-ExecStart=sudo make restart
+ExecStart=sudo make boot
 
 [Install]
 WantedBy=default.target
 EOF
   fi
 
-  sudo systemctl enable start-geck
-}
-
-function setup_cloudflared_service() {
-  throw_if_env_var_not_present "CPU_ARCH" "$CPU_ARCH"
-  throw_if_env_var_not_present "CLOUDFLARED_VERSION" "$CLOUDFLARED_VERSION"
-
-  if [[ ! -f "/opt/tools/cloudflared" ]]; then
-    curl -OL "https://github.com/cloudflare/cloudflared/releases/download/${CLOUDFLARED_VERSION}/cloudflared-linux-${CPU_ARCH}"
-
-    chmod a+x "cloudflared-linux-${CPU_ARCH}"
-
-    mv "cloudflared-linux-${CPU_ARCH}" "/opt/tools/cloudflared"
-  fi
-
-  throw_if_env_var_not_present "CLOUDFLARE_BASE_DIRECTORY" "$CLOUDFLARE_BASE_DIRECTORY"
-  ensure_directory_exists "$CLOUDFLARE_BASE_DIRECTORY/.cloudflared"
-  throw_if_env_var_not_present "CLOUDFLARE_TUNNEL_UUID" "$CLOUDFLARE_TUNNEL_UUID"
-
-  CLOUDFLARE_CREDENTIALS_FILE="$CLOUDFLARE_BASE_DIRECTORY/.cloudflared/$CLOUDFLARE_TUNNEL_UUID.json"
-  CLOUDFLARE_CREDENTIALS_FILE=$(echo "$CLOUDFLARE_CREDENTIALS_FILE" | sed 's/\//\\\//g')
-
-  sed \
-    -e "s/%cloudflare-tunnel-uuid%/${CLOUDFLARE_TUNNEL_UUID}/g" \
-    -e "s/%cloudflare-credentials-file%/${CLOUDFLARE_CREDENTIALS_FILE}/g" \
-    -e "s/%hostname%/${NONROOT_USER}/g" \
-    -e "s/%service-domain%/${SERVICE_DOMAIN}/g" \
-    static/templates/cloudflare.template.yml > "$CLOUDFLARE_BASE_DIRECTORY/config.yaml"
-
-  if [[ ! -f "/etc/systemd/system/start-cloudflare-tunnel.service" ]]; then
-    throw_if_env_var_not_present "CLOUDFLARE_BASE_DIRECTORY" "$CLOUDFLARE_BASE_DIRECTORY"
-
-    sudo tee -a /etc/systemd/system/start-cloudflare-tunnel.service <<EOF
-[Unit]
-Description=Start Cloudflare Tunnel
-After=network.target
-
-[Service]
-WorkingDirectory=/home/$NONROOT_USER/workspace/tjmaynes/geck
-ExecStart=sudo sysctl -w net.core.rmem_max=2500000 && /opt/tools/cloudflared tunnel --config $CLOUDFLARE_BASE_DIRECTORY/config.yaml --no-autoupdate run geck
-
-[Install]
-WantedBy=default.target
-EOF
-  fi
-
-  sudo systemctl enable start-cloudflare-tunnel
+  sudo systemctl enable geck
 }
 
 function setup_cronjobs() {
@@ -99,6 +53,21 @@ function setup_ip_forwarding() {
   fi
 }
 
+function install_cloudflared() {
+  throw_if_env_var_not_present "CPU_ARCH" "$CPU_ARCH"
+  throw_if_env_var_not_present "CLOUDFLARED_VERSION" "$CLOUDFLARED_VERSION"
+
+  if [[ ! -f "/opt/tools/cloudflared" ]]; then
+    curl -OL "https://github.com/cloudflare/cloudflared/releases/download/${CLOUDFLARED_VERSION}/cloudflared-linux-${CPU_ARCH}"
+
+    chmod a+x "cloudflared-linux-${CPU_ARCH}"
+
+    mkdir -p "/opt/tools"
+
+    mv "cloudflared-linux-${CPU_ARCH}" "/opt/tools/cloudflared"
+  fi
+}
+
 function install_docker() {
   if [[ -z "$(command -v docker)" ]]; then
     ./scripts/install-docker.sh
@@ -124,6 +93,7 @@ function install_required_programs() {
   fi
 
   install_docker
+  install_cloudflared
 }
 
 function setup_firewall() {
@@ -149,8 +119,7 @@ function main() {
 
   install_required_programs
 
-  setup_start_geck_service
-  setup_cloudflared_service
+  setup_geck_service
 
   setup_cronjobs
   setup_ip_forwarding

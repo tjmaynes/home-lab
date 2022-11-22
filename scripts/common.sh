@@ -34,6 +34,31 @@ function setup_nas_mount() {
   done
 }
 
+# https://unix.stackexchange.com/a/137639
+function fail() {
+  echo "$1" >&2
+  exit 1
+}
+
+# https://unix.stackexchange.com/a/137639
+function retry() {
+  local n=1
+  local max=5
+  local delay=15
+
+  while true; do
+    "$@" && break || {
+      if [[ $n -lt $max ]]; then
+        ((n++))
+        echo "Command failed. Attempt $n/$max:"
+        sleep $delay;
+      else
+        fail "The command has failed after $n attempts."
+      fi
+    }
+  done
+}
+
 function ensure_directory_exists() {
   TARGET_DIRECTORY=$1
   ALLOWED_USER=${2:-$NONROOT_USER}
