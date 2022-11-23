@@ -25,6 +25,9 @@ backup:
 debug:
 	journalctl -u geck.service -b
 
+debug.ports:
+	 lsof -i -P -n | grep LISTEN
+
 local_plex_pipe:
 	chmod +x ./scripts/local-plex-pipe.sh
 	./scripts/local-plex-pipe.sh

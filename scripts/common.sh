@@ -134,6 +134,32 @@ function ensure_program_installed() {
   fi
 }
 
+function install_cloudflared() {
+  CLOUDFLARED_VERSION=$1
+
+  if [[ -z "$CLOUDFLARED_VERSION" ]]; then
+    echo "install_cloudflared: Please pass a version for cloudflared"
+    exit 1
+  fi
+
+  throw_if_env_var_not_present "CPU_ARCH" "$CPU_ARCH"
+
+  if [[ ! -f "/opt/tools/cloudflared" ]] || ! cat /opt/tools/.cloudflared-version | grep "$CLOUDFLARED_VERSION" &> /dev/null; then
+    rm -rf /opt/tools/cloudflared
+
+    curl -OL "https://github.com/cloudflare/cloudflared/releases/download/${CLOUDFLARED_VERSION}/cloudflared-linux-${CPU_ARCH}"
+
+    chmod a+x "cloudflared-linux-${CPU_ARCH}"
+
+    mv "cloudflared-linux-${CPU_ARCH}" "/opt/tools/cloudflared"
+
+    rm -f /opt/tools/.cloudflared-version
+    tee -a /opt/tools/.cloudflared-version <<EOF
+$CLOUDFLARED_VERSION
+EOF
+  fi
+}
+
 function wait_for_service_to_be_up() {
   throw_if_program_not_present "curl"
 

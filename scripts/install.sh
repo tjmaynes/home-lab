@@ -24,7 +24,7 @@ WantedBy=default.target
 EOF
   fi
 
-  sudo systemctl enable geck
+  systemctl enable start-geck
 }
 
 function setup_cronjobs() {
@@ -44,27 +44,12 @@ function setup_cronjobs() {
 function setup_ip_forwarding() {
   IPV4_CONFIG="net.ipv4.ip_forward=1"
   if ! cat /etc/sysctl.conf | grep "$IPV4_CONFIG"; then
-    echo "$IPV4_CONFIG" | sudo tee -a /etc/sysctl.conf
+    echo "$IPV4_CONFIG" | tee -a /etc/sysctl.conf
   fi
 
   IPV6_CONFIG="net.ipv6.conf.all.forwarding=1"
   if ! cat /etc/sysctl.conf | grep "$IPV6_CONFIG"; then
-    echo "$IPV6_CONFIG" | sudo tee -a /etc/sysctl.conf
-  fi
-}
-
-function install_cloudflared() {
-  throw_if_env_var_not_present "CPU_ARCH" "$CPU_ARCH"
-  throw_if_env_var_not_present "CLOUDFLARED_VERSION" "$CLOUDFLARED_VERSION"
-
-  if [[ ! -f "/opt/tools/cloudflared" ]]; then
-    curl -OL "https://github.com/cloudflare/cloudflared/releases/download/${CLOUDFLARED_VERSION}/cloudflared-linux-${CPU_ARCH}"
-
-    chmod a+x "cloudflared-linux-${CPU_ARCH}"
-
-    mkdir -p "/opt/tools"
-
-    mv "cloudflared-linux-${CPU_ARCH}" "/opt/tools/cloudflared"
+    echo "$IPV6_CONFIG" | tee -a /etc/sysctl.conf
   fi
 }
 
@@ -93,23 +78,6 @@ function install_required_programs() {
   fi
 
   install_docker
-  install_cloudflared
-}
-
-function setup_firewall() {
-  ensure_program_installed "ufw"
-
-  ufw default allow outgoing
-  ufw default deny incoming
-
-  OPEN_PORTS=(22/tcp 80/tcp 443/tcp 32400/tcp)
-  for port in "${OPEN_PORTS[@]}"; do
-    ufw allow "$port"
-  done
-
-  ufw enable
-
-  ufw status
 }
 
 function main() {
@@ -123,11 +91,6 @@ function main() {
 
   setup_cronjobs
   setup_ip_forwarding
-  setup_firewall
-
-  git config --global alias.co checkout
-  git config --global alias.st status
-  git config --global alias.gl "log --oneline --graph"
 
   reboot
 }

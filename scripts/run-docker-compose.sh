@@ -14,6 +14,43 @@ function check_requirements() {
   throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
 }
 
+function setup_firewall() {
+  add_step "Setting up firewall"
+
+  ensure_program_installed "ufw"
+
+  ufw default allow outgoing
+  ufw default deny incoming
+
+  OPEN_PORTS=(22/tcp 80/tcp 443/tcp)
+  for port in "${OPEN_PORTS[@]}"; do
+    ufw allow "$port"
+  done
+
+  ufw --force enable
+}
+
+function setup_nfs_media_mount() {
+  add_step "Setting up NFS mounts"
+
+  throw_if_program_not_present "mount"
+
+  throw_if_env_var_not_present "NAS_MEDIA_DIRECTORY" "$NAS_MEDIA_DIRECTORY"
+  throw_if_env_var_not_present "MEDIA_BASE_DIRECTORY" "$MEDIA_BASE_DIRECTORY"
+
+  ensure_directory_exists "$MEDIA_BASE_DIRECTORY"
+
+  setup_nas_mount "$NAS_MEDIA_DIRECTORY" "$MEDIA_BASE_DIRECTORY"
+
+  throw_if_directory_not_present "VIDEOS_DIRECTORY" "$VIDEOS_DIRECTORY"
+  throw_if_directory_not_present "MUSIC_DIRECTORY" "$MUSIC_DIRECTORY"
+  throw_if_directory_not_present "PHOTOS_DIRECTORY" "$PHOTOS_DIRECTORY"
+  throw_if_directory_not_present "BOOKS_DIRECTORY" "$BOOKS_DIRECTORY"
+  throw_if_directory_not_present "AUDIOBOOKS_DIRECTORY" "$AUDIOBOOKS_DIRECTORY"
+  throw_if_directory_not_present "PODCASTS_DIRECTORY" "$PODCASTS_DIRECTORY"
+  throw_if_directory_not_present "DOWNLOADS_DIRECTORY" "$DOWNLOADS_DIRECTORY"
+}
+
 function setup_cloudflare_tunnel() {
   add_step "Setting up cloudflare-tunnel"
 
@@ -32,6 +69,8 @@ function setup_cloudflare_tunnel() {
     static/templates/cloudflare.template.yml > "$CLOUDFLARE_BASE_DIRECTORY/config.yaml"
 
   sysctl -w net.core.rmem_max=2500000 &> /dev/null
+
+  install_cloudflared "$CLOUDFLARED_VERSION"
 }
 
 function setup_nginx_proxy() {
@@ -96,6 +135,29 @@ function setup_plex_server() {
   throw_if_env_var_not_present "PLEX_BASE_DIRECTORY" "$PLEX_BASE_DIRECTORY"
   ensure_directory_exists "$PLEX_BASE_DIRECTORY/config"
   ensure_directory_exists "$PLEX_BASE_DIRECTORY/transcode"
+
+  if [[ ! -f "/etc/ufw/applications.d/plexmediaserver" ]]; then
+    tee -a /etc/ufw/applications.d/plexmediaserver &> /dev/null <<EOF
+[plexmediaserver]
+title=Plex Media Server (Standard)
+description=The Plex Media Server
+ports=32400/tcp|3005/tcp|5353/udp|8324/tcp|32410:32414/udp
+
+[plexmediaserver-dlna]
+title=Plex Media Server (DLNA)
+description=The Plex Media Server (additional DLNA capability only)
+ports=1900/udp|32469/tcp
+
+[plexmediaserver-all]
+title=Plex Media Server (Standard + DLNA)
+description=The Plex Media Server (with additional DLNA capability)
+ports=32400/tcp|3005/tcp|5353/udp|8324/tcp|32410:32414/udp|1900/udp|32469/tcp
+EOF
+  fi
+
+  ufw app update plexmediaserver
+
+  ufw allow plexmediaserver-all
 }
 
 function setup_calibre_web() {
@@ -403,27 +465,6 @@ function setup_monitoring() {
   fi
 }
 
-function setup_nfs_media_mount() {
-  add_step "Setting up NFS mounts"
-
-  throw_if_program_not_present "mount"
-
-  throw_if_env_var_not_present "NAS_MEDIA_DIRECTORY" "$NAS_MEDIA_DIRECTORY"
-  throw_if_env_var_not_present "MEDIA_BASE_DIRECTORY" "$MEDIA_BASE_DIRECTORY"
-
-  ensure_directory_exists "$MEDIA_BASE_DIRECTORY"
-
-  setup_nas_mount "$NAS_MEDIA_DIRECTORY" "$MEDIA_BASE_DIRECTORY"
-
-  throw_if_directory_not_present "VIDEOS_DIRECTORY" "$VIDEOS_DIRECTORY"
-  throw_if_directory_not_present "MUSIC_DIRECTORY" "$MUSIC_DIRECTORY"
-  throw_if_directory_not_present "PHOTOS_DIRECTORY" "$PHOTOS_DIRECTORY"
-  throw_if_directory_not_present "BOOKS_DIRECTORY" "$BOOKS_DIRECTORY"
-  throw_if_directory_not_present "AUDIOBOOKS_DIRECTORY" "$AUDIOBOOKS_DIRECTORY"
-  throw_if_directory_not_present "PODCASTS_DIRECTORY" "$PODCASTS_DIRECTORY"
-  throw_if_directory_not_present "DOWNLOADS_DIRECTORY" "$DOWNLOADS_DIRECTORY"
-}
-
 function turn_off_wifi() {
   throw_if_program_not_present "rfkill"
 
@@ -441,12 +482,6 @@ function reset_pihole_password() {
   
   echo "Setting pihole-server password..."
   docker exec pihole-server pihole -a -p "$PIHOLE_PASSWORD"
-}
-
-function run_cloudflare_tunnel() {
-  throw_if_directory_not_present "CLOUDFLARE_BASE_DIRECTORY" "$CLOUDFLARE_BASE_DIRECTORY"
-
-   $@
 }
 
 function setup_cloudflare_dns_entries() {
@@ -477,6 +512,10 @@ function post_run() {
   setup_cloudflare_dns_entries
 
   add_plugins_for_home_automation
+
+  git config --global alias.co checkout
+  git config --global alias.st status
+  git config --global alias.gl "log --oneline --graph"
 }
 
 function main() {
@@ -488,6 +527,8 @@ function main() {
   source ./scripts/common.sh
 
   check_requirements
+
+  setup_firewall
 
   setup_nfs_media_mount
 
