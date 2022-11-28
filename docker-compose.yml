@@ -245,6 +245,47 @@ services:
       - LETS_ENCRYPT_ENABLED=false
       - PUBLIC_DNS=design.${SERVICE_DOMAIN}
 
+  mermaid-web:
+    image: ghcr.io/mermaid-js/mermaid-live-editor
+    container_name: mermaid-web
+    restart: unless-stopped
+    networks:
+      - proxy_network
+    environment:
+      - MERMAID_RENDERER_URL=mermaid-server:3000
+      - MERMAID_KROKI_RENDERER_URL=kroki-server:8000
+    depends_on:
+      - mermaid-server
+      - kroki-server
+
+  mermaid-server:
+    image: jihchi/mermaid.ink:3.5.0
+    container_name: mermaid-server
+    restart: unless-stopped
+    networks:
+      - proxy_network
+    environment:
+      - NODE_OPTIONS="--max-http-header-size=102400000"
+
+  kroki-server:
+    image: yuzutech/kroki:0.18.0
+    container_name: kroki-server
+    restart: unless-stopped
+    networks:
+      - proxy_network
+    environment:
+      - KROKI_MERMAID_HOST=mermaid-kroki-server
+    depends_on:
+      - mermaid-kroki-server
+
+  mermaid-kroki-server:
+    image: yuzutech/kroki-mermaid:0.18.0
+    container_name: mermaid-kroki-server
+    networks:
+      - proxy_network
+    expose:
+      - "8002"
+
   podgrab-web:
     image: akhilrex/podgrab:1.0.0
     container_name: podgrab-web
