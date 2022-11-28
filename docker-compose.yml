@@ -155,31 +155,6 @@ services:
       - ${PIGALLERY_BASE_DIRECTORY}/tmp:/app/data/tmp
       - ${PHOTOS_DIRECTORY}:/app/data/images:ro
 
-  miniflux-web:
-    image: miniflux/miniflux:2.0.38
-    container_name: miniflux-web
-    networks:
-      - proxy_network
-    environment:
-      - DATABASE_URL=postgres://${MINIFLUX_DB_USERNAME}:${MINIFLUX_DB_PASSWORD}@miniflux-db/miniflux?sslmode=disable
-      - RUN_MIGRATIONS=1
-      - CREATE_ADMIN=1
-      - ADMIN_USERNAME=${MINIFLUX_ADMIN_USERNAME}
-      - ADMIN_PASSWORD=${MINIFLUX_ADMIN_PASSWORD}
-    depends_on:
-      - miniflux-db
-
-  miniflux-db:
-    image: postgres:14
-    container_name: miniflux-db
-    networks:
-      - proxy_network
-    environment:
-      - POSTGRES_USER=${MINIFLUX_DB_USERNAME}
-      - POSTGRES_PASSWORD=${MINIFLUX_DB_PASSWORD}
-    volumes:
-      - ${MINIFLUX_DB_BASE_DIRECTORY}:/var/lib/postgresql/data
-
   code-server:
     image: lscr.io/linuxserver/code-server:4.8.3
     container_name: code-server

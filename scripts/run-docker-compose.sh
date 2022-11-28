@@ -189,18 +189,6 @@ function setup_audiobookshelf() {
   ensure_directory_exists "$AUDIOBOOKSHELF_BASE_DIRECTORY/metadata"
 }
 
-function setup_miniflux_web() {
-  add_step "Setting up miniflux-web"
-
-  throw_if_env_var_not_present "MINIFLUX_DB_USERNAME" "$MINIFLUX_DB_USERNAME"
-  throw_if_env_var_not_present "MINIFLUX_DB_PASSWORD" "$MINIFLUX_DB_PASSWORD"
-  throw_if_env_var_not_present "MINIFLUX_ADMIN_USERNAME" "$MINIFLUX_ADMIN_USERNAME"
-  throw_if_env_var_not_present "MINIFLUX_ADMIN_PASSWORD" "$MINIFLUX_ADMIN_PASSWORD"
-
-  throw_if_env_var_not_present "MINIFLUX_DB_BASE_DIRECTORY" "$MINIFLUX_DB_BASE_DIRECTORY"
-  ensure_directory_exists "$MINIFLUX_DB_BASE_DIRECTORY"
-}
-
 function setup_code_server() {
   add_step "Setting up code-server"
 
@@ -487,7 +475,7 @@ function reset_pihole_password() {
 function setup_cloudflare_dns_entries() {
   cloudflare_tunnel="/opt/tools/cloudflared --config $CLOUDFLARE_BASE_DIRECTORY/config.yaml --origincert $CLOUDFLARE_BASE_DIRECTORY/.cloudflared/cert.pem tunnel"
   
-  SUBDOMAINS=(home listen read media rss connector git podgrab proxy admin queue ytdl git photos notes coding ssh gladys monitoring mermaid drawio)
+  SUBDOMAINS=(home listen read media connector git podgrab proxy admin queue ytdl git photos notes coding ssh gladys monitoring mermaid drawio)
   for subdomain in "${SUBDOMAINS[@]}"; do
     $cloudflare_tunnel route dns geck "${subdomain}.${SERVICE_DOMAIN}" || true
 
@@ -539,7 +527,6 @@ function main() {
   setup_plex_server
   setup_calibre_web
   setup_pigallary_web
-  setup_miniflux_web
   setup_audiobookshelf
   setup_code_server
   setup_codimd

@@ -51,13 +51,6 @@ services:
         keywords: "self-hosted photo gallery, pigallery"
         url: "%protocol-type%://photo.%service-domain%"
         target: "_blank"
-      - name: "RSS Reader"
-        icon: "fas fa-rss"
-        subtitle: "RSS reader"
-        tag: "app"
-        keywords: "self-hosted rss reader, miniflux"
-        url: "%protocol-type%://rss.%service-domain%"
-        target: "_blank"
   - name: "Productivity"
     icon: "fas fa-tasks"
     items:
