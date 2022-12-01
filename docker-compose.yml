@@ -285,6 +285,30 @@ services:
       UID: ${PUID}
       GID: ${PGID}
 
+  kitchenowl-web:
+    image: tombursch/kitchenowl-web:latest
+    container_name: kitchenowl-web
+    restart: always
+    networks:
+      - proxy_network
+    environment:
+      - BACK_URL=kitchenowl-server:5000
+    depends_on:
+      - kitchenowl-server
+
+  kitchenowl-server:
+    image: tombursch/kitchenowl:latest
+    container_name: kitchenowl-server
+    restart: unless-stopped
+    user: ${PUID}:${PGID}
+    networks:
+      - proxy_network
+    environment:
+      - JWT_SECRET_KEY=${KITCHENOWL_JWT_SECRET_KEY}
+      - FRONT_URL=kitchenowl-web:80
+    volumes:
+      - ${KITCHENOWL_BASE_DIRECTORY}/data:/data
+
   home-assistant-web:
     image: ghcr.io/home-assistant/home-assistant:2022.11.2
     container_name: home-assistant-web

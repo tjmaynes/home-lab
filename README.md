@@ -52,6 +52,7 @@ make backup
 | [podgrab](https://github.com/akhilrex/podgrab)                                        | podcast downloader                 | docker-compose | ✅ |
 | [metube](https://github.com/alexta69/metube)                                          | youtube video downloader           | docker-compose | ✅ |
 | [code-server](https://github.com/coder/code-server)                                   | remote coding platform             | docker-compose | ✅ |
+| [kitchenowl](https://tombursch.github.io/kitchenowl/)                                 | grocery list and recipe manager    | docker-compose | ✅ |
 | [codimd](https://hackmd.io/c/codimd-documentation)                                    | notetaking tool                    | docker-compoes | ✅ |
 | [gogs](https://gogs.io/)                                                              | git server                         | docker-compose | ✅ |
 | [mermaid](https://github.com/mermaid-js/mermaid-live-editor)                          | architecture diagramming tool      | docker-compose | ✅ |

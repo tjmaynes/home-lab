@@ -189,6 +189,15 @@ function setup_audiobookshelf() {
   ensure_directory_exists "$AUDIOBOOKSHELF_BASE_DIRECTORY/metadata"
 }
 
+function setup_kitchenowl() {
+  add_step "Setting up kitchenowl"
+
+  throw_if_env_var_not_present "KITCHENOWL_JWT_SECRET_KEY" "$KITCHENOWL_JWT_SECRET_KEY"
+  throw_if_env_var_not_present "KITCHENOWL_BASE_DIRECTORY" "$KITCHENOWL_BASE_DIRECTORY"
+
+  ensure_directory_exists "$KITCHENOWL_BASE_DIRECTORY/data"
+}
+
 function setup_code_server() {
   add_step "Setting up code-server"
 
@@ -475,7 +484,7 @@ function reset_pihole_password() {
 function setup_cloudflare_dns_entries() {
   cloudflare_tunnel="/opt/tools/cloudflared --config $CLOUDFLARE_BASE_DIRECTORY/config.yaml --origincert $CLOUDFLARE_BASE_DIRECTORY/.cloudflared/cert.pem tunnel"
   
-  SUBDOMAINS=(home listen read media connector git podgrab proxy admin queue ytdl git photos notes coding ssh gladys monitoring mermaid drawio)
+  SUBDOMAINS=(home listen read media connector git podgrab proxy admin queue ytdl git photos notes coding ssh ha monitoring mermaid drawio kitchen)
   for subdomain in "${SUBDOMAINS[@]}"; do
     $cloudflare_tunnel route dns geck "${subdomain}.${SERVICE_DOMAIN}" || true
 
@@ -535,7 +544,7 @@ function main() {
   setup_youtube_downloader
   setup_home_assistant
   setup_nodered
-
+  setup_kitchenowl
   setup_monitoring
 
   case "$RUN_TYPE" in
