@@ -64,7 +64,7 @@ function install_docker() {
 function install_required_programs() {
   apt-get update && apt-get upgrade -y
   
-  DEB_PACKAGES=(cron usermod curl lsof ffmpeg vim htop ethtool rfkill rsync openssh-server)
+  DEB_PACKAGES=(cron usermod curl lsof ffmpeg vim htop ethtool rfkill rsync openssh-server )
   for package in "${DEB_PACKAGES[@]}"; do
     ensure_program_installed "$package"
   done
@@ -75,6 +75,10 @@ function install_required_programs() {
 
   if [[ -z "$(command -v ifconfig)" ]]; then
     ensure_program_installed "net-tools"
+  fi
+
+  if [[ ! -f "/var/log/syslog" ]]; then
+    ensure_program_installed "rsyslog"
   fi
 
   install_docker
