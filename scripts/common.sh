@@ -59,14 +59,30 @@ function retry() {
   done
 }
 
+function ensure_group_exists() {
+  if ! grep -q "$1" /etc/group &>/dev/null; then
+    echo "Adding group: $1"
+    groupadd "$1"
+  fi
+}
+
+function ensure_user_exists() {
+  if ! id "$1" &>/dev/null; then
+    echo "Adding user: $1"
+    useradd -r -g "$1" -G "$2" "$1"
+  fi
+}
+
 function ensure_directory_exists() {
-  TARGET_DIRECTORY=$1
-  ALLOWED_USER=${2:-$NONROOT_USER}
+  ALLOWED_USER=$1
+  TARGET_DIRECTORY=$2
 
   if [[ ! -d "$TARGET_DIRECTORY" ]]; then
     echo "Creating $TARGET_DIRECTORY directory..."
-    sudo -u "$ALLOWED_USER" mkdir -p "$TARGET_DIRECTORY"
+    mkdir -p "$TARGET_DIRECTORY"
   fi
+
+    chown -R "$ALLOWED_USER:$ALLOWED_USER" "$TARGET_DIRECTORY"
 }
 
 function throw_if_program_not_present() {

@@ -159,14 +159,14 @@ services:
     image: archivebox/archivebox:sha-f17f4c6
     container_name: archivebox-web
     restart: always
-    user: ${PUID}:${PGID}
-    entrypoint: /bin/bash
-    command: -c "chown -R archivebox:archivebox /app/archivebox/core/migrations && /app/bin/docker_entrypoint.sh server --quick-init 0.0.0.0:8000"
+    # user: ${ARCHIVEBOX_PUID}:${ARCHIVEBOX_PGID}
+    # entrypoint: /bin/bash
+    command: server --quick-init 0.0.0.0:8000
     networks:
       - proxy_network
     environment:
-      - PUID=${PUID}
-      - PGID=${PGID}
+      - PUID=${ARCHIVEBOX_PUID}
+      - PGID=${ARCHIVEBOX_PGID}
       - TZ=${TIMEZONE}
       - USE_COLOR=True
       - SHOW_PROGRESS=True

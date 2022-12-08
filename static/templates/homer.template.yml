@@ -67,7 +67,7 @@ services:
         url: "%protocol-type%://notes.%service-domain%"
         target: "_blank"
       - name: "Web Archiver"
-        icon: "fas fa-hdd-o"
+        icon: "fas fa-hdd"
         subtitle: "Archive all the things!"
         tag: "app"
         keywords: "self-hosted archiving tool, archivebox"

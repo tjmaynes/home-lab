@@ -14,9 +14,9 @@ function main() {
   throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
 
   BACKUP_LOGS_DIRECTORY=${DOCKER_BASE_DIRECTORY}/logs
-  ensure_directory_exists "$BACKUP_LOGS_DIRECTORY"
+  ensure_directory_exists "root" "$BACKUP_LOGS_DIRECTORY"
 
-  ensure_directory_exists "$BACKUP_BASE_DIRECTORY"
+  ensure_directory_exists "root" "$BACKUP_BASE_DIRECTORY"
 
   setup_nas_mount "$NAS_BACKUP_DIRECTORY" "$BACKUP_BASE_DIRECTORY"
 
