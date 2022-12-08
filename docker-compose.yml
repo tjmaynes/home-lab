@@ -155,6 +155,27 @@ services:
       - ${PIGALLERY_BASE_DIRECTORY}/tmp:/app/data/tmp
       - ${PHOTOS_DIRECTORY}:/app/data/images:ro
 
+  archivebox-web:
+    image: archivebox/archivebox:sha-f17f4c6
+    container_name: archivebox-web
+    restart: always
+    user: ${PUID}:${PGID}
+    entrypoint: /bin/bash
+    command: -c "chown -R archivebox:archivebox /app/archivebox/core/migrations && /app/bin/docker_entrypoint.sh server --quick-init 0.0.0.0:8000"
+    networks:
+      - proxy_network
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+      - USE_COLOR=True
+      - SHOW_PROGRESS=True
+      - ALLOWED_HOSTS=*
+      - MEDIA_MAX_SIZE=750m
+    volumes:
+      - ${ARCHIVEBOX_BASE_DIRECTORY}/data:/data
+      - ${ARCHIVEBOX_BASE_DIRECTORY}/.config:/.config
+
   code-server:
     image: lscr.io/linuxserver/code-server:4.8.3
     container_name: code-server
@@ -230,17 +251,17 @@ services:
       - MERMAID_RENDERER_URL=mermaid-server:3000
       - MERMAID_KROKI_RENDERER_URL=kroki-server:8000
     depends_on:
-      - mermaid-server
+      # - mermaid-server
       - kroki-server
 
-  mermaid-server:
-    image: jihchi/mermaid.ink:3.5.0
-    container_name: mermaid-server
-    restart: unless-stopped
-    networks:
-      - proxy_network
-    environment:
-      - NODE_OPTIONS="--max-http-header-size=102400000"
+  # mermaid-server:
+  #   image: jihchi/mermaid.ink:3.5.0
+  #   container_name: mermaid-server
+  #   restart: unless-stopped
+  #   networks:
+  #     - proxy_network
+  #   environment:
+  #     - NODE_OPTIONS="--max-http-header-size=102400000"
 
   kroki-server:
     image: yuzutech/kroki:0.18.0

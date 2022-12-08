@@ -193,9 +193,17 @@ function setup_kitchenowl() {
   add_step "Setting up kitchenowl"
 
   throw_if_env_var_not_present "KITCHENOWL_JWT_SECRET_KEY" "$KITCHENOWL_JWT_SECRET_KEY"
-  throw_if_env_var_not_present "KITCHENOWL_BASE_DIRECTORY" "$KITCHENOWL_BASE_DIRECTORY"
 
+  throw_if_env_var_not_present "KITCHENOWL_BASE_DIRECTORY" "$KITCHENOWL_BASE_DIRECTORY"
   ensure_directory_exists "$KITCHENOWL_BASE_DIRECTORY/data"
+}
+
+function setup_archivebox() {
+  add_step "Setting up archivebox"
+
+  throw_if_env_var_not_present "ARCHIVEBOX_BASE_DIRECTORY" "$ARCHIVEBOX_BASE_DIRECTORY"
+  ensure_directory_exists "$ARCHIVEBOX_BASE_DIRECTORY/data"
+  ensure_directory_exists "$ARCHIVEBOX_BASE_DIRECTORY/.config"
 }
 
 function setup_code_server() {
@@ -484,7 +492,7 @@ function reset_pihole_password() {
 function setup_cloudflare_dns_entries() {
   cloudflare_tunnel="/opt/tools/cloudflared --config $CLOUDFLARE_BASE_DIRECTORY/config.yaml --origincert $CLOUDFLARE_BASE_DIRECTORY/.cloudflared/cert.pem tunnel"
   
-  SUBDOMAINS=(home listen read media connector git podgrab proxy admin queue ytdl git photos notes coding ssh ha monitoring mermaid drawio kitchen)
+  SUBDOMAINS=(home listen read media connector git podgrab proxy admin queue ytdl git photos notes coding ssh ha monitoring mermaid drawio kitchen archiver)
   for subdomain in "${SUBDOMAINS[@]}"; do
     $cloudflare_tunnel route dns geck "${subdomain}.${SERVICE_DOMAIN}" || true
 
@@ -537,6 +545,7 @@ function main() {
   setup_calibre_web
   setup_pigallary_web
   setup_audiobookshelf
+  setup_archivebox
   setup_code_server
   setup_codimd
   setup_gogs

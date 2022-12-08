@@ -66,6 +66,13 @@ services:
         tag: "app"
         url: "%protocol-type%://notes.%service-domain%"
         target: "_blank"
+      - name: "Web Archiver"
+        icon: "fas fa-hdd-o"
+        subtitle: "Archive all the things!"
+        tag: "app"
+        keywords: "self-hosted archiving tool, archivebox"
+        url: "%protocol-type%://archiver.%service-domain%"
+        target: "_blank"
   - name: "Development"
     icon: "fas fa-keyboard-o"
     items:

@@ -51,6 +51,7 @@ make backup
 | [audiobookshelf](https://www.audiobookshelf.org/)                                     | podcast & audiobooks server        | docker-compose | ✅ |
 | [podgrab](https://github.com/akhilrex/podgrab)                                        | podcast downloader                 | docker-compose | ✅ |
 | [metube](https://github.com/alexta69/metube)                                          | youtube video downloader           | docker-compose | ✅ |
+| [archivebox](https://github.com/ArchiveBox/ArchiveBox)                                | archiving web pages                | docker-compose | ✅ |
 | [code-server](https://github.com/coder/code-server)                                   | remote coding platform             | docker-compose | ✅ |
 | [kitchenowl](https://tombursch.github.io/kitchenowl/)                                 | grocery list and recipe manager    | docker-compose | ✅ |
 | [codimd](https://hackmd.io/c/codimd-documentation)                                    | notetaking tool                    | docker-compoes | ✅ |
