@@ -49,7 +49,7 @@ services:
         subtitle: "Look at all those memories"
         tag: "app"
         keywords: "self-hosted photo gallery, pigallery"
-        url: "%protocol-type%://photo.%service-domain%"
+        url: "%protocol-type%://photos.%service-domain%"
         target: "_blank"
   - name: "Productivity"
     icon: "fas fa-tasks"
