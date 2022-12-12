@@ -82,7 +82,7 @@ function ensure_directory_exists() {
     mkdir -p "$TARGET_DIRECTORY"
   fi
 
-    chown -R "$ALLOWED_USER:$ALLOWED_USER" "$TARGET_DIRECTORY"
+  chown -R "$ALLOWED_USER:$ALLOWED_USER" "$TARGET_DIRECTORY"
 }
 
 function throw_if_program_not_present() {
