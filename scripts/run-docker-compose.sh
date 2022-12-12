@@ -198,21 +198,6 @@ function setup_kitchenowl() {
   ensure_directory_exists "root" "$KITCHENOWL_BASE_DIRECTORY/data"
 }
 
-function setup_archivebox() {
-  add_step "Setting up archivebox"
-
-  ensure_group_exists "archivebox"
-  ensure_user_exists "archivebox" "video,sound"
-
-  throw_if_env_var_not_present "ARCHIVEBOX_BASE_DIRECTORY" "$ARCHIVEBOX_BASE_DIRECTORY"
-  ensure_directory_exists "archivebox" "$ARCHIVEBOX_BASE_DIRECTORY"
-  ensure_directory_exists "archivebox" "$ARCHIVEBOX_BASE_DIRECTORY/data"
-  ensure_directory_exists "archivebox" "$ARCHIVEBOX_BASE_DIRECTORY/.config"
-
-  export ARCHIVEBOX_PUID=$(id archivebox -u)
-  export ARCHIVEBOX_PGID=$(id archivebox -g)
-}
-
 function setup_code_server() {
   add_step "Setting up code-server"
 
@@ -499,7 +484,7 @@ function reset_pihole_password() {
 function setup_cloudflare_dns_entries() {
   cloudflare_tunnel="/opt/tools/cloudflared --config $CLOUDFLARE_BASE_DIRECTORY/config.yaml --origincert $CLOUDFLARE_BASE_DIRECTORY/.cloudflared/cert.pem tunnel"
   
-  SUBDOMAINS=(home listen read media connector git podgrab proxy admin queue ytdl git photos notes coding ssh ha monitoring mermaid drawio kitchen archiver)
+  SUBDOMAINS=(home listen read media connector git podgrab proxy admin queue ytdl git photos notes coding ssh ha monitoring mermaid drawio kitchen)
   for subdomain in "${SUBDOMAINS[@]}"; do
     $cloudflare_tunnel route dns geck "${subdomain}.${SERVICE_DOMAIN}" || true
 
@@ -515,10 +500,6 @@ function add_plugins_for_home_automation() {
   fi
 }
 
-function ensure_admin_user_created_in_archivebox() {
-  docker exec archivebox-web archivebox manage createsuperuser
-}
-
 function post_run() {
   turn_off_wifi
   turn_off_bluetooth
@@ -528,8 +509,6 @@ function post_run() {
   setup_cloudflare_dns_entries
 
   add_plugins_for_home_automation
-
-  ensure_admin_user_created_in_archivebox
 
   git config --global alias.co checkout
   git config --global alias.st status
@@ -558,7 +537,6 @@ function main() {
   setup_calibre_web
   setup_pigallary_web
   setup_audiobookshelf
-  setup_archivebox
   setup_code_server
   setup_codimd
   setup_gogs

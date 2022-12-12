@@ -155,27 +155,6 @@ services:
       - ${PIGALLERY_BASE_DIRECTORY}/tmp:/app/data/tmp
       - ${PHOTOS_DIRECTORY}:/app/data/images:ro
 
-  archivebox-web:
-    image: archivebox/archivebox:sha-f17f4c6
-    container_name: archivebox-web
-    restart: always
-    # user: ${ARCHIVEBOX_PUID}:${ARCHIVEBOX_PGID}
-    # entrypoint: /bin/bash
-    command: server --quick-init 0.0.0.0:8000
-    networks:
-      - proxy_network
-    environment:
-      - PUID=${ARCHIVEBOX_PUID}
-      - PGID=${ARCHIVEBOX_PGID}
-      - TZ=${TIMEZONE}
-      - USE_COLOR=True
-      - SHOW_PROGRESS=True
-      - ALLOWED_HOSTS=*
-      - MEDIA_MAX_SIZE=750m
-    volumes:
-      - ${ARCHIVEBOX_BASE_DIRECTORY}/data:/data
-      - ${ARCHIVEBOX_BASE_DIRECTORY}/.config:/.config
-
   code-server:
     image: lscr.io/linuxserver/code-server:4.8.3
     container_name: code-server
