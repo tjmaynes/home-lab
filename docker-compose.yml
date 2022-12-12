@@ -106,8 +106,8 @@ services:
       - ${PLEX_BASE_DIRECTORY}/transcode:/transcode
       - ${MEDIA_BASE_DIRECTORY}:/data
     environment:
-      - PUID=${PUID}
-      - PGID=${PGID}
+      - PUID=${ROOT_PUID}
+      - PGID=${ROOT_PGID}
       - TZ=${TIMEZONE}
       - CLAIM_TOKEN=${PLEX_CLAIM_TOKEN}
 
@@ -118,8 +118,8 @@ services:
     networks:
       - proxy_network
     environment:
-      - PUID=${PUID}
-      - PGID=${PGID}
+      - PUID=${ROOT_PUID}
+      - PGID=${ROOT_PGID}
       - TZ=${TIMEZONE}
       - DOCKER_MODS=linuxserver/mods:universal-calibre
     volumes:
@@ -133,8 +133,8 @@ services:
     networks:
       - proxy_network
     environment:
-      - AUDIOBOOKSHELF_UID=${PUID}
-      - AUDIOBOOKSHELF_GID=${PGID}
+      - AUDIOBOOKSHELF_UID=${ROOT_PUID}
+      - AUDIOBOOKSHELF_GID=${ROOT_PGID}
     volumes:
       - ${AUDIOBOOKS_DIRECTORY}:/audiobooks
       - ${PODCASTS_DIRECTORY}:/podcasts
@@ -162,8 +162,8 @@ services:
     networks:
       - proxy_network # 8443
     environment:
-      - PUID=${PUID}
-      - PGID=${PGID}
+      - PUID=${ROOT_PUID}
+      - PGID=${ROOT_PGID}
       - TZ=${TIMEZONE}
       - PASSWORD=${CODE_SERVER_PASSWORD}
       - SUDO_PASSWORD=${CODE_SERVER_SUDO_PASSWORD}
@@ -282,8 +282,8 @@ services:
     volumes:
       - ${DOWNLOADS_DIRECTORY}/youtube:/downloads
     environment:
-      UID: ${PUID}
-      GID: ${PGID}
+      UID: ${ROOT_PUID}
+      GID: ${ROOT_PGID}
 
   kitchenowl-web:
     image: tombursch/kitchenowl-web:latest
@@ -300,7 +300,7 @@ services:
     image: tombursch/kitchenowl:latest
     container_name: kitchenowl-server
     restart: unless-stopped
-    user: ${PUID}:${PGID}
+    user: ${ROOT_PUID}:${ROOT_PGID}
     networks:
       - proxy_network
     environment:
@@ -340,37 +340,48 @@ services:
     environment:
       - NANOMQ_BROKER_URL="nmq-tcp://0.0.0.0:1883"
 
+  node-exporter:
+    image: quay.io/prometheus/node-exporter:latest
+    container_name: node-exporter
+    restart: unless-stopped
+    pid: host
+    command:
+      - '--path.rootfs=/host'
+    networks:
+      - monitoring_network #9100
+    volumes:
+      - '/:/host:ro,rslave'
+
   prometheus-server:
     image: prom/prometheus:v2.40.1
     container_name: prometheus-server
     restart: unless-stopped
+    user: ${MONITORING_PUID}:${MONITORING_PGID}
     networks:
+      - proxy_network
       - monitoring_network #9090
     volumes:
+      - ${PROMETHEUS_BASE_DIRECTORY}/data:/prometheus
       - ${PROMETHEUS_BASE_DIRECTORY}/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    depends_on:
+      - node-exporter
 
-  grafana-agent:
-    image: grafana/agent:v0.29.0
-    container_name: grafana-agent
+  loki-server:
+    image: grafana/loki:2.6.1
+    container_name: loki-server
     restart: unless-stopped
-    user: ${PUID}:${PGID}
+    user: ${MONITORING_PUID}:${MONITORING_PGID}
     networks:
-      - monitoring_network
+      - monitoring_network #3100
     volumes:
-      - /:/host/root:ro
-      - /sys:/host/sys:ro
-      - /proc:/host/proc:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ${GRAFANA_AGENT_BASE_DIRECTORY}:/etc/agent
-      - ${GRAFANA_AGENT_BASE_DIRECTORY}/agent.yaml:/etc/agent/agent.yaml
-    command: --config.file=/etc/agent/agent.yaml
-    cap_add:
-      - SYS_TIME
+      - ${LOKI_BASE_DIRECTORY}/data/loki:/data/loki
+      - ${LOKI_BASE_DIRECTORY}/config.yaml:/etc/loki/config.yaml
+    command: -config.file=/etc/loki/config.yaml
 
   promtail-agent:
     image: grafana/promtail:2.7.0
     container_name: promtail-agent
-    user: ${PUID}:${PGID}
+    user: ${ROOT_PUID}:${ROOT_PGID}
     networks:
       - monitoring_network
     volumes:
@@ -379,11 +390,13 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ${PROMTAIL_AGENT_BASE_DIRECTORY}/config.yaml:/etc/promtail/config.yaml
     command: -config.file=/etc/promtail/config.yaml
+    depends_on:
+      - loki-server
 
   grafana-web:
-    image: grafana/grafana-oss:9.2.4
+    image: grafana/grafana-oss:9.3.1
     container_name: grafana-web
-    user: ${PUID}:${PGID}
+    user: ${MONITORING_PUID}:${MONITORING_PGID}
     networks:
       - proxy_network #3000
       - monitoring_network
@@ -391,3 +404,6 @@ services:
     volumes:
       - ${GRAFANA_BASE_DIRECTORY}/var/lib/grafana:/var/lib/grafana
       - ${GRAFANA_BASE_DIRECTORY}/provisioning/datasources:/etc/grafana/provisioning/datasources
+    depends_on:
+      - loki-server
+      - prometheus-server

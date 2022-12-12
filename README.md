@@ -60,7 +60,8 @@ make backup
 | [home-assistant](https://www.home-assistant.io/)                                      | home automation server             | docker-compose | ✅ |
 | [node-red](https://nodered.org/)                                                      | programmable automation interface  | docker-compose | ✅ |
 | [nanomq-server](https://github.com/emqx/nanomq)                                       | pub/sub for IoT (MQTT broker)      | docker-compose | ✅ |
-| [prometheus](https://prometheus.io/)                                                  | timeseriesdb for monitoring server | docker-compose | ✅ |
+| [node-exporter](https://github.com/prometheus/node_exporter)                          | linux metrics scraper              | docker-compose | ✅ |
+| [prometheus](https://prometheus.io/)                                                  | timeseriesdb monitoring server     | docker-compose | ✅ |
+| [loki-server](https://github.com/grafana/loki)                                        | logging server for grafana         | docker-compose | ✅ |
+| [promtail-agent](https://grafana.com/docs/loki/latest/clients/promtail/installation/) | logging agent for loki             | docker-compose | ✅ |
 | [grafana](https://github.com/grafana/grafana)                                         | monitoring dashboard               | docker-compose | ✅ |
-| [grafana-agent](https://github.com/grafana/agent)                                     | monitoring agent for grafana.      | docker-compose | ✅ |
-| [promtail-agent](https://grafana.com/docs/loki/latest/clients/promtail/installation/) | logging agent for grafana          | docker-compose | ✅ |

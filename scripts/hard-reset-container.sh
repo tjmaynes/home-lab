@@ -18,7 +18,7 @@ function main() {
 
     if [[ -d "$DOCKER_BASE_DIRECTORY/$CONTAINER_NAME" ]]; then
       echo "Deleting '$CONTAINER_NAME' container state..."
-      sudo rm -rf "$DOCKER_BASE_DIRECTORY/$CONTAINER_NAME"
+      rm -rf "$DOCKER_BASE_DIRECTORY/$CONTAINER_NAME"
     fi
   else
     echo "Container name '$CONTAINER_NAME' not running, current state: '$CONTAINER_STATE'"

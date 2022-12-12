@@ -8,8 +8,8 @@ function check_requirements() {
   throw_if_program_not_present "docker"
 
   throw_if_env_var_not_present "TIMEZONE" "$TIMEZONE"
-  throw_if_env_var_not_present "PUID" "$PUID"
-  throw_if_env_var_not_present "PGID" "$PGID"
+  throw_if_env_var_not_present "ROOT_PUID" "$ROOT_PUID"
+  throw_if_env_var_not_present "ROOT_PGID" "$ROOT_PGID"
 
   throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
 }
@@ -260,97 +260,64 @@ function setup_nodered() {
   ensure_directory_exists "root" "$NODERED_BASE_DIRECTORY/data"
 }
 
-function setup_grafana_agent() {
-  add_step "Setting up grafana-agent"
+function setup_loki_server() {
+  add_step "Setting up loki-server"
 
-  throw_if_env_var_not_present "GRAFANA_AGENT_BASE_DIRECTORY" "$GRAFANA_AGENT_BASE_DIRECTORY"
-  ensure_directory_exists "root" "${GRAFANA_AGENT_BASE_DIRECTORY}/data"
+  throw_if_env_var_not_present "LOKI_BASE_DIRECTORY" "$LOKI_BASE_DIRECTORY"
 
-  throw_if_env_var_not_present "NONROOT_USER" "$NONROOT_USER"
-  throw_if_env_var_not_present "GRAFANA_USERNAME" "$GRAFANA_USERNAME"
-  throw_if_env_var_not_present "GRAFANA_API_KEY" "$GRAFANA_API_KEY"
-  throw_if_env_var_not_present "LOKI_URI" "$LOKI_URI"
+  ensure_directory_exists "monitoring" "$LOKI_BASE_DIRECTORY"
+  ensure_directory_exists "monitoring" "$LOKI_BASE_DIRECTORY/data/loki"
 
-  if [[ ! -f "${GRAFANA_AGENT_BASE_DIRECTORY}/agent.yaml" ]]; then
-    tee -a "${GRAFANA_AGENT_BASE_DIRECTORY}/agent.yaml" <<EOF
-metrics:
-  wal_directory: /tmp/grafana-agent/wal
-  global:
-    scrape_interval: 1m
-    remote_write:
-      - url: https://prometheus-prod-10-prod-us-central-0.grafana.net/api/prom/push
-        basic_auth:
-          username: ${GRAFANA_USERNAME}
-          password: ${GRAFANA_API_KEY}
+  if [[ ! -f "${LOKI_BASE_DIRECTORY}/config.yaml" ]]; then
+    tee -a "${LOKI_BASE_DIRECTORY}/config.yaml" <<EOF
+auth_enabled: false
 
-integrations:
-  node_exporter:
+server:
+  http_listen_port: 3100
+
+ingester:
+  wal:
     enabled: true
-    relabel_configs:
-    - replacement: hostname
-      source_labels:
-      - __address__
-      target_label: instance
+    dir: /data/loki/wal
+  lifecycler:
+    address: 127.0.0.1
+    ring:
+      kvstore:
+        store: inmemory
+      replication_factor: 1
+    final_sleep: 0s
+  chunk_idle_period: 5m
+  chunk_retain_period: 30s
+  max_transfer_retries: 0
 
-    rootfs_path: /
-    sysfs_path: /sys
-    procfs_path: /proc
+schema_config:
+  configs:
+    - from: 2018-04-15
+      store: boltdb
+      object_store: filesystem
+      schema: v11
+      index:
+        prefix: index_
+        period: 168h
 
-logs:
-  positions_directory: /tmp/grafana-positions
-  configs: 
-  - name: integrations
-    scrape_configs:
-    - job_name: integrations/node_exporter_direct_scrape
-      static_configs:
-      - targets:
-          - localhost
-        labels:
-          instance: hostname
-          __path__: /var/log/{syslog,messages,*.log}
-          job: integrations/node_exporter
+storage_config:
+  boltdb:
+    directory: /data/loki/index
 
-    - job_name: integrations/node_exporter_journal_scrape
-      journal:
-        max_age: 24h
-        labels:
-          instance: hostname
-          job: integrations/node_exporter
-      relabel_configs:
-      - source_labels: ['__journal__systemd_unit']
-        target_label: 'unit'
-      - source_labels: ['__journal__boot_id']
-        target_label: 'boot_id'
-      - source_labels: ['__journal__transport']
-        target_label: 'transport'
+  filesystem:
+    directory: /data/loki/chunks
 
-  - name: scrape-docker
-    target_config:
-      sync_period: 10s
-    scrape_configs:
-    - job_name: integrations/docker
-      docker_sd_configs:
-        - host: unix:///var/run/docker.sock
-          refresh_interval: 5s
-      relabel_configs:
-        - source_labels: ['__meta_docker_container_name']
-          regex: '/(.*).[0-9]\..*'
-          target_label: 'name'
-        - source_labels: ['__meta_docker_container_name']
-          regex: '/(.*).[0-9a-z]*\..*'
-          target_label: 'name'
-        - source_labels: ['__meta_docker_container_name']
-          regex: '/.*.([0-9]{1,2})\..*'
-          target_label: 'replica'
-        - action: replace
-          replacement: integrations/docker
-          source_labels: ['__meta_docker_container_id']
-          target_label: job
-        - source_labels: ['__meta_docker_container_name']
-          regex: '/(.*)'
-          target_label: container
-        - source_labels: ['__meta_docker_container_log_stream']
-          target_label: stream
+limits_config:
+  enforce_metric_name: false
+  reject_old_samples: true
+  reject_old_samples_max_age: 168h
+
+chunk_store_config:
+  max_look_back_period: 0s
+
+table_manager:
+  retention_deletes_enabled: false
+  retention_period: 0s
 EOF
   fi
 }
@@ -358,10 +325,9 @@ EOF
 function setup_promtail_agent() {
   add_step "Setting up promtail-agent"
 
-  throw_if_env_var_not_present "NONROOT_USER" "${NONROOT_USER}"
   throw_if_env_var_not_present "PROMTAIL_AGENT_BASE_DIRECTORY" "$PROMTAIL_AGENT_BASE_DIRECTORY"
 
-  ensure_directory_exists "root" "$PROMTAIL_AGENT_BASE_DIRECTORY"
+  ensure_directory_exists "monitoring" "$PROMTAIL_AGENT_BASE_DIRECTORY"
 
   if [[ ! -f "${PROMTAIL_AGENT_BASE_DIRECTORY}/config.yaml" ]]; then
     tee -a "${PROMTAIL_AGENT_BASE_DIRECTORY}/config.yaml" <<EOF
@@ -373,7 +339,7 @@ positions:
   filename: /tmp/positions.yaml
 
 clients:
-  - url: ${LOKI_URI}
+  - url: http://loki-server:3100/loki/api/v1/push
 
 scrape_configs:
 - job_name: system-logs
@@ -433,27 +399,45 @@ EOF
   fi
 }
 
+function setup_prometheus() {
+  add_step "Setting up prometheus"
+
+  throw_if_env_var_not_present "PROMETHEUS_BASE_DIRECTORY" "$PROMETHEUS_BASE_DIRECTORY"
+  ensure_directory_exists "monitoring" "$PROMETHEUS_BASE_DIRECTORY"
+  ensure_directory_exists "monitoring" "$PROMETHEUS_BASE_DIRECTORY/data"
+
+  if [[ ! -f "$PROMETHEUS_BASE_DIRECTORY/prometheus.yml" ]]; then
+    tee -a "$PROMETHEUS_BASE_DIRECTORY/prometheus.yml" <<EOF
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+- job_name: node
+  static_configs:
+  - targets: ['node-exporter:9100']
+EOF
+  fi
+}
+
 function setup_grafana() {
   add_step "Setting up grafana"
 
   throw_if_env_var_not_present "GRAFANA_BASE_DIRECTORY" "$GRAFANA_BASE_DIRECTORY"
 
-  ensure_directory_exists "root" "$GRAFANA_BASE_DIRECTORY/var/lib/grafana"
-  ensure_directory_exists "root" "$GRAFANA_BASE_DIRECTORY/provisioning/datasources"
+  ensure_directory_exists "monitoring" "$GRAFANA_BASE_DIRECTORY"
+  ensure_directory_exists "monitoring" "$GRAFANA_BASE_DIRECTORY/var/lib/grafana"
+  ensure_directory_exists "monitoring" "$GRAFANA_BASE_DIRECTORY/provisioning/datasources"
 }
 
-function setup_prometheus() {
-  add_step "Setting up prometheus"
+function setup_monitoring_stack() {
+  ensure_group_exists "monitoring"
+  ensure_user_exists "monitoring" "docker"
 
-  throw_if_env_var_not_present "PROMETHEUS_BASE_DIRECTORY" "$PROMETHEUS_BASE_DIRECTORY"
-  ensure_directory_exists "root" "$PROMETHEUS_BASE_DIRECTORY" "104"
+  export MONITORING_PUID=$(id monitoring -u)
+  export MONITORING_PGID=$(id monitoring -g)
 
-  touch "$PROMETHEUS_BASE_DIRECTORY/prometheus.yml"
-}
-
-function setup_monitoring() {
   setup_grafana
-  setup_grafana_agent
+  setup_loki_server
   setup_promtail_agent
   setup_prometheus
 
@@ -484,7 +468,7 @@ function reset_pihole_password() {
 function setup_cloudflare_dns_entries() {
   cloudflare_tunnel="/opt/tools/cloudflared --config $CLOUDFLARE_BASE_DIRECTORY/config.yaml --origincert $CLOUDFLARE_BASE_DIRECTORY/.cloudflared/cert.pem tunnel"
   
-  SUBDOMAINS=(home listen read media connector git podgrab proxy admin queue ytdl git photos notes coding ssh ha monitoring mermaid drawio kitchen)
+  SUBDOMAINS=(home listen read media connector git podgrab proxy admin queue ytdl git photos notes coding ssh ha monitoring mermaid drawio kitchen prometheus)
   for subdomain in "${SUBDOMAINS[@]}"; do
     $cloudflare_tunnel route dns geck "${subdomain}.${SERVICE_DOMAIN}" || true
 
@@ -545,7 +529,7 @@ function main() {
   setup_home_assistant
   setup_nodered
   setup_kitchenowl
-  setup_monitoring
+  setup_monitoring_stack
 
   case "$RUN_TYPE" in
     "start")

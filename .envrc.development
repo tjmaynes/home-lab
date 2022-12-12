@@ -45,7 +45,7 @@ export HOME_ASSISTANT_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/home-assistant-web
 export NODERED_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/nodered-web
 export PROMETHEUS_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/prometheus-server
 export GRAFANA_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/grafana-web
-export GRAFANA_AGENT_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/grafana-agent
+export LOKI_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/loki-server
 export PROMTAIL_AGENT_BASE_DIRECTORY=${DOCKER_BASE_DIRECTORY}/promtail-agent
 
 # Replace-me
@@ -55,10 +55,6 @@ export PIHOLE_PASSWORD=some-password
 export HOST_INTERFACE_NAME=eth0
 export HOST_ROUTER_IP=some-ip-address
 export NAS_MOUNT_PASSWORD=some-password
-export GRAFANA_USERNAME=some-username
-export GRAFANA_API_KEY=some-password
-export LOKI_USERNAME=some-password
-export LOKI_URI=some-uri
 export CLOUDFLARE_TUNNEL_UUID=some-uuid
 export PLEX_CLAIM_TOKEN=some-token
 export CODIMD_DB_USERNAME=codimd

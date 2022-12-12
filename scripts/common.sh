@@ -8,8 +8,8 @@ function setup_env_vars() {
     exit 1
   fi
 
-  export PUID=$(id -u)
-  export PGID=$(id -g)
+  export ROOT_PUID=$(id -u)
+  export ROOT_PGID=$(id -g)
 
   source .envrc.production
 }
@@ -69,7 +69,7 @@ function ensure_group_exists() {
 function ensure_user_exists() {
   if ! id "$1" &>/dev/null; then
     echo "Adding user: $1"
-    useradd -r -g "$1" -G "$2" "$1"
+    useradd -r -g "$1" -G "$2" "$1" -s "/sbin/nologin"
   fi
 }
 
