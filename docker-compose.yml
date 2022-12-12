@@ -175,6 +175,7 @@ services:
     image: postgres:11.6-alpine
     container_name: codimd-db
     restart: always
+    command: postgres -c stats_temp_directory=/tmp
     networks:
       - proxy_network
     volumes:
@@ -194,6 +195,7 @@ services:
       - ${CODIMD_BASE_DIRECTORY}/uploads:/home/hackmd/app/public/uploads
     environment:
       - CMD_DB_URL=${CODIMD_DB_URL}
+      - CMD_DOMAIN=notes.${SERVICE_DOMAIN}
       - CMD_USECDN=false
     depends_on:
       - codimd-db
@@ -402,7 +404,7 @@ services:
       - monitoring_network
     restart: unless-stopped
     volumes:
-      - ${GRAFANA_BASE_DIRECTORY}/var/lib/grafana:/var/lib/grafana
+      - ${GRAFANA_BASE_DIRECTORY}:/var/lib/grafana
       - ${GRAFANA_BASE_DIRECTORY}/provisioning/datasources:/etc/grafana/provisioning/datasources
     depends_on:
       - loki-server

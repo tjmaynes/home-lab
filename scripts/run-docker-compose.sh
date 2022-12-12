@@ -214,9 +214,11 @@ function setup_codimd() {
   throw_if_env_var_not_present "CODIMD_DB_URL" "$CODIMD_DB_URL"
 
   throw_if_env_var_not_present "CODIMD_BASE_DIRECTORY" "$CODIMD_BASE_DIRECTORY"
+  ensure_directory_exists "root" "$CODIMD_BASE_DIRECTORY"
   ensure_directory_exists "root" "$CODIMD_BASE_DIRECTORY/uploads"
 
   throw_if_env_var_not_present "CODIMD_DB_BASE_DIRECTORY" "$CODIMD_DB_BASE_DIRECTORY"
+  ensure_directory_exists "root" "$CODIMD_DB_BASE_DIRECTORY"
   ensure_directory_exists "root" "$CODIMD_DB_BASE_DIRECTORY/data"
 
   throw_if_env_var_not_present "CODIMD_DB_USERNAME" "$CODIMD_DB_USERNAME"
@@ -425,7 +427,6 @@ function setup_grafana() {
   throw_if_env_var_not_present "GRAFANA_BASE_DIRECTORY" "$GRAFANA_BASE_DIRECTORY"
 
   ensure_directory_exists "monitoring" "$GRAFANA_BASE_DIRECTORY"
-  ensure_directory_exists "monitoring" "$GRAFANA_BASE_DIRECTORY/var/lib/grafana"
   ensure_directory_exists "monitoring" "$GRAFANA_BASE_DIRECTORY/provisioning/datasources"
 }
 

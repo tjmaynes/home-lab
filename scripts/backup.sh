@@ -51,6 +51,7 @@ function main() {
     --exclude "/docker/code-server/config/.vimrc" \
     --exclude "/docker/code-server/config/.zpreztorc" \
     --exclude "/docker/code-server/config/.zshrc" \
+    --exclude "/docker/loki-server/data/loki/chunks/" \
     "$DOCKER_BASE_DIRECTORY" \
     "$BACKUP_BASE_DIRECTORY"
 
