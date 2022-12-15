@@ -24,7 +24,8 @@ function setup_firewall() {
 
   OPEN_PORTS=(22/tcp 80/tcp 443/tcp)
   for port in "${OPEN_PORTS[@]}"; do
-    ufw allow "$port"
+    add_step "Allowing ufw outgoing port: '$port'"
+    ufw allow "$port" &> /dev/null
   done
 
   ufw --force enable
@@ -243,6 +244,21 @@ function setup_youtube_downloader() {
 
   throw_if_directory_not_present "DOWNLOADS_DIRECTORY" "$DOWNLOADS_DIRECTORY"
   mkdir -p "$DOWNLOADS_DIRECTORY/youtube"
+}
+
+function setup_media_file_browser() {
+  add_step "Setting up media-file-browser"
+
+  throw_if_directory_not_present "MEDIA_BASE_DIRECTORY" "$MEDIA_BASE_DIRECTORY"
+  throw_if_env_var_not_present "MEDIAFILEBROWSER_BASE_DIRECTORY" "$MEDIAFILEBROWSER_BASE_DIRECTORY"
+
+  ensure_directory_exists "root" "$MEDIAFILEBROWSER_BASE_DIRECTORY"
+
+  if [[ ! -f "$MEDIAFILEBROWSER_BASE_DIRECTORY/filebrowser.db" ]]; then
+    touch "$MEDIAFILEBROWSER_BASE_DIRECTORY/filebrowser.db"
+  fi
+
+  cp -f static/templates/filebrowser.json "$MEDIAFILEBROWSER_BASE_DIRECTORY/settings.json"
 }
 
 function setup_home_assistant() {
@@ -468,7 +484,7 @@ function reset_pihole_password() {
 function setup_cloudflare_dns_entries() {
   cloudflare_tunnel="/opt/tools/cloudflared --config $CLOUDFLARE_BASE_DIRECTORY/config.yaml --origincert $CLOUDFLARE_BASE_DIRECTORY/.cloudflared/cert.pem tunnel"
   
-  SUBDOMAINS=(home listen read media connector git podgrab proxy admin queue ytdl git photos notes coding ssh ha monitoring mermaid drawio kitchen prometheus)
+  SUBDOMAINS=(home listen read media connector git podgrab proxy admin queue ytdl git photos notes coding ssh ha monitoring mermaid drawio kitchen prometheus browser)
   for subdomain in "${SUBDOMAINS[@]}"; do
     $cloudflare_tunnel route dns geck "${subdomain}.${SERVICE_DOMAIN}" || true
 
@@ -526,6 +542,7 @@ function main() {
   setup_gogs
   setup_podgrab
   setup_youtube_downloader
+  setup_media_file_browser
   setup_home_assistant
   setup_nodered
   setup_kitchenowl

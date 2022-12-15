@@ -342,6 +342,22 @@ services:
     environment:
       - NANOMQ_BROKER_URL="nmq-tcp://0.0.0.0:1883"
 
+  media-filebrowser-web:
+    image: filebrowser/filebrowser:s6
+    container_name: media-filebrowser-web
+    restart: unless-stopped
+    networks:
+      - proxy_network # 80
+    volumes:
+      - ${MEDIA_BASE_DIRECTORY}:/srv
+      - ${MEDIAFILEBROWSER_BASE_DIRECTORY}/filebrowser.db:/database/filebrowser.db
+      - ${MEDIAFILEBROWSER_BASE_DIRECTORY}/settings.json:/config/settings.json
+    environment:
+      - NANOMQ_BROKER_URL="nmq-tcp://0.0.0.0:1883"
+      - PUID=${ROOT_PUID}
+      - PGID=${ROOT_PGID}
+      - TZ=${TIMEZONE}
+
   node-exporter:
     image: quay.io/prometheus/node-exporter:latest
     container_name: node-exporter
