@@ -7,11 +7,10 @@ function main() {
 
   throw_if_program_not_present "rsync"
 
-  throw_if_env_var_not_present "NONROOT_USER" "$NONROOT_USER"
+  throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
+  throw_if_env_var_not_present "MEDIA_BASE_DIRECTORY" "$MEDIA_BASE_DIRECTORY"
   throw_if_env_var_not_present "NAS_BACKUP_DIRECTORY" "$NAS_BACKUP_DIRECTORY"
   throw_if_env_var_not_present "BACKUP_BASE_DIRECTORY" "$BACKUP_BASE_DIRECTORY"
-  throw_if_env_var_not_present "NAS_MOUNT_PASSWORD" "$NAS_MOUNT_PASSWORD"
-  throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
 
   BACKUP_LOGS_DIRECTORY=${DOCKER_BASE_DIRECTORY}/logs
   ensure_directory_exists "root" "$BACKUP_LOGS_DIRECTORY"
@@ -22,6 +21,7 @@ function main() {
 
   TODAY=$(date +"%Y%m%d")
 
+  echo "Backing up docker directory..."
   rsync -avuz --delete \
     --log-file="$BACKUP_LOGS_DIRECTORY/$TODAY-backup.log" \
     --exclude "/docker/plex-server/config/Library/Application Support/" \
@@ -55,7 +55,17 @@ function main() {
     "$DOCKER_BASE_DIRECTORY" \
     "$BACKUP_BASE_DIRECTORY"
 
-  cp .envrc.production "$BACKUP_BASE_DIRECTORY/docker"
+  echo "Backing up media directory..."
+  rsync -avuz --delete \
+    --log-file="$BACKUP_LOGS_DIRECTORY/$TODAY-backup.log" \
+    "$MEDIA_BASE_DIRECTORY" \
+    "$BACKUP_BASE_DIRECTORY"
+
+  echo "Backing up .envrc.production file..."
+  rsync -avuz --delete \
+    --log-file="$BACKUP_LOGS_DIRECTORY/$TODAY-backup.log" \
+    ".envrc.production" \
+    "$BACKUP_BASE_DIRECTORY"
 }
 
 main

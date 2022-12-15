@@ -30,17 +30,16 @@ function setup_firewall() {
   ufw --force enable
 }
 
-function setup_nfs_media_mount() {
-  add_step "Setting up NFS mounts"
+function setup_media_mount() {
+  add_step "Setting up media mount"
 
-  throw_if_program_not_present "mount"
+  ensure_program_installed "pmount"
 
-  throw_if_env_var_not_present "NAS_MEDIA_DIRECTORY" "$NAS_MEDIA_DIRECTORY"
+  pmount /dev/sdb1 &> /dev/null || true
+
   throw_if_env_var_not_present "MEDIA_BASE_DIRECTORY" "$MEDIA_BASE_DIRECTORY"
 
   ensure_directory_exists "root" "$MEDIA_BASE_DIRECTORY"
-
-  setup_nas_mount "$NAS_MEDIA_DIRECTORY" "$MEDIA_BASE_DIRECTORY"
 
   throw_if_directory_not_present "VIDEOS_DIRECTORY" "$VIDEOS_DIRECTORY"
   throw_if_directory_not_present "MUSIC_DIRECTORY" "$MUSIC_DIRECTORY"
@@ -512,7 +511,7 @@ function main() {
 
   setup_firewall
 
-  setup_nfs_media_mount
+  setup_media_mount
 
   setup_cloudflare_tunnel
   setup_nginx_proxy
