@@ -61,10 +61,10 @@ function main() {
     "$MEDIA_BASE_DIRECTORY" \
     "$BACKUP_BASE_DIRECTORY"
 
-  echo "Backing up .envrc.production file..."
+  echo "Backing up geck project..."
   rsync -avuz --delete \
     --log-file="$BACKUP_LOGS_DIRECTORY/$TODAY-backup.log" \
-    ".envrc.production" \
+    "../geck" \
     "$BACKUP_BASE_DIRECTORY"
 }
 
