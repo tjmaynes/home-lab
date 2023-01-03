@@ -14,6 +14,44 @@ function setup_env_vars() {
   source .envrc.production
 }
 
+function setup_backup_mount() {
+  add_step "Setting up backup mount"
+
+  ensure_program_installed "pmount"
+
+  throw_if_env_var_not_present "BACKUP_MOUNT_NAME" "$BACKUP_MOUNT_NAME"
+
+  pmount "/dev/disk/by-label/$BACKUP_MOUNT_NAME" "$BACKUP_MOUNT_NAME" || true
+
+  throw_if_env_var_not_present "BACKUP_BASE_DIRECTORY" "$BACKUP_BASE_DIRECTORY"
+  ensure_directory_exists "root" "$BACKUP_BASE_DIRECTORY"
+
+  BACKUP_LOGS_DIRECTORY=${BACKUP_BASE_DIRECTORY}/logs
+  ensure_directory_exists "root" "$BACKUP_LOGS_DIRECTORY"
+}
+
+function setup_media_mount() {
+  add_step "Setting up media mount"
+
+  ensure_program_installed "pmount"
+
+  throw_if_env_var_not_present "MEDIA_MOUNT_NAME" "$MEDIA_MOUNT_NAME"
+
+  pmount "/dev/disk/by-label/$MEDIA_MOUNT_NAME" "$MEDIA_MOUNT_NAME" || true
+
+  throw_if_env_var_not_present "MEDIA_BASE_DIRECTORY" "$MEDIA_BASE_DIRECTORY"
+
+  ensure_directory_exists "root" "$MEDIA_BASE_DIRECTORY"
+
+  throw_if_directory_not_present "VIDEOS_DIRECTORY" "$VIDEOS_DIRECTORY"
+  throw_if_directory_not_present "MUSIC_DIRECTORY" "$MUSIC_DIRECTORY"
+  throw_if_directory_not_present "PHOTOS_DIRECTORY" "$PHOTOS_DIRECTORY"
+  throw_if_directory_not_present "BOOKS_DIRECTORY" "$BOOKS_DIRECTORY"
+  throw_if_directory_not_present "AUDIOBOOKS_DIRECTORY" "$AUDIOBOOKS_DIRECTORY"
+  throw_if_directory_not_present "PODCASTS_DIRECTORY" "$PODCASTS_DIRECTORY"
+  throw_if_directory_not_present "DOWNLOADS_DIRECTORY" "$DOWNLOADS_DIRECTORY"
+}
+
 function setup_nas_mount() {
   throw_if_env_var_not_present "NONROOT_USER" "$NONROOT_USER"
   throw_if_env_var_not_present "NAS_MOUNT_PASSWORD" "$NAS_MOUNT_PASSWORD"
@@ -160,7 +198,7 @@ function install_cloudflared() {
 
   throw_if_env_var_not_present "CPU_ARCH" "$CPU_ARCH"
 
-  if [[ ! -f "/opt/tools/cloudflared" ]] || ! cat /opt/tools/.cloudflared-version | grep "$CLOUDFLARED_VERSION" &> /dev/null; then
+  if [[ ! -f "/opt/tools/cloudflared" ]] || (! cat /opt/tools/.cloudflared-version | grep "$CLOUDFLARED_VERSION" &> /dev/null); then
     rm -rf /opt/tools/cloudflared
 
     curl -OL "https://github.com/cloudflare/cloudflared/releases/download/${CLOUDFLARED_VERSION}/cloudflared-linux-${CPU_ARCH}"

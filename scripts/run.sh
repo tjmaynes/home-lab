@@ -31,26 +31,6 @@ function setup_firewall() {
   ufw --force enable
 }
 
-function setup_media_mount() {
-  add_step "Setting up media mount"
-
-  ensure_program_installed "pmount"
-
-  pmount /dev/sdb1 &> /dev/null || true
-
-  throw_if_env_var_not_present "MEDIA_BASE_DIRECTORY" "$MEDIA_BASE_DIRECTORY"
-
-  ensure_directory_exists "root" "$MEDIA_BASE_DIRECTORY"
-
-  throw_if_directory_not_present "VIDEOS_DIRECTORY" "$VIDEOS_DIRECTORY"
-  throw_if_directory_not_present "MUSIC_DIRECTORY" "$MUSIC_DIRECTORY"
-  throw_if_directory_not_present "PHOTOS_DIRECTORY" "$PHOTOS_DIRECTORY"
-  throw_if_directory_not_present "BOOKS_DIRECTORY" "$BOOKS_DIRECTORY"
-  throw_if_directory_not_present "AUDIOBOOKS_DIRECTORY" "$AUDIOBOOKS_DIRECTORY"
-  throw_if_directory_not_present "PODCASTS_DIRECTORY" "$PODCASTS_DIRECTORY"
-  throw_if_directory_not_present "DOWNLOADS_DIRECTORY" "$DOWNLOADS_DIRECTORY"
-}
-
 function setup_cloudflare_tunnel() {
   add_step "Setting up cloudflare-tunnel"
 
@@ -560,7 +540,7 @@ function main() {
 
       /opt/tools/cloudflared \
         --config "$CLOUDFLARE_BASE_DIRECTORY/config.yaml" \
-        tunnel --no-autoupdate run geck
+        tunnel --no-autoupdate run geck &
       ;;
     *)
       echo "Run type '$RUN_TYPE' is not valid, please use start, restart, or boot."

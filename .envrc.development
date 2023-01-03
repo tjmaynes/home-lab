@@ -4,18 +4,15 @@ export NONROOT_USER=geck
 export SERVICE_DOMAIN=lan
 export BASE_DIRECTORY=/home/${NONROOT_USER}
 export CPU_ARCH=amd64
-export CLOUDFLARED_VERSION=2022.11.0
-
-# NAS
-export NAS_IP=192.168.4.77
-export NAS_RSYNC_BACKUP_DIRECTORY=${NONROOT_USER}@${NAS_IP}::${NONROOT_USER}
-export NAS_BACKUP_DIRECTORY=${NONROOT_USER}
+export CLOUDFLARED_VERSION=2022.12.1
 
 # Backup
-export BACKUP_BASE_DIRECTORY=${BASE_DIRECTORY}/backups
+export BACKUP_MOUNT_NAME=backups
+export BACKUP_BASE_DIRECTORY=/media/${BACKUP_MOUNT_NAME}/backup
 
 # Media
-export MEDIA_BASE_DIRECTORY=/media/sdb1/media
+export MEDIA_MOUNT_NAME=media
+export MEDIA_BASE_DIRECTORY=/media/${MEDIA_MOUNT_NAME}/media
 export VIDEOS_DIRECTORY=${MEDIA_BASE_DIRECTORY}/Videos
 export MUSIC_DIRECTORY=${MEDIA_BASE_DIRECTORY}/Music
 export PHOTOS_DIRECTORY=${MEDIA_BASE_DIRECTORY}/Photos
@@ -57,7 +54,6 @@ export HOST_IP=some-ip-address
 export PIHOLE_PASSWORD=some-password
 export HOST_INTERFACE_NAME=eth0
 export HOST_ROUTER_IP=some-ip-address
-export NAS_MOUNT_PASSWORD=some-password
 export CLOUDFLARE_TUNNEL_UUID=some-uuid
 export PLEX_CLAIM_TOKEN=some-token
 export CODIMD_DB_USERNAME=codimd

@@ -9,20 +9,14 @@ function main() {
 
   throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
   throw_if_env_var_not_present "MEDIA_BASE_DIRECTORY" "$MEDIA_BASE_DIRECTORY"
-  throw_if_env_var_not_present "NAS_BACKUP_DIRECTORY" "$NAS_BACKUP_DIRECTORY"
-  throw_if_env_var_not_present "BACKUP_BASE_DIRECTORY" "$BACKUP_BASE_DIRECTORY"
 
-  BACKUP_LOGS_DIRECTORY=${DOCKER_BASE_DIRECTORY}/logs
-  ensure_directory_exists "root" "$BACKUP_LOGS_DIRECTORY"
-
-  ensure_directory_exists "root" "$BACKUP_BASE_DIRECTORY"
-
-  setup_nas_mount "$NAS_BACKUP_DIRECTORY" "$BACKUP_BASE_DIRECTORY"
+  setup_backup_mount
+  setup_media_mount
 
   TODAY=$(date +"%Y%m%d")
 
   echo "Backing up docker directory..."
-  rsync -avuz --delete \
+  rsync -avuz --delete --no-perms \
     --log-file="$BACKUP_LOGS_DIRECTORY/$TODAY-backup.log" \
     --exclude "/docker/plex-server/config/Library/Application Support/" \
     --exclude "/docker/plex-server/config/cache/" \
@@ -56,16 +50,16 @@ function main() {
     "$BACKUP_BASE_DIRECTORY"
 
   echo "Backing up media directory..."
-  rsync -avuz --delete \
+  rsync -avuz --delete --no-perms \
     --log-file="$BACKUP_LOGS_DIRECTORY/$TODAY-backup.log" \
     "$MEDIA_BASE_DIRECTORY" \
     "$BACKUP_BASE_DIRECTORY"
 
   echo "Backing up geck project..."
-  rsync -avuz --delete \
+  rsync -avuz --delete --no-perms \
     --log-file="$BACKUP_LOGS_DIRECTORY/$TODAY-backup.log" \
-    "../geck" \
     --exclude "/geck/.git/" \
+    "../geck" \
     "$BACKUP_BASE_DIRECTORY"
 }
 
