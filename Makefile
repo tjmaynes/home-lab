@@ -3,16 +3,13 @@ install:
 	./scripts/$@.sh
 
 boot:
-	chmod +x ./scripts/$@.sh
-	./scripts/$@.sh
+	./scripts/run.sh "$@"
 
 start:
-	chmod +x ./scripts/$@.sh
-	./scripts/$@.sh
+	./scripts/run.sh "$@"
 
 restart:
-	chmod +x ./scripts/$@.sh
-	./scripts/$@.sh
+	./scripts/run.sh "$@"
 
 stop:
 	chmod +x ./scripts/$@.sh
