@@ -65,6 +65,7 @@ function main() {
   rsync -avuz --delete \
     --log-file="$BACKUP_LOGS_DIRECTORY/$TODAY-backup.log" \
     "../geck" \
+    --exclude "/geck/.git/" \
     "$BACKUP_BASE_DIRECTORY"
 }
 
