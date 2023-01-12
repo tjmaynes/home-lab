@@ -16,6 +16,7 @@ Description=GECK
 After=network.target
 
 [Service]
+Type=forking
 WorkingDirectory=/home/$NONROOT_USER/workspace/tjmaynes/geck
 ExecStart=sudo make boot
 
