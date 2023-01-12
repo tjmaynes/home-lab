@@ -127,7 +127,7 @@ services:
       - ${BOOKS_DIRECTORY}:/books
 
   audiobookshelf-web:
-    image: ghcr.io/advplyr/audiobookshelf:2.2.1
+    image: ghcr.io/advplyr/audiobookshelf:2.2.12
     container_name: audiobookshelf-web
     restart: unless-stopped
     networks:

@@ -6,12 +6,14 @@ RUN_TYPE=$1
 
 function check_requirements() {
   throw_if_program_not_present "docker"
+  throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
 
   throw_if_env_var_not_present "TIMEZONE" "$TIMEZONE"
   throw_if_env_var_not_present "ROOT_PUID" "$ROOT_PUID"
   throw_if_env_var_not_present "ROOT_PGID" "$ROOT_PGID"
 
-  throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
+  ensure_group_exists "geck"
+  ensure_user_exists "geck" "docker"
 }
 
 function setup_firewall() {
@@ -22,7 +24,7 @@ function setup_firewall() {
   ufw default allow outgoing
   ufw default deny incoming
 
-  OPEN_PORTS=(22/tcp 80/tcp 443/tcp)
+  OPEN_PORTS=(22/tcp 443/tcp)
   for port in "${OPEN_PORTS[@]}"; do
     add_step "Allowing ufw outgoing port: '$port'"
     ufw allow "$port" &> /dev/null
