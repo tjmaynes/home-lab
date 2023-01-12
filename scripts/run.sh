@@ -9,8 +9,8 @@ function check_requirements() {
   throw_if_env_var_not_present "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
 
   throw_if_env_var_not_present "TIMEZONE" "$TIMEZONE"
-  throw_if_env_var_not_present "ROOT_PUID" "$ROOT_PUID"
-  throw_if_env_var_not_present "ROOT_PGID" "$ROOT_PGID"
+  throw_if_env_var_not_present "GECK_PUID" "$GECK_PUID"
+  throw_if_env_var_not_present "GECK_PGID" "$GECK_PGID"
 
   ensure_group_exists "geck"
   ensure_user_exists "geck" "docker"
@@ -37,7 +37,7 @@ function setup_cloudflare_tunnel() {
   add_step "Setting up cloudflare-tunnel"
 
   throw_if_env_var_not_present "CLOUDFLARE_BASE_DIRECTORY" "$CLOUDFLARE_BASE_DIRECTORY"
-  ensure_directory_exists "root" "$CLOUDFLARE_BASE_DIRECTORY/.cloudflared"
+  ensure_directory_exists "geck" "$CLOUDFLARE_BASE_DIRECTORY/.cloudflared"
   throw_if_env_var_not_present "CLOUDFLARE_TUNNEL_UUID" "$CLOUDFLARE_TUNNEL_UUID"
 
   CLOUDFLARE_CREDENTIALS_FILE="$CLOUDFLARE_BASE_DIRECTORY/.cloudflared/$CLOUDFLARE_TUNNEL_UUID.json"
@@ -60,8 +60,8 @@ function setup_nginx_proxy() {
 
   throw_if_env_var_not_present "NGNIX_PROXY_MANAGER_BASE_DIRECTORY" "$NGNIX_PROXY_MANAGER_BASE_DIRECTORY"
 
-  ensure_directory_exists "root" "$NGNIX_PROXY_MANAGER_BASE_DIRECTORY/data"
-  ensure_directory_exists "root" "$NGNIX_PROXY_MANAGER_BASE_DIRECTORY/letsencrypt"
+  ensure_directory_exists "geck" "$NGNIX_PROXY_MANAGER_BASE_DIRECTORY/data"
+  ensure_directory_exists "geck" "$NGNIX_PROXY_MANAGER_BASE_DIRECTORY/letsencrypt"
 
   if ! docker network ls | grep "proxy_network" &> /dev/null; then
     docker network create proxy_network
@@ -75,7 +75,7 @@ function setup_homer() {
 
   throw_if_env_var_not_present "HOMER_BASE_DIRECTORY" "$HOMER_BASE_DIRECTORY"
 
-  ensure_directory_exists "root" "$HOMER_BASE_DIRECTORY/www/assets"
+  ensure_directory_exists "geck" "$HOMER_BASE_DIRECTORY/www/assets"
 
   sed \
     -e "s/%protocol-type%/https/g" \
@@ -94,8 +94,8 @@ function setup_pihole() {
   throw_if_env_var_not_present "HOST_INTERFACE_NAME" "$HOST_INTERFACE_NAME"
 
   throw_if_env_var_not_present "PIHOLE_BASE_DIRECTORY" "$PIHOLE_BASE_DIRECTORY"
-  ensure_directory_exists "root" "$PIHOLE_BASE_DIRECTORY/pihole"
-  ensure_directory_exists "root" "$PIHOLE_BASE_DIRECTORY/dnsmasq.d"
+  ensure_directory_exists "geck" "$PIHOLE_BASE_DIRECTORY/pihole"
+  ensure_directory_exists "geck" "$PIHOLE_BASE_DIRECTORY/dnsmasq.d"
 
   if ! docker network ls | grep "pihole_network" &> /dev/null; then
     docker network create -d macvlan \
@@ -115,8 +115,8 @@ function setup_plex_server() {
   throw_if_env_var_not_present "PLEX_CLAIM_TOKEN" "$PLEX_CLAIM_TOKEN"
 
   throw_if_env_var_not_present "PLEX_BASE_DIRECTORY" "$PLEX_BASE_DIRECTORY"
-  ensure_directory_exists "root" "$PLEX_BASE_DIRECTORY/config"
-  ensure_directory_exists "root" "$PLEX_BASE_DIRECTORY/transcode"
+  ensure_directory_exists "geck" "$PLEX_BASE_DIRECTORY/config"
+  ensure_directory_exists "geck" "$PLEX_BASE_DIRECTORY/transcode"
 
   if [[ ! -f "/etc/ufw/applications.d/plexmediaserver" ]]; then
     tee -a /etc/ufw/applications.d/plexmediaserver &> /dev/null <<EOF
@@ -147,7 +147,7 @@ function setup_calibre_web() {
 
   throw_if_env_var_not_present "CALIBRE_WEB_BASE_DIRECTORY" "$CALIBRE_WEB_BASE_DIRECTORY"
 
-  ensure_directory_exists "root" "$CALIBRE_WEB_BASE_DIRECTORY/config"
+  ensure_directory_exists "geck" "$CALIBRE_WEB_BASE_DIRECTORY/config"
 }
 
 function setup_pigallary_web() {
@@ -157,9 +157,9 @@ function setup_pigallary_web() {
 
   throw_if_env_var_not_present "PIGALLERY_BASE_DIRECTORY" "$PIGALLERY_BASE_DIRECTORY"
 
-  ensure_directory_exists "root" "$PIGALLERY_BASE_DIRECTORY/config"
-  ensure_directory_exists "root" "$PIGALLERY_BASE_DIRECTORY/db"
-  ensure_directory_exists "root" "$PIGALLERY_BASE_DIRECTORY/tmp"
+  ensure_directory_exists "geck" "$PIGALLERY_BASE_DIRECTORY/config"
+  ensure_directory_exists "geck" "$PIGALLERY_BASE_DIRECTORY/db"
+  ensure_directory_exists "geck" "$PIGALLERY_BASE_DIRECTORY/tmp"
 }
 
 function setup_audiobookshelf() {
@@ -167,8 +167,8 @@ function setup_audiobookshelf() {
 
   throw_if_env_var_not_present "AUDIOBOOKSHELF_BASE_DIRECTORY" "$AUDIOBOOKSHELF_BASE_DIRECTORY"
 
-  ensure_directory_exists "root" "$AUDIOBOOKSHELF_BASE_DIRECTORY/config"
-  ensure_directory_exists "root" "$AUDIOBOOKSHELF_BASE_DIRECTORY/metadata"
+  ensure_directory_exists "geck" "$AUDIOBOOKSHELF_BASE_DIRECTORY/config"
+  ensure_directory_exists "geck" "$AUDIOBOOKSHELF_BASE_DIRECTORY/metadata"
 }
 
 function setup_kitchenowl() {
@@ -177,7 +177,7 @@ function setup_kitchenowl() {
   throw_if_env_var_not_present "KITCHENOWL_JWT_SECRET_KEY" "$KITCHENOWL_JWT_SECRET_KEY"
 
   throw_if_env_var_not_present "KITCHENOWL_BASE_DIRECTORY" "$KITCHENOWL_BASE_DIRECTORY"
-  ensure_directory_exists "root" "$KITCHENOWL_BASE_DIRECTORY/data"
+  ensure_directory_exists "geck" "$KITCHENOWL_BASE_DIRECTORY/data"
 }
 
 function setup_code_server() {
@@ -187,7 +187,7 @@ function setup_code_server() {
   throw_if_env_var_not_present "CODE_SERVER_SUDO_PASSWORD" "$CODE_SERVER_SUDO_PASSWORD"
 
   throw_if_env_var_not_present "CODE_SERVER_BASE_DIRECTORY" "$CODE_SERVER_BASE_DIRECTORY"
-  ensure_directory_exists "root" "$CODE_SERVER_BASE_DIRECTORY"
+  ensure_directory_exists "geck" "$CODE_SERVER_BASE_DIRECTORY"
 }
 
 function setup_codimd() {
@@ -196,12 +196,12 @@ function setup_codimd() {
   throw_if_env_var_not_present "CODIMD_DB_URL" "$CODIMD_DB_URL"
 
   throw_if_env_var_not_present "CODIMD_BASE_DIRECTORY" "$CODIMD_BASE_DIRECTORY"
-  ensure_directory_exists "root" "$CODIMD_BASE_DIRECTORY"
-  ensure_directory_exists "root" "$CODIMD_BASE_DIRECTORY/uploads"
+  ensure_directory_exists "geck" "$CODIMD_BASE_DIRECTORY"
+  ensure_directory_exists "geck" "$CODIMD_BASE_DIRECTORY/uploads"
 
   throw_if_env_var_not_present "CODIMD_DB_BASE_DIRECTORY" "$CODIMD_DB_BASE_DIRECTORY"
-  ensure_directory_exists "root" "$CODIMD_DB_BASE_DIRECTORY"
-  ensure_directory_exists "root" "$CODIMD_DB_BASE_DIRECTORY/data"
+  ensure_directory_exists "geck" "$CODIMD_DB_BASE_DIRECTORY"
+  ensure_directory_exists "geck" "$CODIMD_DB_BASE_DIRECTORY/data"
 
   throw_if_env_var_not_present "CODIMD_DB_USERNAME" "$CODIMD_DB_USERNAME"
   throw_if_env_var_not_present "CODIMD_DB_PASSWORD" "$CODIMD_DB_PASSWORD"
@@ -211,14 +211,14 @@ function setup_gogs() {
   add_step "Setting up gogs"
 
   throw_if_env_var_not_present "GOGS_BASE_DIRECTORY" "$GOGS_BASE_DIRECTORY"
-  ensure_directory_exists "root" "$GOGS_BASE_DIRECTORY/data"
+  ensure_directory_exists "geck" "$GOGS_BASE_DIRECTORY/data"
 }
 
 function setup_podgrab() {
   add_step "Setting up podgrab"
 
   throw_if_env_var_not_present "PODGRAB_BASE_DIRECTORY" "$PODGRAB_BASE_DIRECTORY"
-  ensure_directory_exists "root" "$PODGRAB_BASE_DIRECTORY/config"
+  ensure_directory_exists "geck" "$PODGRAB_BASE_DIRECTORY/config"
 }
 
 function setup_youtube_downloader() {
@@ -234,7 +234,7 @@ function setup_media_file_browser() {
   throw_if_directory_not_present "MEDIA_BASE_DIRECTORY" "$MEDIA_BASE_DIRECTORY"
   throw_if_env_var_not_present "MEDIAFILEBROWSER_BASE_DIRECTORY" "$MEDIAFILEBROWSER_BASE_DIRECTORY"
 
-  ensure_directory_exists "root" "$MEDIAFILEBROWSER_BASE_DIRECTORY"
+  ensure_directory_exists "geck" "$MEDIAFILEBROWSER_BASE_DIRECTORY"
 
   if [[ ! -f "$MEDIAFILEBROWSER_BASE_DIRECTORY/filebrowser.db" ]]; then
     touch "$MEDIAFILEBROWSER_BASE_DIRECTORY/filebrowser.db"
@@ -248,7 +248,7 @@ function setup_home_assistant() {
 
   throw_if_env_var_not_present "HOME_ASSISTANT_BASE_DIRECTORY" "$HOME_ASSISTANT_BASE_DIRECTORY"
 
-  ensure_directory_exists "root" "$HOME_ASSISTANT_BASE_DIRECTORY/config"
+  ensure_directory_exists "geck" "$HOME_ASSISTANT_BASE_DIRECTORY/config"
 }
 
 function setup_nodered() {
@@ -256,7 +256,7 @@ function setup_nodered() {
 
   throw_if_env_var_not_present "NODERED_BASE_DIRECTORY" "$NODERED_BASE_DIRECTORY"
 
-  ensure_directory_exists "root" "$NODERED_BASE_DIRECTORY/data"
+  ensure_directory_exists "geck" "$NODERED_BASE_DIRECTORY/data"
 }
 
 function setup_loki_server() {

@@ -8,8 +8,8 @@ function setup_env_vars() {
     exit 1
   fi
 
-  export ROOT_PUID=$(id -u)
-  export ROOT_PGID=$(id -g)
+  export GECK_PUID=$(id -u geck)
+  export GECK_PGID=$(id -g geck)
 
   source .envrc.production
 }
@@ -24,10 +24,10 @@ function setup_backup_mount() {
   pmount "/dev/disk/by-label/$BACKUP_MOUNT_NAME" "$BACKUP_MOUNT_NAME" || true
 
   throw_if_env_var_not_present "BACKUP_BASE_DIRECTORY" "$BACKUP_BASE_DIRECTORY"
-  ensure_directory_exists "root" "$BACKUP_BASE_DIRECTORY"
+  ensure_directory_exists "geck" "$BACKUP_BASE_DIRECTORY"
 
   BACKUP_LOGS_DIRECTORY=${BACKUP_BASE_DIRECTORY}/logs
-  ensure_directory_exists "root" "$BACKUP_LOGS_DIRECTORY"
+  ensure_directory_exists "geck" "$BACKUP_LOGS_DIRECTORY"
 }
 
 function setup_media_mount() {
@@ -41,7 +41,7 @@ function setup_media_mount() {
 
   throw_if_env_var_not_present "MEDIA_BASE_DIRECTORY" "$MEDIA_BASE_DIRECTORY"
 
-  ensure_directory_exists "root" "$MEDIA_BASE_DIRECTORY"
+  ensure_directory_exists "geck" "$MEDIA_BASE_DIRECTORY"
 
   throw_if_directory_not_present "VIDEOS_DIRECTORY" "$VIDEOS_DIRECTORY"
   throw_if_directory_not_present "MUSIC_DIRECTORY" "$MUSIC_DIRECTORY"

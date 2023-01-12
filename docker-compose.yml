@@ -106,8 +106,8 @@ services:
       - ${PLEX_BASE_DIRECTORY}/transcode:/transcode
       - ${MEDIA_BASE_DIRECTORY}:/data
     environment:
-      - PUID=${ROOT_PUID}
-      - PGID=${ROOT_PGID}
+      - PUID=${GECK_PUID}
+      - PGID=${GECK_PGID}
       - TZ=${TIMEZONE}
       - CLAIM_TOKEN=${PLEX_CLAIM_TOKEN}
 
@@ -118,8 +118,8 @@ services:
     networks:
       - proxy_network
     environment:
-      - PUID=${ROOT_PUID}
-      - PGID=${ROOT_PGID}
+      - PUID=${GECK_PUID}
+      - PGID=${GECK_PGID}
       - TZ=${TIMEZONE}
       - DOCKER_MODS=linuxserver/mods:universal-calibre
     volumes:
@@ -133,8 +133,8 @@ services:
     networks:
       - proxy_network
     environment:
-      - AUDIOBOOKSHELF_UID=${ROOT_PUID}
-      - AUDIOBOOKSHELF_GID=${ROOT_PGID}
+      - AUDIOBOOKSHELF_UID=${GECK_PUID}
+      - AUDIOBOOKSHELF_GID=${GECK_PGID}
     volumes:
       - ${AUDIOBOOKS_DIRECTORY}:/audiobooks
       - ${PODCASTS_DIRECTORY}:/podcasts
@@ -162,8 +162,8 @@ services:
     networks:
       - proxy_network # 8443
     environment:
-      - PUID=${ROOT_PUID}
-      - PGID=${ROOT_PGID}
+      - PUID=${GECK_PUID}
+      - PGID=${GECK_PGID}
       - TZ=${TIMEZONE}
       - PASSWORD=${CODE_SERVER_PASSWORD}
       - SUDO_PASSWORD=${CODE_SERVER_SUDO_PASSWORD}
@@ -284,8 +284,8 @@ services:
     volumes:
       - ${DOWNLOADS_DIRECTORY}/youtube:/downloads
     environment:
-      UID: ${ROOT_PUID}
-      GID: ${ROOT_PGID}
+      UID: ${GECK_PUID}
+      GID: ${GECK_PGID}
 
   kitchenowl-web:
     image: tombursch/kitchenowl-web:latest
@@ -302,7 +302,7 @@ services:
     image: tombursch/kitchenowl:latest
     container_name: kitchenowl-server
     restart: unless-stopped
-    user: ${ROOT_PUID}:${ROOT_PGID}
+    user: ${GECK_PUID}:${GECK_PGID}
     networks:
       - proxy_network
     environment:
@@ -354,8 +354,8 @@ services:
       - ${MEDIAFILEBROWSER_BASE_DIRECTORY}/settings.json:/config/settings.json
     environment:
       - NANOMQ_BROKER_URL="nmq-tcp://0.0.0.0:1883"
-      - PUID=${ROOT_PUID}
-      - PGID=${ROOT_PGID}
+      - PUID=${GECK_PUID}
+      - PGID=${GECK_PGID}
       - TZ=${TIMEZONE}
 
   node-exporter:
@@ -399,7 +399,7 @@ services:
   promtail-agent:
     image: grafana/promtail:2.7.0
     container_name: promtail-agent
-    user: ${ROOT_PUID}:${ROOT_PGID}
+    user: ${GECK_PUID}:${GECK_PGID}
     networks:
       - monitoring_network
     volumes:
