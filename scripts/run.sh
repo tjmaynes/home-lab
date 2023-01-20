@@ -542,7 +542,7 @@ function main() {
 
       /opt/tools/cloudflared \
         --config "$CLOUDFLARE_BASE_DIRECTORY/config.yaml" \
-        tunnel --no-autoupdate run geck &
+        tunnel --no-autoupdate run --no-tls-verify geck &
       ;;
     *)
       echo "Run type '$RUN_TYPE' is not valid, please use start, restart, or boot."
