@@ -171,25 +171,6 @@ function setup_audiobookshelf() {
   ensure_directory_exists "geck" "$AUDIOBOOKSHELF_BASE_DIRECTORY/metadata"
 }
 
-function setup_kitchenowl() {
-  add_step "Setting up kitchenowl"
-
-  throw_if_env_var_not_present "KITCHENOWL_JWT_SECRET_KEY" "$KITCHENOWL_JWT_SECRET_KEY"
-
-  throw_if_env_var_not_present "KITCHENOWL_BASE_DIRECTORY" "$KITCHENOWL_BASE_DIRECTORY"
-  ensure_directory_exists "geck" "$KITCHENOWL_BASE_DIRECTORY/data"
-}
-
-function setup_code_server() {
-  add_step "Setting up code-server"
-
-  throw_if_env_var_not_present "CODE_SERVER_PASSWORD" "$CODE_SERVER_PASSWORD"
-  throw_if_env_var_not_present "CODE_SERVER_SUDO_PASSWORD" "$CODE_SERVER_SUDO_PASSWORD"
-
-  throw_if_env_var_not_present "CODE_SERVER_BASE_DIRECTORY" "$CODE_SERVER_BASE_DIRECTORY"
-  ensure_directory_exists "geck" "$CODE_SERVER_BASE_DIRECTORY"
-}
-
 function setup_codimd() {
   add_step "Setting up codimd"
 
@@ -466,7 +447,7 @@ function reset_pihole_password() {
 function setup_cloudflare_dns_entries() {
   cloudflare_tunnel="/opt/tools/cloudflared --config $CLOUDFLARE_BASE_DIRECTORY/config.yaml --origincert $CLOUDFLARE_BASE_DIRECTORY/.cloudflared/cert.pem tunnel"
   
-  SUBDOMAINS=(home listen read media connector git podgrab proxy admin queue ytdl git photos notes coding ssh ha monitoring mermaid drawio kitchen prometheus browser)
+  SUBDOMAINS=(home listen read media connector git podgrab proxy admin queue ytdl git photos notes ssh ha monitoring drawio prometheus browser)
   for subdomain in "${SUBDOMAINS[@]}"; do
     $cloudflare_tunnel route dns geck "${subdomain}.${SERVICE_DOMAIN}" || true
 
@@ -519,7 +500,6 @@ function main() {
   setup_calibre_web
   setup_pigallary_web
   setup_audiobookshelf
-  setup_code_server
   setup_codimd
   setup_gogs
   setup_podgrab
@@ -527,7 +507,6 @@ function main() {
   setup_media_file_browser
   setup_home_assistant
   setup_nodered
-  setup_kitchenowl
   setup_monitoring_stack
 
   case "$RUN_TYPE" in

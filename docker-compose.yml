@@ -155,22 +155,6 @@ services:
       - ${PIGALLERY_BASE_DIRECTORY}/tmp:/app/data/tmp
       - ${PHOTOS_DIRECTORY}:/app/data/images:ro
 
-  code-server:
-    image: lscr.io/linuxserver/code-server:4.8.3
-    container_name: code-server
-    restart: unless-stopped
-    networks:
-      - proxy_network # 8443
-    environment:
-      - PUID=${GECK_PUID}
-      - PGID=${GECK_PGID}
-      - TZ=${TIMEZONE}
-      - PASSWORD=${CODE_SERVER_PASSWORD}
-      - SUDO_PASSWORD=${CODE_SERVER_SUDO_PASSWORD}
-      - DEFAULT_WORKSPACE=/config/workspace/tjmaynes
-    volumes:
-      - ${CODE_SERVER_BASE_DIRECTORY}/config:/config
-
   codimd-db:
     image: postgres:11.6-alpine
     container_name: codimd-db
@@ -222,47 +206,6 @@ services:
       - LETS_ENCRYPT_ENABLED=false
       - PUBLIC_DNS=design.${SERVICE_DOMAIN}
 
-  mermaid-web:
-    image: ghcr.io/mermaid-js/mermaid-live-editor
-    container_name: mermaid-web
-    restart: unless-stopped
-    networks:
-      - proxy_network
-    environment:
-      - MERMAID_RENDERER_URL=mermaid-server:3000
-      - MERMAID_KROKI_RENDERER_URL=kroki-server:8000
-    depends_on:
-      # - mermaid-server
-      - kroki-server
-
-  # mermaid-server:
-  #   image: jihchi/mermaid.ink:3.5.0
-  #   container_name: mermaid-server
-  #   restart: unless-stopped
-  #   networks:
-  #     - proxy_network
-  #   environment:
-  #     - NODE_OPTIONS="--max-http-header-size=102400000"
-
-  kroki-server:
-    image: yuzutech/kroki:0.18.0
-    container_name: kroki-server
-    restart: unless-stopped
-    networks:
-      - proxy_network
-    environment:
-      - KROKI_MERMAID_HOST=mermaid-kroki-server
-    depends_on:
-      - mermaid-kroki-server
-
-  mermaid-kroki-server:
-    image: yuzutech/kroki-mermaid:0.18.0
-    container_name: mermaid-kroki-server
-    networks:
-      - proxy_network
-    expose:
-      - "8002"
-
   podgrab-web:
     image: akhilrex/podgrab:1.0.0
     container_name: podgrab-web
@@ -286,30 +229,6 @@ services:
     environment:
       UID: ${GECK_PUID}
       GID: ${GECK_PGID}
-
-  kitchenowl-web:
-    image: tombursch/kitchenowl-web:latest
-    container_name: kitchenowl-web
-    restart: always
-    networks:
-      - proxy_network
-    environment:
-      - BACK_URL=kitchenowl-server:5000
-    depends_on:
-      - kitchenowl-server
-
-  kitchenowl-server:
-    image: tombursch/kitchenowl:latest
-    container_name: kitchenowl-server
-    restart: unless-stopped
-    user: ${GECK_PUID}:${GECK_PGID}
-    networks:
-      - proxy_network
-    environment:
-      - JWT_SECRET_KEY=${KITCHENOWL_JWT_SECRET_KEY}
-      - FRONT_URL=kitchenowl-web:80
-    volumes:
-      - ${KITCHENOWL_BASE_DIRECTORY}/data:/data
 
   home-assistant-web:
     image: ghcr.io/home-assistant/home-assistant:2022.11.2
