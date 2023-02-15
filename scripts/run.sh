@@ -14,6 +14,9 @@ function check_requirements() {
 
   ensure_group_exists "geck"
   ensure_user_exists "geck" "docker"
+
+  ensure_group_exists "sftp"
+  ensure_user_exists "sftp" ""
 }
 
 function setup_firewall() {
