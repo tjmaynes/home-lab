@@ -2,12 +2,13 @@
 .DS_Store
 
 # Env vars
-.envrc*
+.env.production
 
 # Vagrant
 .vagrant/
 
 # Generated
+tmp/
 *.log
 
 # Downloaded

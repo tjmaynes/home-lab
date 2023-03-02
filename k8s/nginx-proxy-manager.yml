@@ -1,0 +1,169 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-proxy-manager
+  namespace: geck
+spec:
+  selector:
+    app: nginx-proxy-manager
+  type: NodePort
+  ports:
+    - protocol: TCP
+      port: 80
+      name: nginx-proxy-manager
+    - protocol: TCP
+      port: 443
+      name: nginx-proxy-manager-https
+    - protocol: TCP
+      port: 81
+      name: nginx-proxy-manager-admin
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-proxy-manager
+  namespace: geck
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-proxy-manager
+  template:
+    metadata:
+      labels:
+        app: nginx-proxy-manager
+    spec:
+      containers:
+        - name: nginx-proxy-manager
+          image: jc21/nginx-proxy-manager:2.9.19
+          imagePullPolicy: "IfNotPresent"
+          ports:
+            - containerPort: 80
+              protocol: TCP
+            - containerPort: 443
+              protocol: TCP
+            - containerPort: 81
+              protocol: TCP
+          env:
+            - name: DB_MYSQL_HOST
+              value: "nginx-proxy-manager-db.geck.svc.cluster.local"
+            - name: DB_MYSQL_PORT
+              value: "3306"
+            - name: DB_MYSQL_USER
+              value: "npm"
+            - name: DB_MYSQL_PASSWORD
+              value: "npm"
+            - name: DB_MYSQL_NAME
+              value: "npm"
+            - name: DISABLE_IPV6
+              value: "true"
+          volumeMounts:
+            - name: nginx-proxy-manager-data-volume
+              mountPath: /data
+            - name: nginx-proxy-manager-letsencrypt-volume
+              mountPath: /etc/letsencrypt
+          resources:
+            requests:
+              memory: '128Mi'
+              cpu: '100m'
+            limits:
+              memory: '256Mi'
+      volumes:
+        - name: nginx-proxy-manager-data-volume
+          hostPath:
+            path: ${NGINX_BASE_DIRECTORY}/data
+        - name: nginx-proxy-manager-letsencrypt-volume
+          hostPath:
+            path: ${NGINX_BASE_DIRECTORY}/letsencrypt
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-proxy-manager-db
+  namespace: geck
+spec:
+  selector:
+    app: nginx-proxy-manager-db
+  ports:
+    - protocol: TCP
+      port: 3306
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: nginx-proxy-manager-db-secret
+  namespace: geck
+type: kubernetes.io/basic-auth
+stringData:
+  password: ${NGINX_PROXY_MANAGER_DB_PASSWORD}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-proxy-manager-db
+  namespace: geck
+spec:
+  selector:
+    matchLabels:
+      app: nginx-proxy-manager-db
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: nginx-proxy-manager-db
+    spec:
+      containers:
+      - image: jc21/mariadb-aria:10.4.15-innodb
+        name: mariadb
+        env:
+        - name: MYSQL_DATABASE
+          value: 'npm'
+        - name: MYSQL_USER
+          value: 'npm'
+        - name: MYSQL_PASSWORD
+          value: 'npm'
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: nginx-proxy-manager-db-secret
+              key: password
+        ports:
+        - containerPort: 3306
+        volumeMounts:
+        - name: nginx-proxy-db-persistent-storage
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: nginx-proxy-db-persistent-storage
+        persistentVolumeClaim:
+          claimName: nginx-proxy-db-pvc-claim
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nginx-proxy-db-pv-volume
+  namespace: geck
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 2Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/opt/programs/nginx-proxy-db"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nginx-proxy-db-pvc-claim
+  namespace: geck
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi

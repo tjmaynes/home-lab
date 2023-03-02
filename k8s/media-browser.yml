@@ -1,0 +1,87 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: media-browser
+  namespace: geck
+spec:
+  selector:
+    app: media-browser
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+      name: media-browser
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: media-browser
+  namespace: geck
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: media-browser
+  template:
+    metadata:
+      labels:
+        app: media-browser
+    spec:
+      containers:
+        - name: media-browser
+          image: filebrowser/filebrowser:s6
+          imagePullPolicy: "IfNotPresent"
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          env:
+            - name: PUID
+              value: "1001"
+            - name: PGID
+              value: "1001"
+            - name: TZ
+              value: "${TIMEZONE}"
+          volumeMounts:
+            - name: media-browser-database-volume
+              mountPath: /database/filebrowser.db
+            - name: media-browser-config
+              mountPath: /config
+              readOnly: true
+            - name: media-volume
+              mountPath: /srv
+          resources:
+            requests:
+              memory: '128Mi'
+              cpu: '100m'
+            limits:
+              memory: '256Mi'
+      volumes:
+        - name: media-browser-database-volume
+          hostPath:
+            path: ${MEDIAFILEBROWSER_BASE_DIRECTORY}/database/filebrowser.db
+        - name: media-browser-config
+          configMap:
+            name: media-browser-config-map
+            items:
+            - key: settings.json
+              path: settings.json
+        - name: media-volume
+          hostPath:
+            path: ${MEDIA_BASE_DIRECTORY}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: media-browser-config-map
+  namespace: geck
+data:
+  settings.json: |
+    {
+      "port": 8080,
+      "baseURL": "",
+      "address": "",
+      "log": "stdout",
+      "database": "/database/filebrowser.db",
+      "root": "/srv"
+    }

@@ -1,0 +1,36 @@
+---
+- name: Install required packages
+  ansible.builtin.apt:
+    pkg:
+      - rsync
+      - cron
+
+- name: Mount backup drive
+  ansible.posix.mount:
+    path: /opt/backups
+    src: LABEL=backups
+    fstype: ext4
+    state: mounted
+
+- name: Unmount backup drive
+  ansible.posix.mount:
+    path: /backups
+    src: LABEL=backups
+    fstype: ext4
+    state: absent
+
+- name: Copy backup script with owner and permissions
+  ansible.builtin.copy:
+    src: backup.sh
+    dest: /opt/scripts/backup.sh
+    mode: '0644'
+
+- name: Changing perm of "/opt/scripts/backup.sh", adding "a+x"
+  file: dest=/opt/scripts/backup.sh mode=a+x
+
+- name: Ensure backups every 6 hours
+  ansible.builtin.cron:
+    name: "Run backups"
+    minute: "0"
+    hour: "0,6,12"
+    job: "sudo /opt/scripts/backup.sh"

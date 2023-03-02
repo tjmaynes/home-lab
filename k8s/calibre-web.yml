@@ -1,0 +1,64 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: calibre-web
+  namespace: geck
+spec:
+  selector:
+    app: calibre-web
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8083
+      name: calibre-web
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: calibre-web
+  namespace: geck
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: calibre-web
+  template:
+    metadata:
+      labels:
+        app: calibre-web
+    spec:
+      containers:
+        - name: calibre-web
+          image: lscr.io/linuxserver/calibre-web:0.6.19
+          imagePullPolicy: "IfNotPresent"
+          ports:
+            - containerPort: 8083
+              protocol: TCP
+          env:
+            - name: PUID
+              value: "1001"
+            - name: PGID
+              value: "1001"
+            - name: TZ
+              value: "${TIMEZONE}"
+            - name: DOCKER_MODS
+              value: "linuxserver/mods:universal-calibre"
+          volumeMounts:
+            - name: calibre-web-config-volume
+              mountPath: /config
+            - name: books-volume
+              mountPath: /books
+          resources:
+            requests:
+              memory: '64Mi'
+              cpu: '100m'
+            limits:
+              memory: '128Mi'
+      volumes:
+        - name: calibre-web-config-volume
+          hostPath:
+            path: ${HOMER_BASE_DIRECTORY}/config
+        - name: books-volume
+          hostPath:
+            path: ${MEDIA_BASE_DIRECTORY}/Books

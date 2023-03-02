@@ -1,0 +1,70 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: audiobookshelf
+  namespace: geck
+spec:
+  selector:
+    app: audiobookshelf
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+      name: audiobookshelf
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: audiobookshelf
+  namespace: geck
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: audiobookshelf
+  template:
+    metadata:
+      labels:
+        app: audiobookshelf
+    spec:
+      containers:
+        - name: audiobookshelf
+          image: ghcr.io/advplyr/audiobookshelf:2.2.12
+          imagePullPolicy: "IfNotPresent"
+          ports:
+            - containerPort: 80
+              protocol: TCP
+          env:
+            - name: AUDIOBOOKSHELF_UID
+              value: "1001"
+            - name: AUDIOBOOKSHELF_GID
+              value: "1001"
+          volumeMounts:
+            - name: audiobookshelf-config-volume
+              mountPath: /config
+            - name: audiobookshelf-metadata-volume
+              mountPath: /metadata
+            - name: audiobooks-volume
+              mountPath: /audiobooks
+            - name: podcasts-volume
+              mountPath: /podcasts
+          resources:
+            requests:
+              memory: '128Mi'
+              cpu: '100m'
+            limits:
+              memory: '512Mi'
+      volumes:
+        - name: audiobookshelf-config-volume
+          hostPath:
+            path: ${AUDIOBOOKSHELF_BASE_DIRECTORY}/config
+        - name: audiobookshelf-metadata-volume
+          hostPath:
+            path: ${AUDIOBOOKSHELF_BASE_DIRECTORY}/metadata
+        - name: audiobooks-volume
+          hostPath:
+            path: ${MEDIA_BASE_DIRECTORY}/Audiobooks
+        - name: podcasts-volume
+          hostPath:
+            path: ${MEDIA_BASE_DIRECTORY}/Podcasts

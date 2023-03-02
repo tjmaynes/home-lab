@@ -1,0 +1,44 @@
+---
+
+- name: Enable IPv4 forwarding
+  ansible.posix.sysctl:
+    name: net.ipv4.ip_forward
+    value: "1"
+    state: present
+    reload: yes
+
+- name: Enable IPv6 forwarding
+  ansible.posix.sysctl:
+    name: net.ipv6.conf.all.forwarding
+    value: "1"
+    state: present
+    reload: yes
+  when: ansible_all_ipv6_addresses
+
+- name: Block Bluetooth
+  shell: rfkill block bluetooth
+  ignore_errors: yes
+
+- name: UFW - Outgoing allow
+  community.general.ufw:
+    state: enabled
+    direction: outgoing
+    policy: allow
+
+- name: UFW - Incoming deny
+  community.general.ufw:
+    state: enabled
+    direction: incoming
+    policy: deny
+
+- name: UFW - Allow SSH & HTTPS ports
+  community.general.ufw:
+    rule: allow
+    port: '{{ item }}'
+    proto: tcp
+  loop:
+    - ssh
+    - https
+
+- include_tasks: ./CentOS.yml
+  when: ansible_distribution in ['CentOS', 'Red Hat Enterprise Linux']

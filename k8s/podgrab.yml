@@ -1,0 +1,61 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: podgrab
+  namespace: geck
+spec:
+  selector:
+    app: podgrab
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+      name: podgrab
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: podgrab
+  namespace: geck
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: podgrab
+  template:
+    metadata:
+      labels:
+        app: podgrab
+    spec:
+      containers:
+        - name: podgrab
+          image: akhilrex/podgrab:1.0.0
+          imagePullPolicy: "IfNotPresent"
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          env:
+            - name: CHECK_FREQUENCY
+              value: "240"
+          volumeMounts:
+            - name: podgrab-config-volume
+              mountPath: /config
+            - name: podcasts-volume
+              mountPath: /assets
+          resources:
+            requests:
+              memory: '128Mi'
+              cpu: '100m'
+            limits:
+              memory: '512Mi'
+      volumes:
+        - name: podgrab-config-volume
+          hostPath:
+            path: ${PODGRAB_BASE_DIRECTORY}/config
+        - name: media-volume
+          persistentVolumeClaim:
+            claimName: media-pvc-volume
+        - name: podcasts-volume
+          hostPath:
+            path: ${MEDIA_BASE_DIRECTORY}/Podcasts

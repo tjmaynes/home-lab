@@ -1,0 +1,55 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gogs
+  namespace: geck
+spec:
+  selector:
+    app: gogs
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+      name: gogs
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gogs
+  namespace: geck
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gogs
+  template:
+    metadata:
+      labels:
+        app: gogs
+    spec:
+      containers:
+        - name: gogs
+          image: gogs/gogs:0.12
+          imagePullPolicy: "IfNotPresent"
+          ports:
+            - containerPort: 3000
+              protocol: TCP
+          env:
+            - name: RUN_CROND
+              value: "true"
+            - name: DOMAIN
+              value: "git.${SERVICE_DOMAIN}"
+          volumeMounts:
+            - name: gogs-data-volume
+              mountPath: /data
+          resources:
+            requests:
+              memory: '128Mi'
+              cpu: '100m'
+            limits:
+              memory: '256Mi'
+      volumes:
+        - name: gogs-data-volume
+          hostPath:
+            path: ${GOGS_BASE_DIRECTORY}/data

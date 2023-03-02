@@ -1,0 +1,68 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pi-gallery-web
+  namespace: geck
+spec:
+  selector:
+    app: pi-gallery-web
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+      name: pi-gallery-web
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pi-gallery-web
+  namespace: geck
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pi-gallery-web
+  template:
+    metadata:
+      labels:
+        app: pi-gallery-web
+    spec:
+      containers:
+        - name: pi-gallery-web
+          image: bpatrik/pigallery2:1.9.5-alpine
+          imagePullPolicy: "IfNotPresent"
+          ports:
+            - containerPort: 80
+          env:
+            - name: NODE_ENV
+              value: "production"
+          volumeMounts:
+            - name: pi-gallery-web-config-volume
+              mountPath: /app/data/config
+            - name: pi-gallery-web-db-volume
+              mountPath: /app/data/db
+            - name: pi-gallery-web-temp-volume
+              mountPath: /app/data/tmp
+            - name: photos-volume
+              mountPath: /app/data/images
+              readOnly: true
+          resources:
+            requests:
+              memory: '64Mi'
+              cpu: '100m'
+            limits:
+              memory: '128Mi'
+      volumes:
+        - name: pi-gallery-web-config-volume
+          hostPath:
+            path: ${PIGALLERY_BASE_DIRECTORY}/pigallery-web/config
+        - name: pi-gallery-web-db-volume
+          hostPath:
+            path: ${PIGALLERY_BASE_DIRECTORY}/pigallery-web/db
+        - name: pi-gallery-web-temp-volume
+          hostPath:
+            path: ${PIGALLERY_BASE_DIRECTORY}/pigallery-web/tmp
+        - name: photos-volume
+          hostPath:
+            path: ${MEDIA_BASE_DIRECTORY}/Photos

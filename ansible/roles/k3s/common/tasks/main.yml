@@ -1,0 +1,7 @@
+---
+
+- name: UFW - Expose K3s API server
+  community.general.ufw:
+    rule: allow
+    port: 6443
+    proto: tcp

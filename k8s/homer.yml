@@ -1,0 +1,210 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: homer-web
+  namespace: geck
+spec:
+  selector:
+    app: homer-web
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+      name: homer-web
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: homer-web
+  namespace: geck
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: homer-web
+  template:
+    metadata:
+      labels:
+        app: homer-web
+    spec:
+      containers:
+        - name: homer-web
+          image: b4bz/homer:v22.08.1
+          imagePullPolicy: "IfNotPresent"
+          ports:
+            - containerPort: 8080
+          env:
+            - name: INIT_ASSETS
+              value: "0"
+          volumeMounts:
+            - name: homer-web-images-volume
+              mountPath: /www/images
+              readOnly: true
+            - name: homer-web-config
+              mountPath: /www/assets
+              readOnly: true
+      volumes:
+        - name: homer-web-images-volume
+          hostPath:
+            path: ${HOMER_BASE_DIRECTORY}/www/images
+        - name: homer-web-config
+          configMap:
+            name: homer-web-config-map
+            items:
+            - key: config.yml
+              path: config.yml
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: homer-web-config-map
+  namespace: geck
+data:
+  config.yml: |
+    title: "Home Lab Dashboard"
+    subtitle: "Welcome and please be kind..."
+    documentTitle: "Home Lab"
+    logo: "images/logo.webp"
+
+    header: true
+    footer: ''
+
+    columns: "1"
+    connectivityCheck: true
+
+    defaults:
+      layout: list
+      colorTheme: dark
+
+    links:
+      - name: "Source Code"
+        icon: "fab fa-github"
+        url: "https://git.${SERVICE_DOMAIN}/tjmaynes/home-lab"
+        target: "_blank"
+
+    services:
+      - name: "Media"
+        icon: "fas fa-play"
+        items:
+          - name: "Plex"
+            icon: "fas fa-tv"
+            subtitle: "Media server for movies, music, etc"
+            tag: "app"
+            keywords: "self-hosted media server, plex"
+            url: "https://media.${SERVICE_DOMAIN}"
+            target: "_blank"
+          - name: "Calibre-Web"
+            icon: "fas fa-book"
+            subtitle: "Ebook reader"
+            tag: "app"
+            keywords: "self-hosted ebook reader, calibre"
+            url: "https://read.${SERVICE_DOMAIN}"
+            target: "_blank"
+          - name: "Audiobookshelf"
+            icon: "fas fa-podcast"
+            subtitle: "Podcasts and audiobooks"
+            tag: "app"
+            keywords: "self-hosted podcast & audiobooks server"
+            url: "https://listen.${SERVICE_DOMAIN}"
+            target: "_blank"
+          - name: "Photo Gallery"
+            icon: "fas fa-camera-retro"
+            subtitle: "Look at all those memories"
+            tag: "app"
+            keywords: "self-hosted photo gallery, pigallery"
+            url: "https://photos.${SERVICE_DOMAIN}"
+            target: "_blank"
+          - name: "Media Browser"
+            icon: "fas fa-cloud-download"
+            subtitle: "Easily manage files"
+            tag: "app"
+            url: "https://browser.${SERVICE_DOMAIN}"
+            target: "_blank"
+
+      - name: "Development"
+        icon: "fas fa-keyboard-o"
+        items:
+          - name: "Gogs"
+            icon: "fas fa-code-fork"
+            subtitle: "Git mirror server"
+            tag: "app"
+            url: "https://git.${SERVICE_DOMAIN}"
+            target: "_blank"
+
+      - name: "Automation"
+        icon: "fas fa-magic"
+        items:
+          - name: "Home Assistant"
+            icon: "fas fa-home"
+            subtitle: "Life support system"
+            tag: "app"
+            keywords: "self-hosted home automation, home assistant"
+            url: "https://ha.${SERVICE_DOMAIN}"
+            target: "_blank"
+          - name: "Node-RED"
+            icon: "fas fa-cogs"
+            subtitle: "A programming tool for wiring together hardware devices, APIs and online services"
+            tag: "app"
+            keywords: "self-hosted home automation, Node-RED"
+            url: "https://connector.${SERVICE_DOMAIN}"
+            target: "_blank"
+
+      - name: "Utilities"
+        icon: "fas fa-heartbeat"
+        items:
+          - name: "Monitoring"
+            icon: "fas fa-dashboard"
+            subtitle: "Monitoring dashboard for geck"
+            tag: "app"
+            url: "https://monitoring.${SERVICE_DOMAIN}"
+            target: "_blank"
+          - name: "Nginx Proxy Manager"
+            icon: "fas fa-shower"
+            subtitle: "Nginx with GUI"
+            tag: "app"
+            url: "https://proxy.${SERVICE_DOMAIN}"
+            target: "_blank"
+          - name: "Podgrab"
+            icon: "fas fa-cloud-download"
+            subtitle: "Podcast autodownloader"
+            tag: "app"
+            url: "https://podgrab.${SERVICE_DOMAIN}"
+            target: "_blank"
+          - name: "YouTube Downloader"
+            icon: "fas fa-cloud-download"
+            subtitle: "Download video and audio from YouTube"
+            tag: "app"
+            url: "https://ytdl.${SERVICE_DOMAIN}"
+            target: "_blank"
+
+    theme: default
+
+    colors:
+      light:
+        highlight-primary: "#3367d6"
+        highlight-secondary: "#4285f4"
+        highlight-hover: "#5a95f5"
+        background: "#f5f5f5"
+        card-background: "#ffffff"
+        text: "#363636"
+        text-header: "#424242"
+        text-title: "#303030"
+        text-subtitle: "#424242"
+        card-shadow: rgba(0, 0, 0, 0.1)
+        link: "#3273dc"
+        link-hover: "#363636"
+
+      dark:
+        highlight-primary: "#3367d6"
+        highlight-secondary: "#4285f4"
+        highlight-hover: "#5a95f5"
+        background: "#131313"
+        card-background: "#2b2b2b"
+        text: "#eaeaea"
+        text-header: "#ffffff"
+        text-title: "#fafafa"
+        text-subtitle: "#f5f5f5"
+        card-shadow: rgba(0, 0, 0, 0.4)
+        link: "#3273dc"
+        link-hover: "#ffdd57"

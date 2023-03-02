@@ -1,0 +1,74 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudflare-tunnel
+  namespace: geck
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cloudflare-tunnel
+  template:
+    metadata:
+      labels:
+        app: cloudflare-tunnel
+    spec:
+      containers:
+        - name: cloudflare-tunnel
+          image: cloudflare/cloudflared:2023.3.0
+          args:
+            - --config
+            - /etc/cloudflared/config/config.yaml
+            - tunnel
+            - --no-autoupdate
+            - run
+            - --no-tls-verify
+            - geck
+          livenessProbe:
+            httpGet:
+              path: /ready
+              port: 2000
+            failureThreshold: 1
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          volumeMounts:
+            - name: config
+              mountPath: /etc/cloudflared/config
+              readOnly: true
+            - name: creds
+              mountPath: /etc/cloudflared/creds
+              readOnly: true
+      volumes:
+        - name: creds
+          secret:
+            secretName: cloudflare-tunnel-credentials
+        - name: config
+          configMap:
+            name: cloudflare-tunnel-config-map
+            items:
+            - key: config.yaml
+              path: config.yaml
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloudflare-tunnel-config-map
+  namespace: geck
+data:
+  config.yaml: |
+    tunnel: "${CLOUDFLARE_TUNNEL_UUID}"
+    credentials-file: /etc/cloudflared/creds/credentials.json
+    metrics: 0.0.0.0:2000
+    no-autoupdate: true
+    originRequest:
+      originServerName: "*.${SERVICE_DOMAIN}"
+      noTLSVerify: true
+    ingress:
+      - hostname: "proxy.${SERVICE_DOMAIN}"
+        service: "http://nginx-proxy-manager:81"
+      - hostname: "*.${SERVICE_DOMAIN}"
+        service: "http://nginx-proxy-manager:80"
+      - hostname: "*.${SERVICE_DOMAIN}"
+        service: "https://nginx-proxy-manager:443"
+      - service: http_status:404

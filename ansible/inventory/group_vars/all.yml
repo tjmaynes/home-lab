@@ -1,0 +1,8 @@
+---
+k3s_version: v1.23.16+k3s1
+cloudflared_version: 2023.3.0
+ansible_user: lab
+systemd_dir: /etc/systemd/system
+master_ip: "{{ hostvars[groups['master'][0]]['ansible_host'] | default(groups['master'][0]) }}"
+extra_server_args: "--kubelet-arg='kube-reserved=cpu=500m,memory=1Gi,ephemeral-storage=2Gi' --kubelet-arg='system-reserved=cpu=500m, memory=1Gi,ephemeral-storage=2Gi' --kubelet-arg='eviction-hard=memory.available<500Mi,nodefs.available<1%'"
+extra_agent_args: ""

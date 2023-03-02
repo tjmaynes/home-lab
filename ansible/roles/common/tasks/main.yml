@@ -1,0 +1,13 @@
+---
+
+- name: Set timezone to America/Chicago
+  timezone:
+    name: America/Chicago
+
+- name: Install required packages
+  ansible.builtin.apt:
+    pkg:
+      - ufw
+      - rfkill
+
+- include_tasks: networking/default.yml

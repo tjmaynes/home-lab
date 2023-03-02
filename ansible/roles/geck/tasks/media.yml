@@ -1,0 +1,30 @@
+---
+
+- name: Mount media drive
+  ansible.posix.mount:
+    path: /opt/media
+    src: LABEL=media
+    fstype: ext4
+    state: mounted
+
+- name: UFW - Allow Plex (standard + dlna) ports
+  community.general.ufw:
+    rule: allow
+    port: '{{ item }}'
+    proto: tcp
+  loop:
+    - 32400
+    - 3005
+    - 5353
+    - 8324
+    - '32410:32414'
+    - 32469
+
+- name: UFW - Allow Plex (dlna) ports
+  community.general.ufw:
+    rule: allow
+    port: '{{ item }}'
+    proto: udp
+  loop:
+    - 1900
+    - 5353

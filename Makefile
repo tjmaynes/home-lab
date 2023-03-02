@@ -1,30 +1,42 @@
-install:
-	chmod +x ./scripts/$@.sh
-	./scripts/$@.sh
+ENV_FILE := $(or $(ENV_FILE), ./.env.production)
 
-boot:
-	./scripts/run.sh "$@"
+ifneq ("$(wildcard $(ENV_FILE))","")
+	include $(ENV_FILE)
+	export $(shell sed 's/=.*//' $(ENV_FILE))
+endif
 
-start:
-	./scripts/run.sh "$@"
+include ./.env.default
+export $(shell sed 's/=.*//' ./.env.default)
 
-restart:
-	./scripts/run.sh "$@"
+copy_kube_config:
+	scp lab@192.168.5.57:~/.kube/config ${HOME}/.kube/config
 
-stop:
-	chmod +x ./scripts/$@.sh
-	./scripts/$@.sh
+connect_to_proxy:
+	kubectl -n geck port-forward service/nginx-proxy-manager 8080:80
 
-backup:
-	chmod +x ./scripts/$@.sh
-	./scripts/$@.sh
+debug_proxy:
+	chmod +x ./scripts/debug-proxy.sh
+	./scripts/debug-proxy.sh
 
-debug:
-	journalctl -u geck.service -b
+connect_to_plex:
+	kubectl -n geck port-forward service/plex 32400:32400
 
-debug.ports:
-	 lsof -i -P -n | grep LISTEN
+deploy_servers:
+	ansible-playbook ./ansible/setup.yml --ask-become-pass \
+		--inventory-file ./ansible/inventory/hosts.ini
 
-local_plex_pipe:
-	chmod +x ./scripts/local-plex-pipe.sh
-	./scripts/local-plex-pipe.sh
+deploy_k8s:
+	chmod +x ./scripts/run-k8s.sh
+	./scripts/run-k8s.sh "apply"
+
+teardown_k8s:
+	chmod +x ./scripts/run-k8s.sh
+	./scripts/run-k8s.sh "delete"
+
+teardown_servers:
+	ansible-playbook ./ansible/teardown.yml --ask-become-pass \
+		--inventory-file ./ansible/inventory/hosts.ini
+
+deploy: deploy_servers deploy_k8s
+
+teardown: teardown_k8s teardown_servers
