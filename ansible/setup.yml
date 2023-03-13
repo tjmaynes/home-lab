@@ -12,11 +12,11 @@
   roles:
     - role: k3s/common
     - role: k3s/master
-    - role: geck
+    - role: media
 
-- hosts: lab_computer_1
-  become: yes
-  roles:
-    - role: k3s/common
-    - role: k3s/node
-    - role: raspberrypi
+# - hosts: lab_computer_1
+#   become: yes
+#   roles:
+#     - role: k3s/common
+#     - role: k3s/node
+#     - role: raspberrypi

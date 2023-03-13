@@ -3,7 +3,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: youtube-downloader-web
-  namespace: geck
+  namespace: media
 spec:
   selector:
     app: youtube-downloader-web
@@ -17,7 +17,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: youtube-downloader-web
-  namespace: geck
+  namespace: media
 spec:
   replicas: 1
   selector:
@@ -52,4 +52,4 @@ spec:
       volumes:
         - name: downloads-volume
           hostPath:
-            path: ${MEDIA_BASE_DIRECTORY}/Downloads/youtube
+            path: ${MEDIA_BASE_DIRECTORY}/YouTube

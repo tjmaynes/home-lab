@@ -19,18 +19,14 @@ function check_requirements() {
 
   throw_if_required_env_var_not_exists "MEDIA_BASE_DIRECTORY" "$MEDIA_BASE_DIRECTORY"
 
-  throw_if_required_env_var_not_exists "DOCKER_BASE_DIRECTORY" "$DOCKER_BASE_DIRECTORY"
+  throw_if_required_env_var_not_exists "PROGRAMS_BASE_DIRECTORY" "$PROGRAMS_BASE_DIRECTORY"
   throw_if_required_env_var_not_exists "HOMER_BASE_DIRECTORY" "$HOMER_BASE_DIRECTORY"
-  throw_if_required_env_var_not_exists "PIHOLE_BASE_DIRECTORY" "$PIHOLE_BASE_DIRECTORY"
   throw_if_required_env_var_not_exists "PLEX_BASE_DIRECTORY" "$PLEX_BASE_DIRECTORY"
   throw_if_required_env_var_not_exists "CALIBRE_WEB_BASE_DIRECTORY" "$CALIBRE_WEB_BASE_DIRECTORY"
   throw_if_required_env_var_not_exists "PIGALLERY_BASE_DIRECTORY" "$PIGALLERY_BASE_DIRECTORY"
   throw_if_required_env_var_not_exists "GOGS_BASE_DIRECTORY" "$GOGS_BASE_DIRECTORY"
   throw_if_required_env_var_not_exists "AUDIOBOOKSHELF_BASE_DIRECTORY" "$AUDIOBOOKSHELF_BASE_DIRECTORY"
   throw_if_required_env_var_not_exists "PODGRAB_BASE_DIRECTORY" "$PODGRAB_BASE_DIRECTORY"
-  throw_if_required_env_var_not_exists "OCTOPRINT_BASE_DIRECTORY" "$OCTOPRINT_BASE_DIRECTORY"
-  throw_if_required_env_var_not_exists "HOMEASSISTANT_BASE_DIRECTORY" "$HOMEASSISTANT_BASE_DIRECTORY"
-  throw_if_required_env_var_not_exists "NODERED_BASE_DIRECTORY" "$NODERED_BASE_DIRECTORY"
   throw_if_required_env_var_not_exists "MEDIAFILEBROWSER_BASE_DIRECTORY" "$MEDIAFILEBROWSER_BASE_DIRECTORY"
 }
 
@@ -47,40 +43,25 @@ function create_namespace() {
 }
 
 function copy_cloudflare_tunnel_credentials() {
-  if ! kubectl -n geck get secret | grep "cloudflare-tunnel-credentials" &> /dev/null; then
-    kubectl -n geck create secret generic cloudflare-tunnel-credentials \
+  if ! kubectl -n vpn get secret | grep "cloudflare-tunnel-credentials" &> /dev/null; then
+    kubectl -n vpn create secret generic cloudflare-tunnel-credentials \
       --from-file=credentials.json=./tmp/.cloudflared/$CLOUDFLARE_TUNNEL_UUID.json
   fi
 }
 
-function install_node_red_plugins() {
-  NODE_RED_POD=$(kubectl -n geck get pod -l app=node-red -o jsonpath="{.items[0].metadata.name}")
-  # kubectl -n geck exec -it "$NODE_RED_POD" -- /bin/bash -c "mkdir -p /data/.npm && chown -R 1000:1000 /data/.npm"
-
-  if ! kubectl -n geck exec -it "$NODE_RED_POD" -- /bin/bash -c "npm list node-red-node-twilio" &> /dev/null; then
-    echo "Installing node-red dependencies..."
-    kubectl -n geck exec -it "$NODE_RED_POD" -- /bin/bash -c "npm install node-red-node-twilio"
-  fi
-}
-
-function update_home_assistant_env_var() {
-  PROXY_SERVER_IP=$(kubectl -n geck get pod -l app=nginx-proxy-manager -o jsonpath="{.items[0].status.podIP}")
-
-  if ! kubectl -n geck get pod -l app=home-assistant -o jsonpath="{.items[0].spec.containers[0].env}" | grep -w "$PROXY_SERVER_IP" &> /dev/null; then
-    kubectl -n geck set env deployment/home-assistant PROXY_SERVER_IP=${PROXY_SERVER_IP}
-  fi
-}
-
 function run_apply() {
-  create_namespace "geck"
-  create_namespace "monitoring"
-  taint_3dprinter_node
+  create_namespace "vpn"
   copy_cloudflare_tunnel_credentials
+  for f in ./k8s/vpn/*.yml; do envsubst < "$f" | kubectl apply -f -; done
 
-  for f in ./k8s/*.yml; do envsubst < "$f" | kubectl apply -f -; done
+  create_namespace "media"
+  for f in ./k8s/media/*.yml; do envsubst < "$f" | kubectl apply -f -; done
 
-  install_node_red_plugins
-  update_home_assistant_env_var
+  create_namespace "development"
+  for f in ./k8s/development/*.yml; do envsubst < "$f" | kubectl apply -f -; done
+
+  create_namespace "monitoring"
+  for f in ./k8s/monitoring/*.yml; do envsubst < "$f" | kubectl apply -f -; done
 }
 
 function main() {

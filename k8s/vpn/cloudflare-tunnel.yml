@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: cloudflare-tunnel
-  namespace: geck
+  namespace: vpn
 spec:
   replicas: 2
   selector:
@@ -54,7 +54,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: cloudflare-tunnel-config-map
-  namespace: geck
+  namespace: vpn
 data:
   config.yaml: |
     tunnel: "${CLOUDFLARE_TUNNEL_UUID}"

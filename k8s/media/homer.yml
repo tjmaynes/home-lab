@@ -3,7 +3,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: homer-web
-  namespace: geck
+  namespace: vpn
 spec:
   selector:
     app: homer-web
@@ -17,7 +17,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: homer-web
-  namespace: geck
+  namespace: vpn
 spec:
   replicas: 1
   selector:
@@ -59,7 +59,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: homer-web-config-map
-  namespace: geck
+  namespace: vpn
 data:
   config.yml: |
     title: "Home Lab Dashboard"
@@ -121,6 +121,18 @@ data:
             tag: "app"
             url: "https://browser.${SERVICE_DOMAIN}"
             target: "_blank"
+          - name: "Podgrab"
+            icon: "fas fa-cloud-download"
+            subtitle: "Podcast autodownloader"
+            tag: "app"
+            url: "https://podgrab.${SERVICE_DOMAIN}"
+            target: "_blank"
+          - name: "YouTube Downloader"
+            icon: "fas fa-cloud-download"
+            subtitle: "Download video and audio from YouTube"
+            tag: "app"
+            url: "https://ytdl.${SERVICE_DOMAIN}"
+            target: "_blank"
 
       - name: "Development"
         icon: "fas fa-keyboard-o"
@@ -130,24 +142,6 @@ data:
             subtitle: "Git mirror server"
             tag: "app"
             url: "https://git.${SERVICE_DOMAIN}"
-            target: "_blank"
-
-      - name: "Automation"
-        icon: "fas fa-magic"
-        items:
-          - name: "Home Assistant"
-            icon: "fas fa-home"
-            subtitle: "Life support system"
-            tag: "app"
-            keywords: "self-hosted home automation, home assistant"
-            url: "https://ha.${SERVICE_DOMAIN}"
-            target: "_blank"
-          - name: "Node-RED"
-            icon: "fas fa-cogs"
-            subtitle: "A programming tool for wiring together hardware devices, APIs and online services"
-            tag: "app"
-            keywords: "self-hosted home automation, Node-RED"
-            url: "https://connector.${SERVICE_DOMAIN}"
             target: "_blank"
 
       - name: "Utilities"
@@ -164,18 +158,6 @@ data:
             subtitle: "Nginx with GUI"
             tag: "app"
             url: "https://proxy.${SERVICE_DOMAIN}"
-            target: "_blank"
-          - name: "Podgrab"
-            icon: "fas fa-cloud-download"
-            subtitle: "Podcast autodownloader"
-            tag: "app"
-            url: "https://podgrab.${SERVICE_DOMAIN}"
-            target: "_blank"
-          - name: "YouTube Downloader"
-            icon: "fas fa-cloud-download"
-            subtitle: "Download video and audio from YouTube"
-            tag: "app"
-            url: "https://ytdl.${SERVICE_DOMAIN}"
             target: "_blank"
 
     theme: default

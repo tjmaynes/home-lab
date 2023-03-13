@@ -3,7 +3,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: nginx-proxy-manager
-  namespace: geck
+  namespace: vpn
 spec:
   selector:
     app: nginx-proxy-manager
@@ -23,7 +23,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nginx-proxy-manager
-  namespace: geck
+  namespace: vpn
 spec:
   replicas: 1
   selector:
@@ -47,7 +47,7 @@ spec:
               protocol: TCP
           env:
             - name: DB_MYSQL_HOST
-              value: "nginx-proxy-manager-db.geck.svc.cluster.local"
+              value: "nginx-proxy-manager-db.vpn.svc.cluster.local"
             - name: DB_MYSQL_PORT
               value: "3306"
             - name: DB_MYSQL_USER
@@ -81,7 +81,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: nginx-proxy-manager-db
-  namespace: geck
+  namespace: vpn
 spec:
   selector:
     app: nginx-proxy-manager-db
@@ -93,7 +93,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: nginx-proxy-manager-db-secret
-  namespace: geck
+  namespace: vpn
 type: kubernetes.io/basic-auth
 stringData:
   password: ${NGINX_PROXY_MANAGER_DB_PASSWORD}
@@ -102,7 +102,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nginx-proxy-manager-db
-  namespace: geck
+  namespace: vpn
 spec:
   selector:
     matchLabels:
@@ -143,7 +143,7 @@ apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: nginx-proxy-db-pv-volume
-  namespace: geck
+  namespace: vpn
   labels:
     type: local
 spec:
@@ -159,7 +159,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: nginx-proxy-db-pvc-claim
-  namespace: geck
+  namespace: vpn
 spec:
   storageClassName: manual
   accessModes:
