@@ -2,7 +2,7 @@
     <img src="./ansible/roles/media/files/logo.webp" width="150"></a>
 </p>
 
-# Home Lab
+# home-lab
 > Ansible playbook for my K3s-based home lab.
 
 ## Requirements
